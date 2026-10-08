@@ -1,0 +1,60 @@
+name: Build Android APK
+
+# Builds an installable debug APK (landscape, fullscreen) from this project.
+# Run it from the GitHub "Actions" tab ("Run workflow"), then download the
+# "iron-front-debug-apk" artifact and install app-debug.apk on your phone.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build the web game
+        run: npm run build
+
+      - name: Create the Android project
+        run: npx cap add android
+
+      - name: Force landscape + fullscreen
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          # Lock the activity to landscape (either direction).
+          sed -i 's|<activity|<activity android:screenOrientation="sensorLandscape"|' "$MANIFEST"
+          # Hide the status bar / go fullscreen.
+          STYLES=android/app/src/main/res/values/styles.xml
+          sed -i 's|<style name="AppTheme.NoActionBar"[^>]*>|&\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>|' "$STYLES"
+          grep -n "screenOrientation" "$MANIFEST"
+
+      - name: Sync web assets into Android
+        run: npx cap sync android
+
+      - name: Build debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: iron-front-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
