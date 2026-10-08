@@ -1,0 +1,12 @@
+{
+  "appId": "com.ironfront.tactics",
+  "appName": "Iron Front Tactics",
+  "webDir": "dist",
+  "backgroundColor": "#020617",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "Iron Front: Tactics",
+  "short_name": "Iron Front",
+  "description": "Turn-based tactics: capture cities, command officers, win the war.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
