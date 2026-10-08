@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Build an installable debug APK (landscape + fullscreen) on your own computer.
 #
-# Requirements: Node 22+, JDK 21, and the Android SDK (easiest: install Android Studio once,
+# Requirements: Node 24+, JDK 21, and the Android SDK (easiest: install Android Studio once,
 # then set ANDROID_HOME, e.g. ~/Android/Sdk or ~/Library/Android/sdk).
 #
 # Usage:  bash scripts/build-apk.sh

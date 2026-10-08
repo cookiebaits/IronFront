@@ -2033,7 +2033,7 @@ export default function GameView(props: Props) {
               <div className="text-xs text-slate-300"><span className="text-amber-300 font-bold">{gs.funds[localTeam].toLocaleString()}G</span> · Slots {unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</div>
             </div>
             {unitCount(gs, localTeam) >= gs.unitCap[localTeam] && <div className="text-xs text-rose-300 mb-2">Unit limit reached! Lose or merge units before deploying more.</div>}
-            <div className="grid md:grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {U.build.list.map((t, i) => {
                 const cost = costFor(gs, localTeam, t);
                 const ups = save.unitUps?.[t];

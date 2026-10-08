@@ -13,7 +13,7 @@ The game is a web app wrapped with [Capacitor](https://capacitorjs.com). It is l
 
 ## Option B — build it on your computer
 
-Needs Node 22+, JDK 21 and the Android SDK (install Android Studio once, then set `ANDROID_HOME`).
+Needs Node 24+, JDK 21 and the Android SDK (install Android Studio once, then set `ANDROID_HOME`).
 
 ```bash
 bash scripts/build-apk.sh
