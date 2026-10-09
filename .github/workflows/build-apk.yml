@@ -1,63 +1,88 @@
 name: Build Android APK
 
-# Builds an installable debug APK (landscape, fullscreen) from this project.
-# Run it from the GitHub "Actions" tab ("Run workflow"), then download the
-# "iron-front-debug-apk" artifact and install app-debug.apk on your phone.
 on:
   workflow_dispatch:
   push:
     branches: [main, master]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: android-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   apk:
-    # Pin the runner so GitHub's future ubuntu-latest migration cannot change the Android toolchain.
-    runs-on: ubuntu-24.04
+    name: Landscape Android Debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+
     steps:
-      - uses: actions/checkout@v5
+      - name: Check out the repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v5
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
         with:
-          # Capacitor 8 and the current GitHub actions run natively on Node 24.
-          node-version: 24
-          cache: npm
+          node-version: '22'
 
-      - uses: actions/setup-java@v5
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
+          java-version: '21'
 
-      - uses: android-actions/setup-android@v4
+      - name: Set up the Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build the web game
-        run: npm run build
-
-      - name: Create the Android project
-        run: npx cap add android
-
-      - name: Force landscape + fullscreen
+      - name: Install Android SDK 36 and build tools
         run: |
-          MANIFEST=android/app/src/main/AndroidManifest.xml
-          # Lock the activity to landscape (either direction).
-          sed -i 's|<activity|<activity android:screenOrientation="sensorLandscape"|' "$MANIFEST"
-          # Hide the status bar / go fullscreen.
-          STYLES=android/app/src/main/res/values/styles.xml
-          sed -i 's|<style name="AppTheme.NoActionBar"[^>]*>|&\n        <item name="android:windowFullscreen">true</item>\n        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>|' "$STYLES"
-          grep -n "screenOrientation" "$MANIFEST"
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0"
 
-      - name: Sync web assets into Android
-        run: npx cap sync android
-
-      - name: Build debug APK
-        working-directory: android
+      # Optional: reuse a private debug key so later APKs can update the app without losing saves.
+      - name: Restore the optional persistent debug signing key
+        env:
+          ANDROID_DEBUG_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
         run: |
-          chmod +x gradlew
-          ./gradlew assembleDebug --no-daemon
+          if [ -n "$ANDROID_DEBUG_KEYSTORE_BASE64" ]; then
+            mkdir -p "$HOME/.android"
+            printf '%s' "$ANDROID_DEBUG_KEYSTORE_BASE64" | base64 --decode > "$HOME/.android/debug.keystore"
+            chmod 600 "$HOME/.android/debug.keystore"
+          fi
 
-      - uses: actions/upload-artifact@v7
+      - name: Build the fullscreen landscape APK
+        run: bash scripts/build-apk.sh
+
+      - name: Verify the APK and generate its checksum
+        run: |
+          test -s iron-front-debug.apk
+          SDK_ROOT="${ANDROID_HOME:-$ANDROID_SDK_ROOT}"
+          "$SDK_ROOT/build-tools/36.0.0/apksigner" verify iron-front-debug.apk
+          sha256sum iron-front-debug.apk > iron-front-debug.apk.sha256
+
+      - name: Upload the installable APK
+        uses: actions/upload-artifact@v4
         with:
           name: iron-front-debug-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            iron-front-debug.apk
+            iron-front-debug.apk.sha256
           if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Add download instructions to the run summary
+        run: |
+          {
+            echo '## Android APK ready'
+            echo 'Download **iron-front-debug-apk** from the Artifacts section of this run.'
+            echo 'Unzip it and install **iron-front-debug.apk** on your Android phone.'
+            echo 'USB installation: `adb install -r iron-front-debug.apk`'
+            echo 'This is a landscape/fullscreen debug build for testing, not a signed Play Store release.'
+          } >> "$GITHUB_STEP_SUMMARY"
