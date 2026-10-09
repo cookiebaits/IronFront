@@ -6,6 +6,12 @@ on:
   push:
     branches: [main, master]
 
+# A new push supersedes an older APK build on the same branch instead of letting both
+# compete for runner/network time.
+concurrency:
+  group: android-apk-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -15,7 +21,8 @@ jobs:
     # Pin the runner image so the announced ubuntu-latest -> Ubuntu 26 migration
     # cannot change the Android toolchain underneath this workflow.
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    # First-time Android/Gradle dependency downloads can exceed 30 minutes on a cold runner.
+    timeout-minutes: 90
 
     steps:
       - name: Check out repository
@@ -36,6 +43,7 @@ jobs:
 
       - name: Install Android SDK 36
         shell: bash
+        timeout-minutes: 15
         run: |
           set -euxo pipefail
           echo "ANDROID_HOME=${ANDROID_HOME:-}"
@@ -49,9 +57,31 @@ jobs:
             echo "sdkmanager was not found on the GitHub runner" >&2
             exit 1
           fi
-          chmod +x "$SDKMANAGER"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" --install "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+          # GitHub's preinstalled SDK can be mounted read-only. Do not chmod files in it.
+          # sdkmanager is normally executable; if not, invoke the readable shell script via bash.
+          if [ -x "$SDKMANAGER" ]; then
+            SDKMANAGER_RUN=("$SDKMANAGER")
+          else
+            echo "sdkmanager is readable but not executable; invoking it with bash"
+            SDKMANAGER_RUN=(bash "$SDKMANAGER")
+          fi
+          ls -l "$SDKMANAGER"
+          timeout 5m bash -c "yes | bash '$SDKMANAGER' --licenses >/dev/null" || true
+
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          PACKAGES=()
+          [ -d "$SDK_ROOT/platform-tools" ] || PACKAGES+=("platform-tools")
+          [ -d "$SDK_ROOT/platforms/android-36" ] || PACKAGES+=("platforms;android-36")
+          [ -d "$SDK_ROOT/build-tools/36.0.0" ] || PACKAGES+=("build-tools;36.0.0")
+          if [ ${#PACKAGES[@]} -gt 0 ]; then
+            echo "Installing missing Android packages: ${PACKAGES[*]}"
+            # Retry once for transient Google repository/network failures.
+            timeout 10m "${SDKMANAGER_RUN[@]}" --install "${PACKAGES[@]}" \
+              || timeout 10m "${SDKMANAGER_RUN[@]}" --install "${PACKAGES[@]}"
+          else
+            echo "Android SDK 36 packages already present on the runner"
+          fi
 
       - name: Print toolchain versions
         run: |
@@ -60,17 +90,31 @@ jobs:
           java --version
           adb --version
 
+      - name: Cache npm downloads
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('package.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+
       - name: Install JavaScript dependencies
-        run: npm install
+        timeout-minutes: 10
+        run: |
+          npm config set fetch-retries 5
+          npm config set fetch-retry-mintimeout 20000
+          npm config set fetch-retry-maxtimeout 120000
+          npm install --no-audit --no-fund --prefer-offline
 
       - name: Build web game
+        timeout-minutes: 10
         run: npm run build
 
       - name: Create Capacitor Android project
+        timeout-minutes: 10
         run: |
           if [ -d android ]; then
-            echo "android/ already exists; syncing it instead of adding it again"
-            npx cap sync android
+            echo "android/ already exists"
           else
             npx cap add android
           fi
@@ -81,14 +125,37 @@ jobs:
       - name: Force landscape and immersive fullscreen
         run: python3 scripts/patch-android.py
 
+      - name: Cache and configure Gradle
+        uses: gradle/actions/setup-gradle@v5
+        with:
+          cache-read-only: false
+          cache-cleanup: on-success
+
+      - name: Configure Gradle for the hosted runner
+        run: |
+          mkdir -p "$HOME/.gradle"
+          cat > "$HOME/.gradle/gradle.properties" <<'EOF'
+          org.gradle.daemon=false
+          org.gradle.parallel=false
+          org.gradle.caching=true
+          org.gradle.workers.max=2
+          org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
+          EOF
+
       - name: Build APK with Gradle
         working-directory: android
         shell: bash
+        timeout-minutes: 55
+        env:
+          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx3g
         run: |
-          set -o pipefail
+          set -euxo pipefail
           chmod +x gradlew
           ./gradlew --version
-          ./gradlew :app:assembleDebug --no-daemon --stacktrace --warning-mode all 2>&1 | tee ../gradle-build.log
+          # Gradle also gets an internal timeout so the diagnostics artifact step can still run.
+          timeout 50m ./gradlew :app:assembleDebug \
+            --no-daemon --max-workers=2 --stacktrace --warning-mode all \
+            2>&1 | tee ../gradle-build.log
 
       - name: Copy APK with friendly filename
         run: cp android/app/build/outputs/apk/debug/app-debug.apk iron-front-debug.apk
