@@ -83,6 +83,11 @@ If GitHub only shows `Process completed with exit code 1`, open the failed run a
 first red step. The summary message is generic; the real compiler error is inside that step.
 Failed Gradle runs also upload an **android-build-diagnostics** artifact when a log was created.
 
+The APK job allows up to 90 minutes, while the Gradle step has a 55-minute limit. Android SDK
+packages are skipped when already installed, npm downloads are cached, and Gradle dependencies
+are cached between runs. A newer push cancels an older build on the same branch so they do not
+compete for runner and network time. The first completely cold build is still the slowest.
+
 If an old run still reports `checkout@v4`, `setup-node@v4`, `setup-java@v4`, or
 `setup-android@v3`, GitHub is running the old workflow revision. Commit and push the updated
 `.github/workflows/build-apk.yml`, then start a new run from that branch.
@@ -181,6 +186,24 @@ PowerShell and Command Prompt do not run `.sh` files directly. Use one of these 
   `ANDROID_HOME`.
 - `adb: command not found`: add the Android SDK `platform-tools` folder to your `PATH`, or copy
   the APK to the phone manually.
+- A local script failure always leaves `apk-build.log` in the repository root. Start with the
+  last 60 lines printed by the script, then search upward for the first `FAILURE`, `ERROR`, or
+  `Caused by` line.
+- `Android SDK Platform 36 is missing`: Android Studio → **Tools → SDK Manager → SDK Platforms**
+  → enable **Android API 36**. Under **SDK Tools**, enable **Android SDK Build-Tools 36.0.0** and
+  **Android SDK Platform-Tools**.
+- `JDK 21+ is required`: set `JAVA_HOME` to the JDK 21 installation and reopen Terminal.
+- Gradle download stalls: verify that Gradle/Maven/Google repositories are not blocked by a VPN,
+  firewall, proxy, or corporate network, then rerun the script; downloaded dependencies are
+  retained in `~/.gradle/caches`.
+
+To collect local diagnostics without rebuilding everything:
+
+```bash
+bash scripts/doctor-apk.sh
+```
+
+It creates `apk-doctor.log`. If Option B still fails, share that file and `apk-build.log`.
 
 See [`ANDROID_BUILD.md`](ANDROID_BUILD.md) for Windows commands, manual Gradle steps, and SDK
 paths.
