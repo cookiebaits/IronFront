@@ -15,7 +15,7 @@ concurrency:
 jobs:
   apk:
     name: Landscape Android Debug APK
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 40
     defaults:
       run:
@@ -23,27 +23,67 @@ jobs:
 
     steps:
       - name: Check out the repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Set up Node.js 22
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '22'
+          package-manager-cache: false
 
       - name: Set up JDK 21
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
 
       - name: Set up the Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools'
+          log-accepted-android-sdk-licenses: 'false'
 
       - name: Install Android SDK 36 and build tools
         run: |
           sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0" "build-tools;35.0.0"
+
+      - name: Check the APK toolchain
+        run: bash scripts/build-apk.sh check
+
+      - name: Install JavaScript dependencies
+        run: bash scripts/build-apk.sh install 2>&1 | tee dependency-install.log
+
+      - name: Build the web game
+        run: bash scripts/build-apk.sh web 2>&1 | tee web-build.log
+
+      - name: Check shell syntax and test Android configuration
+        run: |
+          bash -n scripts/build-apk.sh
+          node --check scripts/prepare-android.mjs
+          node --test scripts/prepare-android.test.mjs
+
+      - name: Generate and configure the Android project
+        run: |
+          bash scripts/build-apk.sh prepare 2>&1 | tee android-prepare.log
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+
+          for name in (
+              'android/app/src/main/AndroidManifest.xml',
+              'android/app/src/main/res/values/styles.xml',
+          ):
+              ET.parse(name)
+              print(f'Validated XML: {name}')
+          backups = list(Path('android/app/src/main/res/values').glob('*.bak'))
+          if backups:
+              raise RuntimeError(f'Remove invalid resource backups: {backups}')
+          PY
+
+      - name: Sync the game into Android
+        run: bash scripts/build-apk.sh sync 2>&1 | tee capacitor-sync.log
 
       # Optional: reuse a private debug key so later APKs can update the app without losing saves.
       - name: Restore the optional persistent debug signing key
@@ -56,8 +96,8 @@ jobs:
             chmod 600 "$HOME/.android/debug.keystore"
           fi
 
-      - name: Build the fullscreen landscape APK
-        run: bash scripts/build-apk.sh
+      - name: Assemble the fullscreen landscape APK
+        run: bash scripts/build-apk.sh assemble
 
       - name: Verify the APK and generate its checksum
         run: |
@@ -67,7 +107,7 @@ jobs:
           sha256sum iron-front-debug.apk > iron-front-debug.apk.sha256
 
       - name: Upload the installable APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: iron-front-debug-apk
           path: |
@@ -76,6 +116,33 @@ jobs:
           if-no-files-found: error
           compression-level: 0
           retention-days: 14
+
+      - name: Upload Android failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: android-build-diagnostics
+          path: |
+            dependency-install.log
+            web-build.log
+            android-prepare.log
+            capacitor-sync.log
+            apk-build.log
+            android/variables.gradle
+            android/gradle/wrapper/gradle-wrapper.properties
+            android/app/build/reports/
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Explain a failed run
+        if: failure()
+        run: |
+          {
+            echo '## Android build failed'
+            echo 'Open the first failed step and read the underlying error above the exit-code message.'
+            echo 'For Gradle failures, download **android-build-diagnostics** and inspect **apk-build.log**.'
+            echo 'Node runtime deprecation warnings and runner-image notices are not the Gradle error.'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Add download instructions to the run summary
         run: |
