@@ -81,8 +81,8 @@ interface Particle { x: number; y: number; vx: number; vy: number; life: number;
 interface Float { x: number; y: number; text: string; c: string; t0: number; dur: number; size: number }
 interface Anim { path: [number, number][]; t0: number; per: number; resolve: () => void; last: number }
 
-// HUD heights reserved above/below the map. Shrunk on short (landscape phone) screens.
-let TOP = 64, BOT = 84;
+// HUD heights reserved above/below the map. These match the actual compact landscape HUD.
+let TOP = 90, BOT = 104;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /** The retired basic Power no longer creates a ready notice; only the Ultimate does. */
 function chargeLevelFor(s: GameState, team: Team): 0 | 2 {
@@ -345,8 +345,11 @@ export default function GameView(props: Props) {
   // ---------- camera ----------
   const computeTs = () => {
     const v = view.current;
-    const base = Math.floor(Math.min(v.vw / gs.w, (v.vh - TOP - BOT) / gs.h));
-    v.ts = Math.round(Math.max(44, Math.min(84, base)) * v.zoom);
+    const availableH = Math.max(120, v.vh - TOP - BOT);
+    const base = Math.floor(Math.min((v.vw - 12) / gs.w, availableH / gs.h));
+    // The old 44px floor forced maps taller than Android's short WebView and clipped the board.
+    const minTile = v.vh < 520 ? 22 : 34;
+    v.ts = Math.round(Math.max(minTile, Math.min(84, base)) * v.zoom);
   };
   const camBounds = () => {
     const v = view.current;
@@ -1249,9 +1252,9 @@ export default function GameView(props: Props) {
       const v = view.current;
       v.dpr = Math.min(2, window.devicePixelRatio || 1);
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
-      const shortScreen = v.vh < 500;
-      TOP = shortScreen ? 62 : 64;
-      BOT = shortScreen ? 60 : 84;
+      const shortScreen = v.vh < 520;
+      TOP = shortScreen ? 78 : 90;
+      BOT = shortScreen ? 76 : 104;
       cv.width = v.vw * v.dpr; cv.height = v.vh * v.dpr;
       cv.style.width = v.vw + 'px'; cv.style.height = v.vh + 'px';
       computeTs();
@@ -1715,15 +1718,11 @@ export default function GameView(props: Props) {
   // Keep both HUD rows aligned to the visible map instead of the browser edge.
   const hudVw = v.vw || window.innerWidth;
   const hudVh = v.vh || window.innerHeight;
-  const hudTs = v.ts || 56;
-  const renderedMapW = gs.w * hudTs + 12;
-  const renderedMapH = gs.h * hudTs + 12;
-  const hudWidth = Math.max(300, Math.min(hudVw - 12, renderedMapW));
-  const bottomHudHeight = hudVh < 500 ? 72 : 96;
-  const mapFitsY = renderedMapH <= hudVh - TOP - BOT;
-  const visibleMapTop = mapFitsY ? TOP + (hudVh - TOP - BOT - renderedMapH) / 2 : TOP + 8;
-  const topHudY = Math.max(4, visibleMapTop - (hudVh < 500 ? 72 : 90));
-  const bottomHudY = Math.min(hudVh - bottomHudHeight - 10, visibleMapTop + renderedMapH + 8);
+  // HUD uses the full safe landscape width. The map stays centered beneath it.
+  const hudWidth = Math.max(300, hudVw - 12);
+  const bottomHudHeight = hudVh < 520 ? 70 : 96;
+  const topHudY = 4;
+  const bottomHudY = hudVh - bottomHudHeight - 4;
 
   const terrainText = (() => {
     const owner = curTile.owner === localTeam ? 'Yours' : curTile.owner === enemyTeam ? 'Enemy' : 'Neutral';
@@ -1794,9 +1793,9 @@ export default function GameView(props: Props) {
       <canvas ref={cvRef} className="absolute inset-0" />
 
       {/* TOP HUD */}
-      <div className="absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
-        <button className="pointer-events-auto hud-btn w-11 text-lg" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
-        <div className={`pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-1 ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+      <div className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+        <button className="battle-pause pointer-events-auto hud-btn w-11 text-lg" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.35] ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
           <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
             <Portrait id={gs.cos[localTeam]} size={44} />
             <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-sky-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
@@ -1820,7 +1819,7 @@ export default function GameView(props: Props) {
             </div>
           </div>
         </div>
-        <div className="pointer-events-auto hud-panel px-2 py-1 flex flex-col justify-center items-center min-w-[70px]">
+        <div className="battle-day-panel pointer-events-auto hud-panel px-2 py-1 flex flex-col justify-center items-center min-w-[76px]">
           <div className="text-[10px] text-slate-400 leading-none">DAY</div>
           <div className="text-xl font-black leading-none text-white">{gs.day}{mission.objective.type === 'survive' ? <span className="text-xs text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-xs text-slate-400">/{mission.dayLimit}</span> : null}</div>
           <div className="text-xs leading-none mt-0.5" title={WEATHER_INFO[gs.weather].desc}>{WEATHER_INFO[gs.weather].icon} <span className="text-[10px] text-slate-300">{WEATHER_INFO[gs.weather].name}</span></div>
@@ -1828,12 +1827,12 @@ export default function GameView(props: Props) {
             📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST READY' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
           </div>
         </div>
-        <div className="pointer-events-auto hud-panel px-2 py-1 flex flex-col justify-center min-w-[78px]">
+        <div className="battle-funds-panel pointer-events-auto hud-panel px-2.5 py-1 flex flex-col justify-center min-w-[96px]">
           <div className="text-sm font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
           <div className="text-[10px] text-slate-300 leading-tight">Units {unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</div>
           <div className="text-[10px] text-rose-300 leading-tight">Foe {gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</div>
         </div>
-        <div className={`pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-1 cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.15] cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
           <div className="relative shrink-0">
             <Portrait id={gs.cos[enemyTeam]} size={44} />
             <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
@@ -1936,7 +1935,7 @@ export default function GameView(props: Props) {
       )}
 
       {/* BOTTOM HUD */}
-      <div className="absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+      <div className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
         <div className="pointer-events-auto hud-panel px-3 py-2 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
           <div className="min-w-[126px] max-w-[180px] shrink-0 pr-3 border-r border-slate-600">
             <div className="text-sm sm:text-base font-black text-white leading-tight">{TERRAIN[curTile.t].name}</div>
@@ -2033,7 +2032,7 @@ export default function GameView(props: Props) {
               <div className="text-xs text-slate-300"><span className="text-amber-300 font-bold">{gs.funds[localTeam].toLocaleString()}G</span> · Slots {unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</div>
             </div>
             {unitCount(gs, localTeam) >= gs.unitCap[localTeam] && <div className="text-xs text-rose-300 mb-2">Unit limit reached! Lose or merge units before deploying more.</div>}
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid md:grid-cols-2 gap-1.5">
               {U.build.list.map((t, i) => {
                 const cost = costFor(gs, localTeam, t);
                 const ups = save.unitUps?.[t];

@@ -6,8 +6,10 @@
 
 html, body, #root {
   height: 100%;
+  width: 100%;
   margin: 0;
   background: #020617;
+  overflow: hidden;
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
@@ -64,6 +66,88 @@ button:disabled { cursor: not-allowed; }
 .title-text {
   text-shadow: 0 5px 0 #b45309, 0 10px 24px rgba(0, 0, 0, 0.7);
   -webkit-text-stroke: 2px #0f172a;
+}
+
+/* Title screen: never vertically center an overflowing column (that clips its top in WebViews).
+   Short landscape devices switch to a two-column composition that uses the full screen. */
+.title-page { min-height: 100dvh; }
+.title-scroll {
+  padding-top: max(12px, env(safe-area-inset-top));
+  padding-right: max(12px, env(safe-area-inset-right));
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+  padding-left: max(12px, env(safe-area-inset-left));
+}
+.title-layout {
+  width: min(100%, 1080px);
+  min-height: calc(100dvh - max(24px, env(safe-area-inset-top)) - max(24px, env(safe-area-inset-bottom)));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 3vh, 28px);
+}
+.title-kicker { font-size: clamp(9px, 1.8vh, 12px); }
+.title-logo { font-size: clamp(48px, 11vh, 88px); }
+.title-subtitle { margin-top: -4px; font-size: clamp(20px, 4.5vh, 32px); }
+.title-actions { width: min(360px, 92vw); }
+
+/* Battlefield HUD: consume the full landscape safe width while keeping gauges readable. */
+.battle-top-hud,
+.battle-bottom-hud {
+  max-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 8px);
+}
+.battle-co-panel { overflow: hidden; }
+.battle-co-panel button { white-space: nowrap; }
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .battle-top-hud, .battle-bottom-hud { gap: 3px !important; padding: 2px !important; }
+  .battle-top-hud .hud-panel, .battle-top-hud .hud-btn { border-radius: 8px; }
+  .battle-pause { width: 36px !important; font-size: 14px !important; }
+  .battle-co-panel { gap: 5px !important; padding: 3px 6px !important; }
+  .battle-co-panel .text-sm { font-size: 11px !important; }
+  .battle-co-panel .text-\[11px\] { font-size: 8px !important; }
+  .battle-co-panel .text-\[10px\] { font-size: 8px !important; }
+  .battle-co-panel .text-\[8px\] { font-size: 7px !important; }
+  .battle-co-panel .mt-1 { margin-top: 2px !important; }
+  .battle-co-panel button { min-height: 18px; line-height: 1; }
+  .battle-day-panel { min-width: 62px !important; padding: 3px 5px !important; }
+  .battle-day-panel .text-xl { font-size: 16px !important; }
+  .battle-funds-panel { min-width: 78px !important; padding: 3px 6px !important; }
+  .battle-funds-panel .text-sm { font-size: 11px !important; }
+  .battle-funds-panel .text-\[10px\] { font-size: 8px !important; }
+  .battle-bottom-hud .hud-panel { border-radius: 8px; }
+}
+
+@media (orientation: landscape) and (max-height: 700px) {
+  .title-scroll { padding-top: max(8px, env(safe-area-inset-top)); padding-bottom: max(8px, env(safe-area-inset-bottom)); }
+  .title-layout {
+    width: min(1120px, 100%);
+    min-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: minmax(250px, 0.82fr) minmax(390px, 1.18fr);
+    align-items: center;
+    justify-items: stretch;
+    gap: clamp(18px, 5vw, 72px);
+  }
+  .title-brand { min-width: 0; }
+  .title-logo { font-size: clamp(46px, 14vh, 80px); white-space: nowrap; }
+  .title-subtitle { font-size: clamp(18px, 5vh, 28px); }
+  .title-actions { width: 100%; max-width: 520px; justify-self: end; gap: 6px; }
+  .title-actions .menu-btn { height: clamp(38px, 8.6vh, 48px); }
+  .title-actions .title-primary { font-size: clamp(13px, 3vh, 18px); }
+  .title-secondary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .title-secondary-grid .menu-btn { padding-inline: 6px; font-size: clamp(10px, 2.35vh, 14px); }
+  .title-progress { margin-top: 1px; font-size: clamp(9px, 2vh, 11px); }
+}
+
+@media (orientation: landscape) and (max-height: 430px) {
+  .title-layout { grid-template-columns: minmax(220px, 0.75fr) minmax(430px, 1.25fr); gap: 20px; }
+  .title-logo { font-size: clamp(40px, 13vh, 60px); }
+  .title-tagline { display: none !important; }
+  .title-actions .menu-btn { height: 36px; box-shadow: 0 2px 0 rgba(0,0,0,.45); }
+  .title-actions { gap: 4px; }
+  .title-secondary-grid { gap: 4px; }
 }
 
 .rank-badge {

@@ -71,35 +71,38 @@ export function Title({ save, onNav, onQuick, resume, onContinue }: { save: Save
   }, [onQuick]);
   const fresh = save.progress === 0;
   return (
-    <div className="absolute inset-0 overflow-hidden">
+    <div className="absolute inset-0 overflow-hidden title-page">
       <TitleBg />
-      <div className="relative z-10 h-full flex flex-col items-center justify-center p-4 overflow-auto">
-        <div className="text-center anim-title">
-          <div className="text-[11px] sm:text-xs tracking-[0.5em] text-amber-300 font-bold">TURN-BASED WARFARE</div>
-          <h1 className="text-6xl sm:text-8xl font-black tracking-tight text-white leading-none title-text">IRON FRONT</h1>
-          <div className="text-2xl sm:text-3xl font-black tracking-[0.4em] text-amber-400 -mt-1">TACTICS</div>
-        </div>
-        <div className="mt-6 grid gap-2 w-[min(320px,90vw)] anim-slide-up">
-          {resume && onContinue && (
-            <button className="menu-btn h-auto py-2 bg-emerald-500 text-slate-950 text-lg shadow-[0_0_24px_rgba(16,185,129,0.55)] leading-tight" onClick={() => { sfx.select(); onContinue(); }}>
-              ⏯ CONTINUE BATTLE
-              <span className="block text-[11px] font-bold opacity-80">{resume.mission} · Day {resume.day} · auto-saved</span>
+      <div className="title-scroll relative z-10 h-full overflow-auto">
+        <div className="title-layout">
+          <div className="title-brand text-center anim-title">
+            <div className="title-kicker tracking-[0.5em] text-amber-300 font-bold">TURN-BASED WARFARE</div>
+            <h1 className="title-logo font-black tracking-tight text-white leading-none title-text">IRON FRONT</h1>
+            <div className="title-subtitle font-black tracking-[0.4em] text-amber-400">TACTICS</div>
+            <div className="title-tagline text-xs text-slate-300/75 mt-3 hidden landscape:block">Command. Capture. Outthink.</div>
+          </div>
+          <div className="title-actions grid gap-2 anim-slide-up">
+            {resume && onContinue && (
+              <button className="menu-btn title-primary h-auto py-2 bg-emerald-500 text-slate-950 text-lg shadow-[0_0_24px_rgba(16,185,129,0.55)] leading-tight" onClick={() => { sfx.select(); onContinue(); }}>
+                ⏯ CONTINUE BATTLE
+                <span className="block text-[11px] font-bold opacity-80">{resume.mission} · Day {resume.day} · auto-saved</span>
+              </button>
+            )}
+            <button className="menu-btn title-primary bg-amber-400 text-slate-900 text-lg shadow-[0_0_24px_rgba(251,191,36,0.5)]" onClick={() => { sfx.select(); fresh ? onNav('campaign-start') : onNav('campaign'); }}>
+              {fresh ? '▶ START CAMPAIGN' : '▶ CAMPAIGN'}
             </button>
-          )}
-          <button className="menu-btn bg-amber-400 text-slate-900 text-lg shadow-[0_0_24px_rgba(251,191,36,0.5)]" onClick={() => { sfx.select(); fresh ? onNav('campaign-start') : onNav('campaign'); }}>
-            {fresh ? '▶ START CAMPAIGN' : '▶ CAMPAIGN'}
-          </button>
-          <button className="menu-btn bg-rose-600" onClick={() => { sfx.select(); onQuick(); }}>⚡ QUICK BATTLE <span className="text-xs opacity-70">(Enter)</span></button>
-          <button className="menu-btn bg-cyan-700 border-cyan-400" onClick={() => { sfx.select(); onNav('online'); }}>🌐 ONLINE / CO-OP</button>
-          <div className="grid grid-cols-2 gap-2">
-            <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('skirmish')}>⚔ Skirmish</button>
-            <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('workshop')}>🎖 Command HQ</button>
-            <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('scores')}>🏆 High Scores</button>
-            <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('help')}>📖 Field Manual</button>
-            <button className="menu-btn bg-emerald-800/90 text-sm col-span-2" onClick={() => onNav('saves')}>💾 Save / Load</button>
+            <button className="menu-btn title-primary bg-rose-600" onClick={() => { sfx.select(); onQuick(); }}>⚡ QUICK BATTLE <span className="text-xs opacity-70">(Enter)</span></button>
+            <button className="menu-btn title-primary bg-cyan-700 border-cyan-400" onClick={() => { sfx.select(); onNav('online'); }}>🌐 ONLINE / CO-OP</button>
+            <div className="grid grid-cols-3 title-secondary-grid gap-2">
+              <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('skirmish')}>⚔ Skirmish</button>
+              <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('workshop')}>🎖 Command HQ</button>
+              <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('scores')}>🏆 Scores</button>
+              <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('help')}>📖 Manual</button>
+              <button className="menu-btn bg-emerald-800/90 text-sm col-span-2" onClick={() => onNav('saves')}>💾 Save / Load</button>
+            </div>
+            <div className="title-progress text-[11px] text-slate-300/80 text-center">🪙 <b className="text-amber-300">{save.merits}</b> · 🧩 <b className="text-fuchsia-300">{Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</b> · Campaign {Math.min(save.progress, MISSIONS.length)}/{MISSIONS.length}</div>
           </div>
         </div>
-        <div className="mt-4 text-[11px] text-slate-300/80 text-center">🪙 Gold: <b className="text-amber-300">{save.merits}</b> · 🧩 Pieces: <b className="text-fuchsia-300">{Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</b> · Campaign {Math.min(save.progress, MISSIONS.length)}/{MISSIONS.length}</div>
       </div>
     </div>
   );
