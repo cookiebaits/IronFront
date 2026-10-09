@@ -72,6 +72,17 @@ No local Android installation is needed for this option.
 The workflow also runs automatically when you push to `main` or `master`. Artifacts are kept
 for 14 days. The workflow file must be on your default branch for **Run workflow** to appear.
 
+The Android job is pinned to **Ubuntu 24.04** to avoid unexpected runner-image changes. Its
+Actions use the supported **Node 24 runtime**; the game still builds with **Node.js 22** and
+**JDK 21**. Dependency installation, web build, Android preparation, Capacitor sync, and Gradle
+assembly appear as separate steps.
+
+If a build fails, open the **first failed step** and read the error above `exit code 1`. Gradle
+errors also produce an **android-build-diagnostics** artifact containing `apk-build.log` and
+related logs. The generic exit code and deprecation warnings alone do not identify the cause.
+After updating a workflow, start a **new run from the latest commit**; rerunning an old job
+uses the old commit and workflow.
+
 To install later APK updates without uninstalling and losing device saves, configure a stable
 debug signing key as described in
 [`ANDROID_BUILD.md`](ANDROID_BUILD.md#keep-apk-updates-compatible-with-existing-saves).
@@ -243,6 +254,8 @@ src/game/data.ts               Units, COs, terrain, weather, and upgrades
 src/game/campaign.ts           Missions, acts, story, bosses, and tutorial
 src/game/save.ts               Progress, resume, high scores, and named slots
 scripts/build-apk.sh           Local Android debug APK builder
+scripts/prepare-android.mjs    Repeat-safe Android landscape/fullscreen configuration
+scripts/prepare-android.test.mjs Android configuration regression checks
 .github/workflows/build-apk.yml GitHub Actions Android debug APK builder
 capacitor.config.json          Capacitor configuration
 ```
