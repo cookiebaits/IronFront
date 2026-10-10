@@ -13,11 +13,17 @@ The workflow is stored at `.github/workflows/build-apk.yml`.
 2. Open **Actions** → **Build Android APK**.
 3. Select **Run workflow**.
 4. Open the completed run and download the **iron-front-debug-apk** artifact.
-5. Unzip it and install `iron-front-debug.apk` on the phone.
+5. Unzip it. Install the inner `iron-front-debug.apk`, not the artifact ZIP.
+6. The artifact also contains signature, alignment, package metadata, and SHA-256 reports.
 
 The workflow runs on pushes to `main` and `master` as well as manual runs. It provisions
 Node.js 22, JDK 21, Android SDK 36, Capacitor Android, landscape orientation, and fullscreen
 mode before running Gradle.
+
+The workflow verifies the finished APK with `zipalign`, `apksigner`, and `aapt` before uploading
+it. It also caches a stable debug signing key so subsequent GitHub builds can update a previous
+GitHub APK. The first build after this signing change may require uninstalling an older test APK
+that was signed by a different temporary key.
 
 It is pinned to Ubuntu 24.04 and uses Node 24-compatible action versions, avoiding the Node 20,
 `setup-java@v4`, and `ubuntu-latest` migration notices. If GitHub still names those older action
@@ -27,6 +33,14 @@ containing that commit.
 `Process completed with exit code 1` is only the summary. Expand the first red workflow step to
 see the real error. Gradle failures also attempt to upload an `android-build-diagnostics`
 artifact with `gradle-build.log`.
+
+An older workflow may fail with `chmod ... sdkmanager: Operation not permitted` because the
+hosted SDK is read-only. The current workflow does not change SDK permissions and safely invokes
+the existing `sdkmanager` script.
+
+An older workflow may also fail at **Print toolchain versions** with `adb: command not found`.
+The current workflow exports the SDK `platform-tools` directory through `$GITHUB_PATH` and treats
+ADB as an optional diagnostic. APK compilation itself does not require ADB.
 
 The workflow has a 90-minute job limit and a 55-minute Gradle limit. It caches npm downloads and
 the Gradle user home, skips Android SDK packages already on the runner, retries transient SDK
@@ -79,11 +93,20 @@ to diagnose than a generic Gradle exit code.
 Install it with USB debugging:
 
 ```bash
-adb install -r iron-front-debug.apk
+bash scripts/install-apk.sh
 ```
 
 You can also copy the APK to the phone and open it. Android may ask you to allow installation
 from unknown sources.
+
+If Android only says **App not installed**, connect with USB debugging and run the installer
+script to see the actual rejection code. Common causes:
+
+- `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: uninstall the old differently-signed test app once with
+  `adb uninstall com.ironfront.tactics`, then reinstall. GitHub builds are now stably signed.
+- `INSTALL_FAILED_OLDER_SDK`: the device must run Android 7.0 / API 24 or newer.
+- `INSTALL_PARSE_FAILED...`: extract the APK from GitHub's artifact ZIP and verify its SHA-256.
+- `INSTALL_FAILED_USER_RESTRICTED`: enable USB installs or **Install unknown apps**.
 
 ## Build on Windows
 

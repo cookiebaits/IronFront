@@ -60,6 +60,17 @@ if [ ! -d android ]; then npx cap add android 2>&1 | tee -a "$LOG"; fi
 npx cap sync android 2>&1 | tee -a "$LOG"
 npx cap doctor 2>&1 | tee -a "$LOG" || echo "Capacitor doctor reported a warning; continuing to Gradle." | tee -a "$LOG"
 
+say "Prepare stable local debug signing key"
+mkdir -p "$HOME/.android"
+if [ ! -s "$HOME/.android/debug.keystore" ]; then
+  keytool -genkeypair -noprompt \
+    -keystore "$HOME/.android/debug.keystore" \
+    -storepass android -alias androiddebugkey -keypass android \
+    -keyalg RSA -keysize 2048 -validity 10000 \
+    -dname "CN=Android Debug,O=Iron Front,C=US" 2>&1 | tee -a "$LOG"
+fi
+printf 'sdk.dir=%s\n' "$SDK_ROOT" > android/local.properties
+
 say "Apply landscape + immersive Android settings"
 python3 scripts/patch-android.py 2>&1 | tee -a "$LOG"
 
@@ -74,6 +85,15 @@ export GRADLE_OPTS="${GRADLE_OPTS:--Dorg.gradle.daemon=false -Dorg.gradle.worker
 APK="android/app/build/outputs/apk/debug/app-debug.apk"
 [ -f "$APK" ] || die "Gradle finished but APK was not found at $APK"
 cp "$APK" iron-front-debug.apk
+
+say "Verify APK alignment, signature, and package metadata"
+BUILD_TOOLS="$SDK_ROOT/build-tools/36.0.0"
+"$BUILD_TOOLS/zipalign" -c -v 4 iron-front-debug.apk 2>&1 | tee apk-zipalign.txt | tee -a "$LOG"
+"$BUILD_TOOLS/apksigner" verify --verbose --print-certs iron-front-debug.apk 2>&1 | tee apk-signature.txt | tee -a "$LOG"
+"$BUILD_TOOLS/aapt" dump badging iron-front-debug.apk 2>&1 | tee apk-badging.txt | tee -a "$LOG"
+grep -q "package: name='com.ironfront.tactics'" apk-badging.txt || die "Unexpected Android package id"
+grep -q "sdkVersion:'24'" apk-badging.txt || die "Unexpected minimum Android SDK"
+if command -v sha256sum >/dev/null 2>&1; then sha256sum iron-front-debug.apk > iron-front-debug.apk.sha256; else shasum -a 256 iron-front-debug.apk > iron-front-debug.apk.sha256; fi
 
 trap - ERR
 say "Build complete"

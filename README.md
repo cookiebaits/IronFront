@@ -68,8 +68,14 @@ The repository includes `.github/workflows/build-apk.yml`.
 5. Wait for **Build debug APK** to finish with a green check mark.
 6. Open the completed workflow run.
 7. Scroll to **Artifacts** and download **iron-front-debug-apk**.
-8. Unzip the artifact to get `iron-front-debug.apk`.
-9. Copy it to the Android phone, open it, and allow **Install unknown apps** if prompted.
+8. **Unzip the artifact ZIP**. Do not rename or try to install the artifact ZIP itself.
+9. Inside it, install `iron-front-debug.apk`. The other files verify the build:
+   - `iron-front-debug.apk.sha256`
+   - `apk-signature.txt`
+   - `apk-badging.txt`
+   - `apk-zipalign.txt`
+10. Copy `iron-front-debug.apk` to the Android phone, open it, and allow **Install unknown apps**
+    if prompted. Iron Front requires Android 7.0 / API 24 or newer.
 
 The workflow also runs automatically after a push to `main` or `master`. It uses Node 22,
 JDK 21, Android SDK 36, and Capacitor 8. The runner is pinned to Ubuntu 24.04 so a future
@@ -83,10 +89,24 @@ If GitHub only shows `Process completed with exit code 1`, open the failed run a
 first red step. The summary message is generic; the real compiler error is inside that step.
 Failed Gradle runs also upload an **android-build-diagnostics** artifact when a log was created.
 
+If an older run fails with `chmod: changing permissions of .../sdkmanager: Operation not
+permitted`, push the current workflow and start a new run. The hosted Android SDK is read-only;
+the current workflow no longer tries to change its permissions.
+
+If an older run fails during **Print toolchain versions** with `adb: command not found`, push the
+current workflow and start a new run. The current workflow persists `platform-tools` to GitHub's
+`PATH`, but also treats ADB as optional because ADB is used for installing an APK onto a phone,
+not for compiling the APK.
+
 The APK job allows up to 90 minutes, while the Gradle step has a 55-minute limit. Android SDK
 packages are skipped when already installed, npm downloads are cached, and Gradle dependencies
 are cached between runs. A newer push cancels an older build on the same branch so they do not
 compete for runner and network time. The first completely cold build is still the slowest.
+
+GitHub builds now reuse a cached debug signing key. The first APK built after this change may
+conflict with an older test APK that was signed by a one-off key. If Android says **App not
+installed**, uninstall the old Iron Front test app once and install the new APK. Later GitHub APKs
+will update normally because they use the stable cached key.
 
 If an old run still reports `checkout@v4`, `setup-node@v4`, `setup-java@v4`, or
 `setup-android@v3`, GitHub is running the old workflow revision. Commit and push the updated
@@ -159,8 +179,11 @@ To install it over USB, enable **Developer options** and **USB debugging** on th
 the phone, and run:
 
 ```bash
-adb install -r iron-front-debug.apk
+bash scripts/install-apk.sh
 ```
+
+The installer verifies the APK, runs `adb install -r`, and explains signature conflicts, an old
+Android version, insufficient storage, invalid downloads, and blocked unknown-app installs.
 
 You can instead copy `iron-front-debug.apk` to the phone, open it with the Files app, and allow
 **Install unknown apps** if Android asks.
@@ -196,6 +219,12 @@ PowerShell and Command Prompt do not run `.sh` files directly. Use one of these 
 - Gradle download stalls: verify that Gradle/Maven/Google repositories are not blocked by a VPN,
   firewall, proxy, or corporate network, then rerun the script; downloaded dependencies are
   retained in `~/.gradle/caches`.
+- `INSTALL_FAILED_UPDATE_INCOMPATIBLE`: an existing app has the same package ID but a different
+  debug signature. Uninstall it once with `adb uninstall com.ironfront.tactics`, then install the
+  new APK. Switching between locally signed and GitHub-signed debug APKs can require this.
+- `INSTALL_FAILED_OLDER_SDK`: the phone is older than Android 7.0 / API 24.
+- `INSTALL_PARSE_FAILED...`: unzip the GitHub artifact and install the inner APK, not the artifact
+  ZIP. Verify it against `iron-front-debug.apk.sha256`.
 
 To collect local diagnostics without rebuilding everything:
 
