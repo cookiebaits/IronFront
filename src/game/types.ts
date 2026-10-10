@@ -136,10 +136,21 @@ export interface SaveData {
   missionAuditUnlocked: boolean;
 }
 
+export type GraphicsQuality = 'auto' | 'ultra' | 'high' | 'medium' | 'low';
+export type FpsTarget = 'uncapped' | 120 | 60 | 30;
+export type DprOption = 'auto' | 2 | 1.5 | 1 | 0.75;
+export type ParticleOption = 'full' | 'medium' | 'low' | 'off';
+
 export interface Settings {
   battleAnim: 'all' | 'player' | 'off';
   speed: number; // 0.75 slow, 1 normal, 1.5 fast
   sfx: boolean;
+  graphicsQuality: GraphicsQuality;
+  fpsTarget: FpsTarget;
+  dprScale: DprOption;
+  particles: ParticleOption;
+  shadows: boolean;
+  weatherEffects: boolean;
 }
 
 export interface HighScore {

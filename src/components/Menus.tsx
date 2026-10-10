@@ -7,7 +7,8 @@ import { sfx } from '../game/audio';
 import Portrait from './Portrait';
 import COInfo, { PowerExplainer } from './COInfo';
 import { UnitIcon } from './GameView';
-import type { Category, Dialogue, ModId, SaveData, UnitType, Weather } from '../game/types';
+import { GraphicsSettingsModal } from './GraphicsSettingsModal';
+import type { Category, Dialogue, ModId, SaveData, Settings, UnitType, Weather } from '../game/types';
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
 
 /* ---------------- Title ---------------- */
@@ -29,13 +30,19 @@ export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
       const isAir = i % 3 === 0;
       units.push({ type: isAir ? air[i % air.length] : types[i % types.length], x: Math.random() * innerWidth, y: isAir ? 0.18 + Math.random() * 0.25 : 0.72 + Math.random() * 0.16, sp: 0.3 + Math.random() * 0.6, team: i % 2 ? 1 : 0, s: isAir ? 56 : 64 + Math.random() * 30 });
     }
+    let lastT = 0;
     const frame = (t: number) => {
+      raf = requestAnimationFrame(frame);
+      const rawDt = lastT ? (t - lastT) / 1000 : 0.016667;
+      lastT = t;
+      const dtFactor = Math.min(3.0, Math.max(0.1, rawDt / 0.016667));
+
       const W = innerWidth, H = innerHeight;
       const sky = g.createLinearGradient(0, 0, 0, H);
       sky.addColorStop(0, '#0b1631'); sky.addColorStop(0.55, '#3b2f5e'); sky.addColorStop(0.7, '#f59e0b');
       g.fillStyle = sky; g.fillRect(0, 0, W, H);
       g.fillStyle = 'rgba(253,224,71,0.25)'; g.beginPath(); g.arc(W * 0.7, H * 0.62, H * 0.14, 0, Math.PI * 2); g.fill();
-      // mountains: static ridge lines (no scrolling, which looked jittery)
+      // mountains: static ridge lines
       for (let L = 0; L < 3; L++) {
         g.fillStyle = ['#1e1b4b', '#172554', '#0f172a'][L];
         g.beginPath(); g.moveTo(0, H);
@@ -47,7 +54,7 @@ export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
       g.fillStyle = '#14532d'; g.fillRect(0, H * 0.78, W, H);
       g.fillStyle = '#166534'; for (let i = 0; i < 30; i++) g.fillRect(((i * 137 - t * 0.04) % (W + 60) + W + 60) % (W + 60) - 30, H * 0.8 + (i * 53) % (H * 0.18), 30, 4);
       for (const u of units) {
-        u.x += u.sp * (u.team === 0 ? 1 : -1);
+        u.x += u.sp * (u.team === 0 ? 1 : -1) * dtFactor;
         if (u.x > W + 80) u.x = -80; if (u.x < -80) u.x = W + 80;
         drawUnit(g, u.type, u.x, H * u.y, u.s, u.team, u.team === 0 ? 1 : -1, t);
       }
@@ -56,7 +63,6 @@ export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
       const tp = (t / 900) % 1;
       g.beginPath(); g.moveTo(W * (0.1 + tp * 0.8), H * (0.8 - Math.sin(tp * Math.PI) * 0.4)); g.lineTo(W * (0.1 + tp * 0.8) + 10, H * (0.8 - Math.sin(tp * Math.PI) * 0.4) - 4); g.stroke();
       g.fillStyle = 'rgba(2,6,23,0.35)'; g.fillRect(0, 0, W, H);
-      raf = requestAnimationFrame(frame);
     };
     const onTap = (e: PointerEvent) => {
       if (!tapRef.current) return;
@@ -75,9 +81,10 @@ export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
 }
 
 export interface ResumeInfo { mission: string; day: number }
-export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onAuditUnlock?: () => void }) {
+export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock, onSettings }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onAuditUnlock?: () => void; onSettings?: (st: Settings) => void }) {
   const [auditTaps, setAuditTaps] = useState(0);
   const [auditUnlocked, setAuditUnlocked] = useState(false);
+  const [showGraphicsSettings, setShowGraphicsSettings] = useState(false);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onQuick(); } };
     addEventListener('keydown', k);
@@ -125,7 +132,8 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock 
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('workshop')}>🎖 Command HQ</button>
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('scores')}>🏆 Scores</button>
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('help')}>📖 Manual</button>
-              <button className="menu-btn bg-emerald-800/90 text-sm col-span-2" onClick={() => onNav('saves')}>💾 Save / Load</button>
+              <button className="menu-btn bg-emerald-800/90 text-sm" onClick={() => onNav('saves')}>💾 Save / Load</button>
+              <button className="menu-btn bg-amber-600/90 text-sm font-bold" onClick={() => setShowGraphicsSettings(true)}>⚙️ Graphics</button>
             </div>
             <div className="title-progress text-[11px] text-slate-300/80 text-center">🪙 <b className="text-amber-300">{save.merits}</b> · 🧩 <b className="text-fuchsia-300">{Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</b> · Campaign {Math.min(save.progress, MISSIONS.length)}/{MISSIONS.length}</div>
           </div>
@@ -133,6 +141,14 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock 
       </div>
       {auditTaps > 0 && !auditUnlocked && <div className="absolute z-30 top-3 right-3 hud-panel border-cyan-400 px-3 py-1.5 text-[10px] font-black tracking-widest text-cyan-200 anim-pop">MISSION AUDIT {auditTaps}/5</div>}
       {auditUnlocked && <div className="absolute z-30 top-3 right-3 hud-panel border-amber-400 px-4 py-2 text-xs font-black tracking-widest text-amber-300 shadow-[0_0_20px_rgba(251,191,36,.45)] anim-pop">ALL MISSIONS UNLOCKED FOR AUDIT</div>}
+
+      {showGraphicsSettings && onSettings && (
+        <GraphicsSettingsModal
+          settings={save.settings}
+          onSave={onSettings}
+          onClose={() => setShowGraphicsSettings(false)}
+        />
+      )}
     </div>
   );
 }

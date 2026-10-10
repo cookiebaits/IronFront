@@ -14,6 +14,7 @@ import { getLastDrops, type PieceDrop } from '../game/unlocks';
 import BattleScene from './BattleScene';
 import Portrait from './Portrait';
 import COInfo from './COInfo';
+import { GraphicsSettingsModal } from './GraphicsSettingsModal';
 import type { AttackResult, GameState, MissionDef, PowerEffect, SaveData, Settings, Team, Unit, UnitType, Weather } from '../game/types';
 
 export type ScoreInfo = ReturnType<typeof computeScore>;
@@ -172,6 +173,7 @@ export default function GameView(props: Props) {
   const tutorialPromptOpen = briefingOpen || !!tutNote;
   const [showIntel, setShowIntel] = useState(false);
   const [coInfo, setCoInfo] = useState<Team | null>(null);
+  const [showGraphicsSettings, setShowGraphicsSettings] = useState(false);
   const [rangePeek, setRangePeek] = useState<{ text: string; until: number } | null>(null);
   const [chargeFx, setChargeFx] = useState<{ team: Team; level: 1 | 2; id: number } | null>(null);
   const chargeFxRef = useRef<{ team: Team; level: 1 | 2; id: number } | null>(null);
@@ -1250,7 +1252,10 @@ export default function GameView(props: Props) {
 
     const onResize = () => {
       const v = view.current;
-      v.dpr = Math.min(2, window.devicePixelRatio || 1);
+      const st = propsRef.current.save.settings;
+      const native = window.devicePixelRatio || 1;
+      const dprOpt = st.dprScale ?? 'auto';
+      v.dpr = dprOpt === 'auto' ? Math.min(2, native) : typeof dprOpt === 'number' ? dprOpt : Math.min(2, native);
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
       const shortScreen = v.vh < 520;
       TOP = shortScreen ? 78 : 90;
@@ -1318,15 +1323,17 @@ export default function GameView(props: Props) {
     const onKey = (e: KeyboardEvent) => keyRef.current(e);
     window.addEventListener('keydown', onKey);
 
-    const draw = (now: number) => {
+    const draw = (now: number, dtFactor = 1.0) => {
       const v = view.current;
       const ts = v.ts;
       const s = gsRef.current;
       const U = ui.current;
-      // camera smoothing
+      const st = propsRef.current.save.settings;
+      // camera smoothing with dtFactor
       if (cam.current.tx != null && cam.current.ty != null) {
-        cam.current.x += (cam.current.tx - cam.current.x) * 0.15;
-        cam.current.y += (cam.current.ty - cam.current.y) * 0.15;
+        const camAlpha = 1 - Math.pow(1 - 0.15, dtFactor);
+        cam.current.x += (cam.current.tx - cam.current.x) * camAlpha;
+        cam.current.y += (cam.current.ty - cam.current.y) * camAlpha;
         if (Math.abs(cam.current.tx - cam.current.x) < 0.5 && Math.abs(cam.current.ty - cam.current.y) < 0.5) cam.current.tx = cam.current.ty = null;
       }
       g.setTransform(v.dpr, 0, 0, v.dpr, 0, 0);
@@ -1336,7 +1343,7 @@ export default function GameView(props: Props) {
       let sx = 0, sy = 0;
       if (shake.current > 0.3) {
         sx = (Math.random() - 0.5) * shake.current; sy = (Math.random() - 0.5) * shake.current;
-        shake.current *= 0.88;
+        shake.current *= Math.pow(0.88, dtFactor);
       } else shake.current = 0;
       g.translate(Math.round(-cam.current.x + sx), Math.round(-cam.current.y + sy));
       // map frame
@@ -1435,7 +1442,12 @@ export default function GameView(props: Props) {
             const e2 = f < 0.5 ? 2 * f * f : 1 - Math.pow(-2 * f + 2, 2) / 2;
             ux = ax + (bx - ax) * e2; uy = ay + (by - ay) * e2;
             if (bx !== ax) facing = bx > ax ? 1 : -1;
-            if (i !== an.last) { an.last = i; sfx.move(); if (Math.random() < 0.7 && UNITS[u.type].cat !== 'air') parts.current.push({ x: ax * ts + ts / 2, y: ay * ts + ts * 0.8, vx: 0, vy: -0.3, life: 0, max: 30, c: 'rgba(180,170,150,0.6)', s: ts / 10, g: -0.003, k: 1 }); }
+            if (i !== an.last) {
+              an.last = i; sfx.move();
+              const pOpt = st.particles ?? 'full';
+              const pProb = pOpt === 'full' ? 0.7 : pOpt === 'medium' ? 0.4 : pOpt === 'low' ? 0.2 : 0;
+              if (pProb > 0 && Math.random() < pProb && UNITS[u.type].cat !== 'air') parts.current.push({ x: ax * ts + ts / 2, y: ay * ts + ts * 0.8, vx: 0, vy: -0.3, life: 0, max: 30, c: 'rgba(180,170,150,0.6)', s: ts / 10, g: -0.003, k: 1 });
+            }
           }
           u.facing = facing;
         } else if (U.pending && U.selId === u.id && (U.mode === 'menu' || U.mode === 'target' || U.mode === 'busy')) {
@@ -1544,7 +1556,7 @@ export default function GameView(props: Props) {
       const P = parts.current;
       for (let i = P.length - 1; i >= 0; i--) {
         const p = P[i];
-        p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life++;
+        p.x += p.vx * dtFactor; p.y += p.vy * dtFactor; p.vy += p.g * dtFactor; p.life += dtFactor;
         if (p.life > p.max) { P.splice(i, 1); continue; }
         const q = p.life / p.max;
         if (p.k === 2) {
@@ -1575,16 +1587,19 @@ export default function GameView(props: Props) {
       g.restore();
       // weather overlay (screen space)
       const w = s.weather;
-      if (w === 'rain' || w === 'snow' || w === 'sand') {
+      const allowWeather = st.weatherEffects ?? true;
+      if (allowWeather && (w === 'rain' || w === 'snow' || w === 'sand')) {
         if (w === 'sand') { g.fillStyle = 'rgba(214,163,92,0.16)'; g.fillRect(0, 0, v.vw, v.vh); }
         g.strokeStyle = w === 'rain' ? 'rgba(186,215,255,0.45)' : w === 'snow' ? 'rgba(255,255,255,0.85)' : 'rgba(230,190,120,0.5)';
         g.lineWidth = w === 'snow' ? 3 : 1.5;
         g.lineCap = 'round';
         g.beginPath();
-        const n = 60;
+        const pOpt = st.particles ?? 'full';
+        const n = pOpt === 'full' ? 60 : pOpt === 'medium' ? 35 : pOpt === 'low' ? 15 : 0;
         for (let i = 0; i < n; i++) {
           const spd = w === 'rain' ? 0.9 : w === 'snow' ? 0.08 : 0.5;
           const x = ((i * 97.3 + now * (w === 'sand' ? 0.6 : w === 'rain' ? 0.25 : 0.03 + Math.sin(i) * 0.02)) % (v.vw + 40)) - 20;
+          if (x < -20 || x > v.vw + 20) continue;
           const y = ((i * 61.7 + now * spd * (w === 'sand' ? 0.2 : 1)) % (v.vh + 40)) - 20;
           if (w === 'rain') { g.moveTo(x, y); g.lineTo(x - 3, y + 14); }
           else if (w === 'snow') { g.moveTo(x, y); g.lineTo(x + 0.5, y + 0.5); }
@@ -1593,17 +1608,30 @@ export default function GameView(props: Props) {
         g.stroke();
       }
     };
+    let lastRenderTime = 0;
+    let lastFrameTimestamp = 0;
     let errCount = 0;
     const render = (now: number) => {
+      raf = requestAnimationFrame(render);
+      const st = propsRef.current.save.settings;
+      const targetFps = st.fpsTarget ?? 'uncapped';
+      if (targetFps !== 'uncapped' && typeof targetFps === 'number') {
+        const minInterval = 1000 / targetFps;
+        if (now - lastRenderTime < minInterval - 1.5) return;
+      }
+      const rawDt = lastFrameTimestamp ? (now - lastFrameTimestamp) / 1000 : 0.016667;
+      lastFrameTimestamp = now;
+      lastRenderTime = now;
+      const dtFactor = Math.min(3.0, Math.max(0.1, rawDt / 0.016667));
+
       try {
         g.globalAlpha = 1;
         g.shadowBlur = 0;
-        draw(now);
+        draw(now, dtFactor);
       } catch (err) {
         if (errCount++ < 5) console.error('render error', err);
         try { g.restore(); } catch { /* ignore */ }
       }
-      raf = requestAnimationFrame(render);
     };
     raf = requestAnimationFrame(render);
     return () => {
@@ -2184,25 +2212,36 @@ export default function GameView(props: Props) {
       {/* Pause */}
       {paused && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 anim-fade">
-          <div className="hud-panel p-5 w-[min(360px,92vw)] max-h-[96vh] overflow-auto anim-zoom">
-            <div className="text-3xl font-black text-center text-amber-300 mb-1 tracking-widest">PAUSED</div>
-            <div className="text-center text-xs text-slate-400 mb-4">{mission.name} · Day {gs.day}</div>
-            <div className="grid gap-2">
-              <button className="menu-btn bg-sky-600" onClick={() => setPaused(false)}>▶ Resume</button>
-              <button className="menu-btn bg-slate-700" onClick={restart}>↻ Restart Mission</button>
-              <button className="menu-btn bg-slate-700" onClick={() => { setPaused(false); setShowIntel(true); }}>ℹ Intel & COs</button>
-              <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, battleAnim: settings.battleAnim === 'all' ? 'player' : settings.battleAnim === 'player' ? 'off' : 'all' })}>
-                Battle Scenes: <b className="text-amber-300">{settings.battleAnim === 'all' ? 'All' : settings.battleAnim === 'player' ? 'Mine only' : 'Off'}</b>
-              </button>
-              <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, speed: settings.speed === 0.75 ? 1 : settings.speed === 1 ? 1.5 : 0.75 })}>
-                Anim Speed: <b className="text-amber-300">{settings.speed === 0.75 ? 'Slow' : settings.speed === 1 ? 'Normal' : 'Fast'}</b>
-              </button>
-              <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, sfx: !settings.sfx })}>
-                Sound: <b className="text-amber-300">{settings.sfx ? 'On' : 'Off'}</b>
-              </button>
-              <button className="menu-btn bg-rose-700" onClick={props.onExit}>✕ Quit to Menu</button>
+          {showGraphicsSettings ? (
+            <GraphicsSettingsModal
+              settings={settings}
+              onSave={(st) => props.onSettings(st)}
+              onClose={() => setShowGraphicsSettings(false)}
+            />
+          ) : (
+            <div className="hud-panel p-5 w-[min(360px,92vw)] max-h-[96vh] overflow-auto anim-zoom">
+              <div className="text-3xl font-black text-center text-amber-300 mb-1 tracking-widest">PAUSED</div>
+              <div className="text-center text-xs text-slate-400 mb-4">{mission.name} · Day {gs.day}</div>
+              <div className="grid gap-2">
+                <button className="menu-btn bg-sky-600" onClick={() => setPaused(false)}>▶ Resume</button>
+                <button className="menu-btn bg-slate-700" onClick={restart}>↻ Restart Mission</button>
+                <button className="menu-btn bg-slate-700" onClick={() => { setPaused(false); setShowIntel(true); }}>ℹ Intel & COs</button>
+                <button className="menu-btn bg-amber-600 text-sm font-bold shadow-[0_0_15px_rgba(245,158,11,0.3)]" onClick={() => setShowGraphicsSettings(true)}>
+                  ⚙️ Graphics & Performance Settings
+                </button>
+                <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, battleAnim: settings.battleAnim === 'all' ? 'player' : settings.battleAnim === 'player' ? 'off' : 'all' })}>
+                  Battle Scenes: <b className="text-amber-300">{settings.battleAnim === 'all' ? 'All' : settings.battleAnim === 'player' ? 'Mine only' : 'Off'}</b>
+                </button>
+                <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, speed: settings.speed === 0.75 ? 1 : settings.speed === 1 ? 1.5 : 0.75 })}>
+                  Anim Speed: <b className="text-amber-300">{settings.speed === 0.75 ? 'Slow' : settings.speed === 1 ? 'Normal' : 'Fast'}</b>
+                </button>
+                <button className="menu-btn bg-slate-800 text-sm" onClick={() => props.onSettings({ ...settings, sfx: !settings.sfx })}>
+                  Sound: <b className="text-amber-300">{settings.sfx ? 'On' : 'Off'}</b>
+                </button>
+                <button className="menu-btn bg-rose-700" onClick={props.onExit}>✕ Quit to Menu</button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       )}
 
