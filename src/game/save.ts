@@ -1,7 +1,24 @@
+import { getGraphicsPreset } from '../utils/hardware';
 import { emptyUpgrades } from './engine';
-import type { GameState, HighScore, SaveData, Weather } from './types';
+import type { GameState, HighScore, SaveData, Settings, Weather } from './types';
 
 const KEY = 'ironfront_tactics_v1';
+
+export function defaultSettings(): Settings {
+  const autoPreset = getGraphicsPreset('auto');
+  return {
+    battleAnim: 'all',
+    speed: 1,
+    sfx: true,
+    graphicsQuality: 'auto',
+    fpsTarget: 'uncapped',
+    dprScale: 'auto',
+    particles: 'full',
+    shadows: true,
+    weatherEffects: true,
+    ...autoPreset,
+  };
+}
 
 export function defaultSave(): SaveData {
   return {
@@ -13,7 +30,7 @@ export function defaultSave(): SaveData {
     highscores: [],
     best: {},
     unlockedCos: ['rhea'],
-    settings: { battleAnim: 'all', speed: 1, sfx: true },
+    settings: defaultSettings(),
     coRank: {},
     ownedSkills: [],
     loadout: {},
@@ -30,7 +47,8 @@ export function loadSave(): SaveData {
     if (!raw) return defaultSave();
     const d = JSON.parse(raw);
     const def = defaultSave();
-    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), missionAuditUnlocked: d.missionAuditUnlocked ?? false, ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: { ...def.settings, ...(d.settings ?? {}) }, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
+    const mergedSettings: Settings = { ...def.settings, ...(d.settings ?? {}) };
+    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), missionAuditUnlocked: d.missionAuditUnlocked ?? false, ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: mergedSettings, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
   } catch {
     return defaultSave();
   }

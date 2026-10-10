@@ -1,0 +1,8 @@
+node_modules/
+dist/
+android/
+*.log
+*.apk
+*.idsig
+*.sha256
+apk-*.txt

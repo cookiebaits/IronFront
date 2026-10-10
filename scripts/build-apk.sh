@@ -86,8 +86,13 @@ APK="android/app/build/outputs/apk/debug/app-debug.apk"
 [ -f "$APK" ] || die "Gradle finished but APK was not found at $APK"
 cp "$APK" iron-front-debug.apk
 
-say "Verify APK alignment, signature, and package metadata"
+say "Sign and verify APK alignment, signature, and package metadata"
 BUILD_TOOLS="$SDK_ROOT/build-tools/36.0.0"
+"$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
+  --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
+  --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
+  iron-front-debug.apk 2>&1 | tee -a "$LOG"
+
 "$BUILD_TOOLS/zipalign" -c -v 4 iron-front-debug.apk 2>&1 | tee apk-zipalign.txt | tee -a "$LOG"
 "$BUILD_TOOLS/apksigner" verify --verbose --print-certs iron-front-debug.apk 2>&1 | tee apk-signature.txt | tee -a "$LOG"
 "$BUILD_TOOLS/aapt" dump badging iron-front-debug.apk 2>&1 | tee apk-badging.txt | tee -a "$LOG"

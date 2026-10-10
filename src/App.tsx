@@ -198,7 +198,7 @@ export default function App() {
           onAuditUnlock={() => persist({ ...save, missionAuditUnlocked: true })} onNav={(s) => {
           if (s === 'campaign-start') pickMission(0);
           else setScreen(s as ScreenId);
-        }} />
+        }} onSettings={onSettings} />
       )}
       {screen === 'campaign' && <Campaign save={save} onBack={() => setScreen('title')} onPick={pickMission} onHQ={() => setScreen('workshop')}
         resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume} />}
