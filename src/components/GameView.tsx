@@ -346,17 +346,19 @@ export default function GameView(props: Props) {
   const computeTs = () => {
     const v = view.current;
     const availableH = Math.max(120, v.vh - TOP - BOT);
-    const base = Math.floor(Math.min((v.vw - 12) / gs.w, availableH / gs.h));
-    // The old 44px floor forced maps taller than Android's short WebView and clipped the board.
-    const minTile = v.vh < 520 ? 22 : 34;
-    v.ts = Math.round(Math.max(minTile, Math.min(84, base)) * v.zoom);
+    const baseWidth = v.vw / gs.w;
+    const baseHeight = availableH / gs.h;
+    // Stretch tile size to fill the screen horizontally from left to right, limiting side black bars
+    const base = Math.max(baseWidth, baseHeight);
+    const minTile = v.vh < 520 ? 24 : 36;
+    v.ts = Math.round(Math.max(minTile, base) * v.zoom);
   };
   const camBounds = () => {
     const v = view.current;
     const MW = gs.w * v.ts, MH = gs.h * v.ts;
     const avH = v.vh - TOP - BOT;
-    const bx: [number, number] = MW <= v.vw ? [-(v.vw - MW) / 2, -(v.vw - MW) / 2] : [-16, MW - v.vw + 16];
-    const by: [number, number] = MH <= avH ? [-(TOP + (avH - MH) / 2), -(TOP + (avH - MH) / 2)] : [-TOP - 8, MH - v.vh + BOT + 8];
+    const bx: [number, number] = MW <= v.vw ? [-(v.vw - MW) / 2, -(v.vw - MW) / 2] : [0, MW - v.vw];
+    const by: [number, number] = MH <= avH ? [-(TOP + (avH - MH) / 2), -(TOP + (avH - MH) / 2)] : [-TOP, MH - v.vh + BOT];
     return { bx, by };
   };
   const clampCam = () => {
@@ -1254,7 +1256,7 @@ export default function GameView(props: Props) {
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
       const shortScreen = v.vh < 520;
       TOP = shortScreen ? 78 : 90;
-      BOT = shortScreen ? 76 : 104;
+      BOT = shortScreen ? 86 : 104;
       cv.width = v.vw * v.dpr; cv.height = v.vh * v.dpr;
       cv.style.width = v.vw + 'px'; cv.style.height = v.vh + 'px';
       computeTs();
@@ -1720,7 +1722,7 @@ export default function GameView(props: Props) {
   const hudVh = v.vh || window.innerHeight;
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
-  const bottomHudHeight = hudVh < 520 ? 70 : 96;
+  const bottomHudHeight = hudVh < 520 ? 82 : 96;
   const topHudY = 4;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
@@ -1936,29 +1938,28 @@ export default function GameView(props: Props) {
 
       {/* BOTTOM HUD */}
       <div className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
-        <div className="pointer-events-auto hud-panel px-3 py-2 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
-          <div className="min-w-[126px] max-w-[180px] shrink-0 pr-3 border-r border-slate-600">
-            <div className="text-sm sm:text-base font-black text-white leading-tight">{TERRAIN[curTile.t].name}</div>
+        <div className="pointer-events-auto hud-panel px-2.5 py-1.5 flex gap-2 sm:gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
+          <div className="min-w-[100px] sm:min-w-[126px] max-w-[150px] sm:max-w-[180px] shrink-0 pr-2 sm:pr-3 border-r border-slate-600 flex flex-col justify-center">
+            <div className="text-xs sm:text-base font-black text-white leading-tight">{TERRAIN[curTile.t].name}</div>
             {/* UI always shows at least one star so zero-cover terrain is still easy to compare. Engine defense remains zero. */}
-            <div className="text-sm sm:text-base text-amber-300 tracking-tight leading-tight">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</div>
-            <div className="text-[10px] sm:text-xs text-slate-300 leading-snug mt-0.5">{terrainText}</div>
-            {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Capture: {curTile.capture}/20</div>}
+            <div className="text-xs sm:text-base text-amber-300 tracking-tight leading-none my-0.5">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</div>
+            <div className="text-[9px] sm:text-xs text-slate-300 leading-tight line-clamp-2">{terrainText}</div>
+            {curTile.capture < 20 && <div className="text-[9px] sm:text-[10px] text-amber-300 font-bold leading-none mt-0.5">Capture: {curTile.capture}/20</div>}
           </div>
           {curUnit ? (() => {
             const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
-            const isVehicle = d.cat === 'vehicle' || d.cat === 'artillery';
             return (
-              <div className="min-w-0 flex-1 flex items-center gap-3">
-                <div className="hidden xs:block shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={54} /></div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <div className={`text-base sm:text-lg font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
-                    <div className="text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
+              <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3">
+                <div className="hidden sm:block shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={46} /></div>
+                <div className="min-w-0 flex-1 flex flex-col justify-center">
+                  <div className="flex items-baseline gap-1.5 flex-wrap">
+                    <div className={`text-xs sm:text-lg font-black leading-tight ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
+                    <div className="text-[10px] sm:text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-200 leading-snug mt-1 line-clamp-2">{d.desc}</div>
-                  <div className="flex gap-2 sm:gap-4 flex-wrap mt-1 text-xs sm:text-sm font-black">
-                    <span className="text-cyan-300">MOVE {m.move} {isVehicle ? 'SQUARES' : ''}</span>
-                    <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`} {isVehicle ? 'SQUARES' : ''}</span>
+                  <div className="text-[10px] sm:text-xs text-slate-200 leading-tight line-clamp-1 my-0.5">{d.desc}</div>
+                  <div className="flex gap-1.5 sm:gap-3 flex-wrap text-[10px] sm:text-xs font-black leading-tight">
+                    <span className="text-cyan-300">MOVE {m.move}</span>
+                    <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
                     <span className="text-amber-300">ATK {m.atk}%</span>
                     <span className="text-emerald-300">DEF {m.def}%</span>
                     {d.fuel && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel}</span>}
@@ -1967,25 +1968,25 @@ export default function GameView(props: Props) {
               </div>
             );
           })() : (
-            <div className="min-w-0 flex-1">
-              <div className="text-sm sm:text-base font-black text-amber-300">AREA INFORMATION</div>
-              <div className="text-xs sm:text-sm text-slate-200 leading-snug">{terrainText}</div>
-              <div className="text-[10px] sm:text-xs text-slate-400 mt-1">Tap this panel for full Intel. Double-tap a unit for movement and weapon range.</div>
+            <div className="min-w-0 flex-1 flex flex-col justify-center">
+              <div className="text-xs sm:text-base font-black text-amber-300 leading-tight">AREA INFORMATION</div>
+              <div className="text-[10px] sm:text-xs text-slate-200 leading-tight my-0.5">{terrainText}</div>
+              <div className="text-[9px] sm:text-[10px] text-slate-400">Tap this panel for full Intel. Double-tap a unit for movement and weapon range.</div>
             </div>
           )}
         </div>
         {/* Four utility controls align above an End Turn button of the same combined width. */}
-        <div className="pointer-events-auto grid grid-cols-2 grid-rows-[1fr_1fr_1.25fr] gap-1 w-[112px] shrink-0" style={{ height: bottomHudHeight }}>
-          <button className="hud-btn min-h-0 text-lg" onClick={() => zoom(-1)}>−</button>
-          <button className="hud-btn min-h-0 text-lg" onClick={() => zoom(1)}>+</button>
-          <button className="hud-btn min-h-0 text-[10px] font-bold" onClick={nextUnit}>NEXT ▸</button>
+        <div className="pointer-events-auto grid grid-cols-2 grid-rows-[1fr_1fr_1.25fr] gap-1 w-[108px] sm:w-[112px] shrink-0" style={{ height: bottomHudHeight }}>
+          <button className="hud-btn min-h-0 text-base sm:text-lg" onClick={() => zoom(-1)}>−</button>
+          <button className="hud-btn min-h-0 text-base sm:text-lg" onClick={() => zoom(1)}>+</button>
+          <button className="hud-btn min-h-0 text-[9px] sm:text-[10px] font-bold" onClick={nextUnit}>NEXT ▸</button>
           <button
-            className={`relative min-h-0 rounded-[10px] border-2 text-[10px] font-black leading-none transition active:scale-95 ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
+            className={`relative min-h-0 rounded-[10px] border-2 text-[9px] sm:text-[10px] font-black leading-none transition active:scale-95 ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
             onClick={doUndo} title="Undo last action (once per turn) — U">
             {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
           </button>
           <button
-            className={`relative col-span-2 min-h-0 rounded-xl font-black text-sm border-2 transition-all active:scale-95 ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
+            className={`relative col-span-2 min-h-0 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
             onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
             {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
           </button>
