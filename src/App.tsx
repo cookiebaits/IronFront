@@ -107,22 +107,23 @@ export default function App() {
     let s: SaveData = { ...save, merits: save.merits + score.merits };
     let storyCo: string | undefined;
     if (cfg?.isCampaign && w) {
-      const firstClear = cfg.idx >= s.progress;
+      const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
+      const firstClear = !auditJump && cfg.idx >= s.progress;
       if (firstClear) s.merits += MERIT_BONUS;
       const rid = REWARDS[cfg.mission.id];
-      if (rid && !s.ownedSkills.includes(rid)) {
+      if (!auditJump && rid && !s.ownedSkills.includes(rid)) {
         s.ownedSkills = [...s.ownedSkills, rid];
         // auto-equip on the officer who earned it if they have a free slot
         const co = cfg.playerCo;
         const cur = s.loadout[co] ?? [];
         if (cur.length < rankSlots(s.coRank[co] ?? 0)) s.loadout = { ...s.loadout, [co]: [...cur, rid] };
       }
-      s.progress = Math.max(s.progress, cfg.idx + 1);
+      if (!auditJump) s.progress = Math.max(s.progress, cfg.idx + 1);
       const prev = s.best[cfg.mission.id];
       if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
       // Story clears no longer hand out officers: they award CO Pieces (unlock them in Command HQ with Gold).
       if (firstClear) storyCo = cfg.mission.unlockCo;
-      if (cfg.mission.tutorial) s.tutorialComplete = true;
+      if (!auditJump && cfg.mission.tutorial) s.tutorialComplete = true;
     }
     s = awardPieces(s, { won: w, rank: score.rank, storyCo });
     let place = -1;
@@ -193,7 +194,8 @@ export default function App() {
         </div>
       )}
       {screen === 'title' && (
-        <Title save={save} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume} onNav={(s) => {
+        <Title save={save} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
+          onAuditUnlock={() => persist({ ...save, missionAuditUnlocked: true })} onNav={(s) => {
           if (s === 'campaign-start') pickMission(0);
           else setScreen(s as ScreenId);
         }} />

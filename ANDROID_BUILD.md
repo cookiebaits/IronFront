@@ -34,6 +34,11 @@ containing that commit.
 see the real error. Gradle failures also attempt to upload an `android-build-diagnostics`
 artifact with `gradle-build.log`.
 
+A standalone 32-character value is a GitHub cache/action-service reference ID, not the Android
+compiler message. Cache restore/save steps are now non-fatal. The final job summary also prints
+the first useful Gradle error using only shell commands, so it remains available even when the
+cache or artifact service is unhealthy.
+
 An older workflow may fail with `chmod ... sdkmanager: Operation not permitted` because the
 hosted SDK is read-only. The current workflow does not change SDK permissions and safely invokes
 the existing `sdkmanager` script.

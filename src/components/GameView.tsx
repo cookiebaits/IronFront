@@ -1851,7 +1851,7 @@ export default function GameView(props: Props) {
       {/* In-battle briefing: the dimmed battlefield stays visible, but all game input is paused. */}
       {tutNote && (
         <div className="absolute inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
-          <div className="tutorial-co-focus hud-panel border-cyan-300 bg-slate-950/90 p-4 w-[min(460px,94vw)] shadow-[0_16px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(34,211,238,0.35)] anim-zoom">
+          <div className="hud-panel border-cyan-300 bg-slate-950/90 p-4 w-[min(460px,94vw)] shadow-[0_16px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(34,211,238,0.35)] anim-zoom">
             {/* CO dialogue: portrait + short speech */}
             <div className="flex items-start gap-3">
               <div className="relative shrink-0">

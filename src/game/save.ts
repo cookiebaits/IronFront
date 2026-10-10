@@ -20,6 +20,7 @@ export function defaultSave(): SaveData {
     unitUps: {},
     coPieces: {},
     tutorialComplete: false,
+    missionAuditUnlocked: false,
   };
 }
 
@@ -29,7 +30,7 @@ export function loadSave(): SaveData {
     if (!raw) return defaultSave();
     const d = JSON.parse(raw);
     const def = defaultSave();
-    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: { ...def.settings, ...(d.settings ?? {}) }, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
+    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), missionAuditUnlocked: d.missionAuditUnlocked ?? false, ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: { ...def.settings, ...(d.settings ?? {}) }, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
   } catch {
     return defaultSave();
   }

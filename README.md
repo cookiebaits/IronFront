@@ -89,6 +89,13 @@ If GitHub only shows `Process completed with exit code 1`, open the failed run a
 first red step. The summary message is generic; the real compiler error is inside that step.
 Failed Gradle runs also upload an **android-build-diagnostics** artifact when a log was created.
 
+An error that contains only a 32-character value such as
+`567bd02882fd56cfb48b4ec02fcbbc33` is a GitHub service reference ID, not an Android error. The
+workflow now treats npm, Gradle, and signing-key cache failures as optional. It also writes a
+plain-text **Android APK build failed** summary without relying on the cache service. Copy the
+first `FAILURE`, `ERROR`, `What went wrong`, or `Caused by` line from that summary when reporting
+a problem.
+
 If an older run fails with `chmod: changing permissions of .../sdkmanager: Operation not
 permitted`, push the current workflow and start a new run. The hosted Android SDK is read-only;
 the current workflow no longer tries to change its permissions.

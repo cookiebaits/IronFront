@@ -132,6 +132,8 @@ export interface SaveData {
   coPieces: Record<string, number>;
   /** Set after completing Boot Camp once; enables the Skip Tutorial option on replays. */
   tutorialComplete: boolean;
+  /** Developer/player audit switch: all missions selectable without changing story progress. */
+  missionAuditUnlocked: boolean;
 }
 
 export interface Settings {

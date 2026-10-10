@@ -1,4 +1,5 @@
 import type { MissionDef, Team, UnitType } from './types';
+import { UNITS } from './data';
 
 const PLAYABLE_ORDER_FRIENDLY = ['rhea', 'dax', 'sora', 'mira', 'brann'];
 
@@ -72,7 +73,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm2', name: 'River Crossing', act: 1, par: 9, cos: ['rhea', 'dax'], enemyCo: 'grimm',
     map: sym(['mmf..f~', 'mH=c.f~', 'fB==.=#', '..f.f.~', '.c..mf~', 'f=====#', 'mf.c..~', '..ft.f~', 'mmm..m~']),
-    units: mir(14, [['infantry', 4, 1], ['infantry', 3, 3], ['mech', 2, 4], ['tank', 4, 2], ['artillery', 3, 5], ['recon', 2, 6]], [['artillery', 10, 3], ['tank', 9, 7]]),
+    units: mir(14, [['infantry', 4, 1], ['infantry', 3, 3], ['mech', 2, 4], ['tank', 4, 2], ['artillery', 3, 5], ['recon', 2, 6]], [['mech', 10, 3]]),
     funds: [3000, 3000], weather: 'rain', fog: false, unitCap: [11, 12], objective: { type: 'hq' }, aiLevel: 1,
     hint: 'Capture the enemy HQ. Rain slows vehicles — mechs can wade rivers!',
     briefing: [
@@ -89,14 +90,15 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm3', name: 'Iron Valley', act: 1, par: 9, cos: ['rhea', 'dax'], enemyCo: 'frost',
     map: sym(['mmmff..', 'mH=..f.', 'mB=c...', 'm.=..m.', '..===.=', 'fc.m...', 'm..f.c.', 'mm.t.f.', 'mmm.mm.']),
-    units: mir(14, [['tank', 3, 1], ['tank', 4, 4], ['apc', 2, 5], ['infantry', 4, 2], ['infantry', 5, 6], ['artillery', 1, 3], ['mech', 4, 6]], [['heavy', 8, 5]]),
-    funds: [3000, 3000], weather: 'snow', fog: false, unitCap: [11, 12], objective: { type: 'rout' }, aiLevel: 1,
+    // Balanced challenge: Frost keeps snow immunity and one extra Mech; the 16,000G Heavy Tank was removed.
+    units: mir(14, [['tank', 3, 1], ['tank', 4, 4], ['apc', 2, 5], ['infantry', 4, 2], ['infantry', 5, 6], ['artillery', 1, 3], ['mech', 4, 6]], [['mech', 8, 5]]),
+    funds: [3000, 3000], weather: 'snow', fog: false, unitCap: [12, 12], objective: { type: 'rout' }, aiLevel: 1,
     hint: 'Snow slows your army, but not Frost\'s. Hold defensive terrain.',
     briefing: [
       { who: 'narrator', text: 'The Iron Valley. Snowdrifts bury the old tank graveyard of the last war.' },
       { who: 'frost', text: 'How quaint. Republic soldiers, shivering in my snow. You will make fine ice sculptures.' },
       { who: 'dax', text: 'His troops ignore the cold. Ours don\'t. Snow costs us extra movement and defense.' },
-      { who: 'rhea', text: 'He has a Heavy Tank. Mechs and focused fire, Commander. Don\'t trade blow for blow.' },
+      { who: 'rhea', text: 'Frost has one extra Mech and ignores the snow. Use your equal armor force, roads, and artillery support instead of trading blindly.' },
     ],
     outro: [
       { who: 'frost', text: 'A temporary thaw. I shall retreat to the Pass. Winter always returns.' },
@@ -139,7 +141,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm5', name: 'Wings over Ash', act: 2, par: 9, cos: ['rhea', 'dax', 'sora'], enemyCo: 'nyx',
     map: sym(['mmf.ff.', 'mH=c..f', 'mB==...', 'fA.=f.c', '.c.=..=', 'f..====', 'm.f.f..', '.c..t.f', 'mmff..m']),
-    units: mir(14, [['drone', 4, 2], ['gundrone', 3, 6], ['bcopter', 2, 3], ['infantry', 4, 1], ['infantry', 5, 6], ['tank', 4, 4], ['aa', 2, 5], ['recon', 5, 2]], [['bcopter', 8, 7]]),
+    units: mir(14, [['drone', 4, 2], ['gundrone', 3, 6], ['bcopter', 2, 3], ['infantry', 4, 1], ['infantry', 5, 6], ['tank', 4, 4], ['aa', 2, 5], ['recon', 5, 2]], [['drone', 8, 7]]),
     funds: [4000, 4000], weather: 'clear', fog: true, unitCap: [11, 12], objective: { type: 'rout' }, aiLevel: 2,
     hint: 'Fog of war! Use drones & recon to scout. Enemies hide in forests.',
     briefing: [
@@ -156,7 +158,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm6', name: 'Nightfall', act: 2, par: 10, cos: ['rhea', 'dax', 'sora'], enemyCo: 'nyx', unlockCo: 'mira',
     map: sym(['mm.ff..', 'mH=..ff', 'fB=c...', '..=..m.', 'mc=t.f=', '..====.', 'fA.f..c', 'f.c..f.', 'mmm.ff.']),
-    units: mir(14, [['infantry', 3, 1], ['infantry', 4, 7], ['mech', 4, 2], ['tank', 4, 3], ['tank', 4, 5], ['artillery', 1, 3], ['bcopter', 2, 6], ['recon', 6, 5]], [['tank', 9, 3], ['drone', 8, 6]]),
+    units: mir(14, [['infantry', 3, 1], ['infantry', 4, 7], ['mech', 4, 2], ['tank', 4, 3], ['tank', 4, 5], ['artillery', 1, 3], ['bcopter', 2, 6], ['recon', 6, 5]], [['drone', 8, 6]]),
     funds: [4000, 5000], weather: 'rain', fog: true, unitCap: [12, 13], objective: { type: 'hq' }, aiLevel: 2,
     hint: 'Capture Nyx\'s HQ under rain and fog. Towers boost attack +10%!',
     briefing: [
@@ -190,7 +192,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm8', name: 'Storm Front', act: 2, par: 11, cos: ['rhea', 'dax', 'sora', 'mira'], enemyCo: 'volkov', unlockCo: 'brann',
     map: sym(['mmff..c.', 'mH=..f..', 'fB==c..m', '.A.=..f.', '~~~#~~~~', '.c.=..t.', 'f..==..f', 'mcf.=c..', 'mm..=.mm']),
-    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['infantry', 6, 1], ['infantry', 5, 6], ['artillery', 2, 3], ['bcopter', 2, 5], ['aa', 4, 5], ['mech', 6, 7]], [['rockets', 13, 6]]),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['infantry', 6, 1], ['infantry', 5, 6], ['artillery', 2, 3], ['bcopter', 2, 5], ['aa', 4, 5], ['mech', 6, 7]], [['artillery', 13, 6]]),
     funds: [5000, 6000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [13, 14], objective: { type: 'rout' }, aiLevel: 2,
     hint: 'Weather changes daily. Adapt — and strike when it favors you.',
     briefing: [
@@ -208,7 +210,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm9', name: 'Long Guns', act: 3, par: 11, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov',
     map: sym(['mm.ff...', 'mH=c...m', 'mB==.m..', '...=..c.', 'fc.=====', '...f.t..', 'mA.=..c.', 'm.c=.m..', 'mmm=....']),
-    units: mir(16, [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['tank', 5, 5], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]], [['heavy', 10, 4], ['artillery', 9, 7]]),
+    units: mir(16, [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['tank', 5, 5], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]], [['artillery', 9, 7]]),
     funds: [5000, 6000], weather: 'sand', fog: false, unitCap: [13, 15], objective: { type: 'hq' }, aiLevel: 3,
     hint: 'Sandstorm shortens indirect range. Capture Volkov\'s HQ.',
     briefing: [
@@ -225,7 +227,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm10', name: 'Ghost Signal', act: 3, par: 11, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx',
     map: sym(['mmf..f..', 'mH=.c..m', 'fB==..f.', 'fA.=t..c', '...===.=', 'mc.f..m.', 'm..=c...', 'mf.=..f.', 'mm.=..mm']),
-    units: mir(16, [['infantry', 3, 1], ['mech', 5, 2], ['tank', 4, 4], ['tank', 5, 5], ['artillery', 2, 4], ['bcopter', 2, 6], ['recon', 6, 6], ['aa', 4, 7]], [['bcopter', 9, 4], ['tank', 9, 1]]),
+    units: mir(16, [['infantry', 3, 1], ['mech', 5, 2], ['tank', 4, 4], ['tank', 5, 5], ['artillery', 2, 4], ['bcopter', 2, 6], ['recon', 6, 6], ['aa', 4, 7]], [['drone', 9, 4]]),
     funds: [5000, 6000], weather: 'sand', weatherPool: ['sand', 'clear', 'rain'], fog: true, unitCap: [13, 15], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Fog and sand. Nyx guards the relay. Scout, then strike decisively.',
     briefing: [
@@ -264,7 +266,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm12', name: 'Dead Signal', act: 4, par: 12, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
     map: sym(['mmf..f..', 'mH=c...m', 'fB==..t.', '..f=..c.', '.A.====.', 'f..c.f..', 'mm.f..m.', '...=c...', 'mm..f...']),
-    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 3], ['mech', 4, 6], ['aa', 1, 7]], [['rockets', 11, 6], ['bcopter', 12, 2]]),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 3], ['mech', 4, 6], ['aa', 1, 7]], [['artillery', 11, 6], ['drone', 12, 2]]),
     funds: [5000, 6500], weather: 'sand', weatherPool: ['sand', 'clear', 'rain'], fog: true, unitCap: [14, 16], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'The Architect is gone. Destroy the machines following its last transmission.',
     briefing: [
@@ -281,7 +283,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm13', name: 'The Warden', act: 4, par: 13, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
     map: sym(['mmff....', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.=.t..', 'f..=====', 'm..f..c.', '..c.=...', 'mm..f...']),
-    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['mech', 4, 3], ['artillery', 2, 4], ['infantry', 3, 5], ['apc', 4, 6], ['aa', 1, 7]], [['rockets', 12, 6], ['bcopter', 10, 2], ['heavy', 3, 4]]),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['mech', 4, 3], ['artillery', 2, 4], ['infantry', 3, 5], ['apc', 4, 6], ['aa', 1, 7]], [['artillery', 11, 6]]),
     boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'THE WARDEN', hp: 100, phases: 3 },
     funds: [5500, 7000], weather: 'clear', fog: false, unitCap: [15, 17], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Boss battle: defeat the Warden through three shield phases. Mechs and focused fire help crack heavy armor.',
@@ -299,7 +301,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm14', name: 'Skybreaker', act: 5, par: 12, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
     map: sym(['mm.ff...', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.====.', 'f..f..t.', 'm.c...f.', '..c.=...', 'mm..f...']),
-    units: mir(16, [['fighter', 3, 1], ['aa', 5, 2], ['missiles', 2, 4], ['gundrone', 4, 3], ['bcopter', 5, 5], ['infantry', 4, 6], ['tank', 2, 7]], [['fighter', 11, 1], ['bomber', 12, 3], ['missiles', 12, 6]]),
+    units: mir(16, [['fighter', 3, 1], ['aa', 5, 2], ['missiles', 2, 4], ['gundrone', 4, 3], ['bcopter', 5, 5], ['infantry', 4, 6], ['tank', 2, 7]], [['bomber', 12, 3], ['missiles', 12, 6]]),
     boss: { x: 12, y: 3, team: 1, type: 'bomber', name: 'SKYBREAKER', hp: 100, phases: 3 },
     funds: [6000, 7500], weather: 'snow', weatherPool: ['snow', 'clear', 'sand'], fog: false, unitCap: [14, 16], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Boss battle: Skybreaker has three armor phases. Fighters, anti-air and missiles are essential.',
@@ -340,7 +342,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm16', name: 'Broken Treaty', act: 6, par: 11, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'volkov',
     map: sym(['mmf...c.', 'mH==..f.', 'fB.=c...', '..f===t.', '.c..f...', 'fA.===c.', 'm..f....', '.c..=...', 'mmm.f...']),
-    units: mir(16, [['infantry', 4, 1], ['mech', 5, 2], ['tank', 4, 3], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 6], ['aa', 3, 7]], [['heavy', 11, 4], ['rockets', 13, 7]]),
+    units: mir(16, [['infantry', 4, 1], ['mech', 5, 2], ['tank', 4, 3], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 6], ['aa', 3, 7]], [['heavy', 11, 4]]),
     funds: [5500, 6500], weather: 'clear', weatherPool: ['clear', 'rain'], fog: false, unitCap: [15, 16], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'A rogue Dominion army has broken the peace. Secure the central Radio Towers before its armor arrives.',
     briefing: [
@@ -372,7 +374,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm18', name: 'Eastern Horizon', act: 7, par: 13, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'frost',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['cruiser', 1, 5], ['sub', 0, 7], ['tank', 5, 2], ['artillery', 4, 4], ['infantry', 5, 1], ['fighter', 3, 3], ['gundrone', 4, 7], ['missiles', 2, 8]], [['battleship', 15, 5], ['bomber', 11, 3]]),
+    units: mir(16, [['cruiser', 1, 5], ['sub', 0, 7], ['tank', 5, 2], ['artillery', 4, 4], ['infantry', 5, 1], ['fighter', 3, 3], ['gundrone', 4, 7], ['missiles', 2, 8]], [['bomber', 11, 3]]),
     funds: [7000, 8500], weather: 'snow', weatherPool: ['snow', 'clear', 'rain'], fog: false, unitCap: [17, 18], objective: { type: 'hq' }, aiLevel: 3,
     hint: 'Secure air and sea refueling points, then capture the eastern HQ.',
     briefing: [
@@ -420,6 +422,16 @@ export const ACT_INTROS = [
   'Peace fractures as rogue armies rebuild the old machine network. Hunt the Pretender beneath the capital.',
   'The last signal races east. Cross the frozen horizon and stop Zero Dawn before it erases every nation.',
 ];
+
+/** Pre-deployed army value used by the hidden title-screen mission audit mode. */
+export function deploymentValue(m: MissionDef, team: Team) {
+  let value = m.units.filter(([, , , t]) => t === team).reduce((sum, [type]) => sum + UNITS[type].cost, 0);
+  if (m.boss?.team === team) {
+    const alreadyPlaced = m.units.some(([type, x, y, t]) => t === team && type === m.boss!.type && x === m.boss!.x && y === m.boss!.y);
+    value += UNITS[m.boss.type].cost * ((m.boss.phases ?? 1) - (alreadyPlaced ? 1 : 0));
+  }
+  return value;
+}
 
 export interface TutorialTarget {
   x?: number;

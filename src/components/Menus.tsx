@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ARMOR_NAMES, CAT_NAMES, COS, MODS, PLAYABLE_ORDER, TERRAIN, TERRAIN_BONUS, UNITS, UNIT_ORDER, WEATHER_INFO, ultimateCost } from '../game/data';
-import { ACTS, ACT_INTROS, MISSIONS, REWARDS } from '../game/campaign';
+import { ACTS, ACT_INTROS, MISSIONS, REWARDS, deploymentValue } from '../game/campaign';
 import { RANK_NAMES, SKILLS, rankSlots } from '../game/data';
 import { drawUnit } from '../game/draw';
 import { sfx } from '../game/audio';
@@ -11,8 +11,10 @@ import type { Category, Dialogue, ModId, SaveData, UnitType, Weather } from '../
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
 
 /* ---------------- Title ---------------- */
-export function TitleBg() {
+export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
   const ref = useRef<HTMLCanvasElement>(null);
+  const tapRef = useRef(onVehicleTap);
+  tapRef.current = onVehicleTap;
   useEffect(() => {
     const c = ref.current!;
     const g = c.getContext('2d')!;
@@ -56,23 +58,48 @@ export function TitleBg() {
       g.fillStyle = 'rgba(2,6,23,0.35)'; g.fillRect(0, 0, W, H);
       raf = requestAnimationFrame(frame);
     };
+    const onTap = (e: PointerEvent) => {
+      if (!tapRef.current) return;
+      const r = c.getBoundingClientRect();
+      const x = ((e.clientX - r.left) / r.width) * innerWidth;
+      const y = ((e.clientY - r.top) / r.height) * innerHeight;
+      // Only count actual animated vehicles/aircraft (not empty background or infantry).
+      const hit = [...units].reverse().find((u) => UNITS[u.type].cat !== 'infantry' && Math.hypot(x - u.x, y - innerHeight * u.y) <= Math.max(32, u.s * 0.7));
+      if (hit) tapRef.current();
+    };
+    c.addEventListener('pointerdown', onTap);
     raf = requestAnimationFrame(frame);
-    return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); };
+    return () => { cancelAnimationFrame(raf); removeEventListener('resize', resize); c.removeEventListener('pointerdown', onTap); };
   }, []);
   return <canvas ref={ref} className="absolute inset-0 w-full h-full" />;
 }
 
 export interface ResumeInfo { mission: string; day: number }
-export function Title({ save, onNav, onQuick, resume, onContinue }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
+export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onAuditUnlock?: () => void }) {
+  const [auditTaps, setAuditTaps] = useState(0);
+  const [auditUnlocked, setAuditUnlocked] = useState(false);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onQuick(); } };
     addEventListener('keydown', k);
     return () => removeEventListener('keydown', k);
   }, [onQuick]);
   const fresh = save.progress === 0;
+  const auditTap = () => {
+    setAuditTaps((n) => {
+      const next = n + 1;
+      if (next >= 5) {
+        onAuditUnlock?.();
+        setAuditUnlocked(true);
+        sfx.capture();
+        return 5;
+      }
+      sfx.cursor();
+      return next;
+    });
+  };
   return (
     <div className="absolute inset-0 overflow-hidden title-page">
-      <TitleBg />
+      <TitleBg onVehicleTap={auditTap} />
       <div className="title-scroll relative z-10 h-full overflow-auto">
         <div className="title-layout">
           <div className="title-brand text-center anim-title">
@@ -104,6 +131,8 @@ export function Title({ save, onNav, onQuick, resume, onContinue }: { save: Save
           </div>
         </div>
       </div>
+      {auditTaps > 0 && !auditUnlocked && <div className="absolute z-30 top-3 right-3 hud-panel border-cyan-400 px-3 py-1.5 text-[10px] font-black tracking-widest text-cyan-200 anim-pop">MISSION AUDIT {auditTaps}/5</div>}
+      {auditUnlocked && <div className="absolute z-30 top-3 right-3 hud-panel border-amber-400 px-4 py-2 text-xs font-black tracking-widest text-amber-300 shadow-[0_0_20px_rgba(251,191,36,.45)] anim-pop">ALL MISSIONS UNLOCKED FOR AUDIT</div>}
     </div>
   );
 }
@@ -146,14 +175,14 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
             <div className="text-[11px] text-slate-500 italic mb-2 mt-1">{ai <= Math.max(0, MISSIONS[Math.min(save.progress, MISSIONS.length - 1)].act) ? ACT_INTROS[ai] : 'Classified. Keep advancing the campaign.'}</div>
             <div className="grid sm:grid-cols-2 gap-2">
               {MISSIONS.map((m, i) => ({ m, i })).filter(({ m }) => m.act === ai).map(({ m, i }) => {
-                const locked = i > save.progress;
+                const locked = i > save.progress && !save.missionAuditUnlocked;
                 const best = save.best[m.id];
                 return (
                   <button key={m.id} disabled={locked} onClick={() => { sfx.select(); onPick(i); }}
                     className={`text-left p-2.5 rounded-xl border-2 flex gap-3 items-center transition active:scale-[0.98] ${locked ? 'border-slate-800 bg-slate-900/60 opacity-50' : i === save.progress ? 'border-amber-400 bg-slate-800 shadow-[0_0_16px_rgba(251,191,36,0.25)]' : 'border-slate-700 bg-slate-800/80 hover:border-sky-400'}`}>
                     {locked ? <div className="w-14 h-14 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🔒</div> : <Portrait id={m.enemyCo} size={56} />}
                     <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-slate-400 font-bold">{m.tutorial ? 'TUTORIAL' : `MISSION ${i}`}</div>
+                      <div className="text-[10px] text-slate-400 font-bold">{m.tutorial ? 'TUTORIAL' : `MISSION ${i}`}{save.missionAuditUnlocked && i > save.progress ? <span className="text-cyan-300 ml-1">· AUDIT</span> : null}</div>
                       <div className="font-black text-white truncate">{m.name}</div>
                       <div className="text-[11px] text-slate-400 truncate">{locked ? 'Complete previous mission' : m.hint}</div>
                       <div className="text-[11px] mt-0.5 flex gap-2 text-slate-300">
@@ -162,6 +191,7 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
                         <span>{m.objective.type === 'rout' ? '⚔ Rout' : m.objective.type === 'hq' ? '🏛 HQ' : `🛡 Survive ${m.objective.days}d`}</span>
                         <span>Lv{m.aiLevel}</span>
                       </div>
+                      {save.missionAuditUnlocked && <div className="text-[9px] text-cyan-300 mt-1 font-bold">AUDIT DEPLOYMENT · YOU {deploymentValue(m, 0).toLocaleString()}G · FOE {deploymentValue(m, 1).toLocaleString()}G{m.boss ? ` · ${m.boss.phases ?? 1} boss phases` : ''}</div>}
                       {!locked && REWARDS[m.id] && SKILLS[REWARDS[m.id]] && (
                         <div className={`text-[10px] mt-0.5 font-bold ${save.ownedSkills.includes(REWARDS[m.id]) ? 'text-slate-500' : 'text-emerald-300'}`}>
                           🎁 {save.ownedSkills.includes(REWARDS[m.id]) ? 'Owned' : 'Reward'}: {SKILLS[REWARDS[m.id]].icon} {SKILLS[REWARDS[m.id]].name}

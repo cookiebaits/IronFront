@@ -291,25 +291,6 @@ button:disabled { cursor: not-allowed; }
 .gauge-sheen::after { content: ''; position: absolute; top: -50%; bottom: -50%; width: 38%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); animation: gaugeSheen 1.25s linear infinite; }
 .tutorial-end-glow { z-index: 25; animation: lessonButtonGlow 0.75s ease-in-out infinite; }
 .tutorial-button-label { position: absolute; left: 50%; top: -22px; padding: 3px 6px; border-radius: 5px; background: #facc15; color: #111827; font-size: 8px; letter-spacing: 0.08em; white-space: nowrap; box-shadow: 0 2px 8px rgba(0,0,0,0.6); animation: lessonTag 0.75s ease-in-out infinite; }
-/* Large visual focus ring around Captain Rhea's tutorial dialogue (matches the highlighted mockup). */
-.tutorial-co-focus { position: relative; isolation: isolate; overflow: visible; }
-.tutorial-co-focus::before {
-  content: '';
-  position: absolute;
-  z-index: -1;
-  left: 50%; top: 50%;
-  width: min(66vw, 610px); height: min(66vw, 610px);
-  max-height: 78vh;
-  border: 5px solid #fde047;
-  border-radius: 999px;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 18px rgba(253,224,71,0.45), inset 0 0 18px rgba(253,224,71,0.12);
-  pointer-events: none;
-}
-@media (max-height: 560px) {
-  .tutorial-co-focus::before { width: min(72vw, 460px); height: min(72vw, 460px); border-width: 4px; }
-}
-
 .power-rays {
   background: repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.14) 0deg 8deg, transparent 8deg 20deg);
   animation: rays 1.7s linear both;
