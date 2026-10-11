@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -120,10 +120,10 @@ export const MISSIONS: MissionDef[] = [
       'mmmmm..mmm..mmm',
     ],
     units: [
-      ['tank', 4, 2, 0], ['tank', 4, 5, 0], ['artillery', 2, 3, 0], ['artillery', 2, 6, 0], ['infantry', 3, 1, 0], ['mech', 5, 4, 0], ['aa', 4, 7, 0], ['infantry', 2, 8, 0],
-      ['tank', 11, 1, 1], ['tank', 12, 4, 1], ['heavy', 12, 6, 1], ['infantry', 10, 2, 1], ['infantry', 12, 7, 1], ['artillery', 9, 5, 1], ['recon', 11, 8, 1], ['artillery', 12, 3, 1], ['mech', 9, 7, 1],
+      ['tank', 4, 2, 0], ['tank', 4, 5, 0], ['artillery', 2, 3, 0], ['artillery', 2, 6, 0], ['infantry', 3, 1, 0], ['infantry', 1, 4, 0], ['mech', 5, 4, 0], ['mech', 2, 2, 0], ['aa', 4, 7, 0], ['infantry', 2, 8, 0],
+      ['tank', 11, 1, 1], ['tank', 12, 4, 1], ['heavy', 12, 6, 1], ['infantry', 10, 2, 1], ['infantry', 12, 7, 1], ['artillery', 9, 5, 1], ['recon', 11, 8, 1], ['artillery', 12, 3, 1], ['mech', 9, 7, 1], ['infantry', 13, 2, 1], ['mech', 10, 5, 1],
     ],
-    funds: [2000, 4000], weather: 'snow', weatherPool: ['snow', 'snow', 'clear'], fog: false, unitCap: [11, 14],
+    funds: [2000, 4000], weather: 'snow', weatherPool: ['snow', 'snow', 'clear'], fog: true, unitCap: [12, 16],
     objective: { type: 'survive', days: 7 }, aiLevel: 2,
     hint: 'Survive 7 days against a superior force. Use chokepoints!',
     briefing: [
@@ -473,7 +473,85 @@ export const MISSIONS: MissionDef[] = [
     ],
     outro: [
       { who: 'architect', text: 'CORE ERADICATED... NETWORK OFFLINE... FAREWELL...' },
-      { who: 'narrator', text: 'VICTORY! The war machine is destroyed forever. Iron Front Tactics is complete!' },
+      { who: 'narrator', text: 'The Apex Core collapses! But remnant signal towers pulse in the mountain sky...' },
+    ],
+  },
+  {
+    id: 'm25', name: 'Titan Gate', act: 11, par: 15, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'kaelen', unlockCo: 'kaelen',
+    map: sym(['mmmf..A.', 'mH=c..f.', 'fB==t.c.', '..f=~~#~', '.A.====.', 'f..c~~#~', 'mm.f..c.', '.c..=...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['mech', 4, 2], ['tank', 4, 3], ['fighter', 2, 4], ['bcopter', 5, 4], ['artillery', 2, 5], ['aa', 3, 6]], [['fighter', 12, 3], ['bomber', 13, 5]]),
+    funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [18, 22], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Flight Captain Kaelen commands the skies over Titan Gate. Use anti-air and fighters to control the air.',
+    briefing: [
+      { who: 'narrator', text: 'Titan Pass. Flight Captain Kaelen\'s sky armada guards the mountain threshold.' },
+      { who: 'kaelen', text: 'Welcome to my skybox, Commander. Look up before you step into my valley.' },
+      { who: 'sora', text: 'Kaelen\'s pilots move fast and hit hard. Anti-air support is mandatory!' },
+    ],
+    outro: [
+      { who: 'kaelen', text: 'Solid flying, Commander. You earned the pass.' },
+      { who: 'rhea', text: 'Push on to the Iron Stronghold.' },
+    ],
+  },
+  {
+    id: 'm26', name: 'Iron Stronghold', act: 11, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'aria', unlockCo: 'aria',
+    map: sym(['mmf.c.f.', 'mH==..t.', 'fB.=c...', '..f===#~', '.c..f.c.', 'fA.===#~', 'm..f.c..', '.c..=...', 'mmm.f...']),
+    units: mir(16, [['infantry', 4, 1], ['mech', 3, 2], ['heavy', 4, 3], ['tank', 5, 4], ['artillery', 2, 5], ['recon', 5, 2], ['gundrone', 2, 6]], [['heavy', 12, 3], ['rockets', 13, 6]]),
+    funds: [8500, 11000], weather: 'rain', fog: true, unitCap: [20, 24], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'Aria\'s cyber net slows movements and skill charges. Capture the radio relays to break her disruption.',
+    briefing: [
+      { who: 'narrator', text: 'The Iron Stronghold. Cyber Officer Aria Chen has locked down communications.' },
+      { who: 'aria', text: 'Disruption protocol active. Your tactical network belongs to me.' },
+      { who: 'rhea', text: 'Capture the Radio Towers to override her jammer and secure the HQ.' },
+    ],
+    outro: [
+      { who: 'aria', text: 'Jammer bypassed... Impression recorded. Good fight, Commander.' },
+    ],
+  },
+  {
+    id: 'm27', name: 'Shadow Breach', act: 12, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'zero', unlockCo: 'zero',
+    map: sym(['mmf..f..', 'mH=c...m', 'fB==~.#.', '..f=~.c.', '.A.====.', 'f..c~f..', 'mm.f~.m.', '...=#c..', 'mm..f...']),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['artillery', 2, 4], ['rockets', 1, 6], ['infantry', 4, 3], ['mech', 3, 5], ['aa', 2, 7]], [['heavy', 12, 3], ['artillery', 13, 6], ['rockets', 11, 7]]),
+    funds: [9000, 12000], weather: 'sand', fog: true, unitCap: [20, 24], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Zero\'s long-range artillery covers the breach. Advance under cover and destroy his siege batteries.',
+    briefing: [
+      { who: 'narrator', text: 'Shadow Breach. Siege Director Zero commands an impenetrable battery line.' },
+      { who: 'zero', text: 'Every tile in this canyon is pre-targeted. Step forward if you dare.' },
+      { who: 'brann', text: 'His guns have maximum range. Flank through the mountain trails with mechs.' },
+    ],
+    outro: [
+      { who: 'zero', text: 'Targeting overrun... Impressive tactics.' },
+    ],
+  },
+  {
+    id: 'm28', name: 'Apex Core II', act: 12, par: 17, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'seraphina', unlockCo: 'seraphina',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['tank', 5, 2], ['heavy', 4, 4], ['fighter', 2, 3], ['bomber', 3, 6], ['rockets', 2, 8]], [['heavy', 12, 2], ['bomber', 13, 4], ['battleship', 15, 8]]),
+    boss: { x: 12, y: 2, team: 1, type: 'heavy', name: 'OMEGA CORE', hp: 100, phases: 4 },
+    funds: [9500, 13000], weather: 'clear', fog: true, unitCap: [22, 26], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'Seraphina\'s nanite fields heal enemy forces turn after turn. Focus fire to eliminate targets clean.',
+    briefing: [
+      { who: 'narrator', text: 'Omega Horizon. Medic General Seraphina guards the rebooting Omega Core.' },
+      { who: 'seraphina', text: 'My nanite field heals all wounded. Half-hearted attacks will accomplish nothing.' },
+      { who: 'dax', text: 'No single shots! Focus full fire on one unit at a time until it is destroyed!' },
+    ],
+    outro: [
+      { who: 'seraphina', text: 'Nanite grid depleted. The Omega Vanguard is yours.' },
+    ],
+  },
+  {
+    id: 'm29', name: 'Omega Vanguard', act: 13, par: 20, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'architect',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=t.', 'wwsfA.=.', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['heavy', 5, 2], ['tank', 5, 5], ['rockets', 3, 6], ['mech', 4, 3], ['fighter', 2, 3], ['bomber', 4, 7], ['aa', 5, 8]], [['heavy', 11, 4], ['bomber', 12, 3], ['battleship', 15, 7], ['rockets', 13, 6]]),
+    boss: { x: 11, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 5 },
+    funds: [12000, 16000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: true, unitCap: [24, 28], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'The supreme final campaign mission! Defeat the 5 shield phases of the TITAN CORE under Fog of War!',
+    briefing: [
+      { who: 'architect', text: 'TITAN CORE ONLINE. FINAL CAMPAIGN PROTOCOL. SURRENDER OR BE ERASED.' },
+      { who: 'rhea', text: 'This is the true final frontier. Every commander, every unit — push forward to victory!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'TITAN CORE ERADICATED... ABSOLUTE PEACE RESTORED...' },
+      { who: 'narrator', text: 'CONGRATULATIONS! You have conquered the entire expanded campaign of Iron Front Tactics!' },
     ],
   },
 ];
@@ -485,6 +563,7 @@ export const REWARDS: Record<string, string> = {
   m12: 'clear', m13: 'blitz', m14: 'whiteout', m15: 'fury',
   m16: 'warbonds', m17: 'strike', m18: 'repair', m19: 'meteor',
   m20: 'airstrike', m21: 'stealth', m22: 'overdrive', m23: 'nanite', m24: 'orbital',
+  m25: 'airstrike', m26: 'emp', m27: 'orbital', m28: 'nanite', m29: 'meteor',
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
