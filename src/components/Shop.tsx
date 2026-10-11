@@ -152,6 +152,22 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
 
         <div className="flex-1 overflow-auto p-3 anim-fade" key={tab}>
         <div className="max-w-3xl mx-auto">
+          <div className="hud-panel p-3 mb-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center anim-fade">
+            <Portrait id="rhea" size={56} className="shrink-0" />
+            <div className="flex-1 min-w-0 text-xs">
+              <div className="font-black text-amber-300 text-sm mb-0.5">CAPTAIN RHEA · COMMAND HQ GUIDE</div>
+              <div className="text-slate-200 leading-relaxed">
+                Welcome to Command HQ! Here is how to upgrade your forces:
+                <br />
+                • <b className="text-amber-300">👤 Officers:</b> Collect 🧩 CO Pieces from battles + Gold to unlock COs like Dax and Sora. Promote officer Rank to gain Skill Slots.
+                <br />
+                • <b className="text-cyan-300">🎴 Skills:</b> Learn tactical skills or earn them free from campaign clears, then equip them in officer slots.
+                <br />
+                • <b className="text-emerald-300">🔧 Units:</b> Upgrade firepower, armor, mobility, range & cost for any unit. Refunds are 100% free anytime!
+              </div>
+            </div>
+          </div>
+
           {tab === 'cos' && (
             <>
               <div className="text-xs text-slate-400 mb-2">Collect 🧩 CO Pieces from battles, then pay Gold to unlock new officers. Locked officers can be previewed. Promote them and equip tactical skills.</div>
