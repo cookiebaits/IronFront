@@ -129,13 +129,13 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock,
             <button className="menu-btn title-primary bg-cyan-700 border-cyan-400" onClick={() => { sfx.select(); onNav('online'); }}>🌐 ONLINE / CO-OP</button>
             <div className="grid grid-cols-3 title-secondary-grid gap-2">
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('skirmish')}>⚔ Skirmish</button>
-              <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('workshop')}>🎖 Command HQ</button>
+              <button className="menu-btn bg-amber-500/90 text-slate-950 font-black text-sm shadow-[0_0_12px_rgba(245,158,11,0.5)]" onClick={() => onNav('workshop')}>🛒 SHOP / HQ</button>
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('scores')}>🏆 Scores</button>
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('help')}>📖 Manual</button>
               <button className="menu-btn bg-emerald-800/90 text-sm" onClick={() => onNav('saves')}>💾 Save / Load</button>
               <button className="menu-btn bg-amber-600/90 text-sm font-bold" onClick={() => setShowGraphicsSettings(true)}>⚙️ Graphics</button>
             </div>
-            <div className="title-progress text-[11px] text-slate-300/80 text-center">🪙 <b className="text-amber-300">{save.merits}</b> · 🧩 <b className="text-fuchsia-300">{Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</b> · Campaign {Math.min(save.progress, MISSIONS.length)}/{MISSIONS.length}</div>
+            <div className="title-progress text-[11px] text-slate-300/80 text-center">🪙 <b className="text-amber-300">{save.merits.toLocaleString()}</b> · 💎 <b className="text-cyan-300">{save.gems ?? 0}</b> · 🧩 <b className="text-fuchsia-300">{Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</b> · Campaign {Math.min(save.progress, MISSIONS.length)}/{MISSIONS.length}</div>
           </div>
         </div>
       </div>
@@ -175,9 +175,9 @@ function Screen({ title, onBack, children, right }: { title: string; onBack: () 
 /* ---------------- Campaign ---------------- */
 export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { save: SaveData; onBack: () => void; onPick: (i: number) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
   return (
-    <Screen title="CAMPAIGN" onBack={onBack} right={onHQ ? <button className="hud-btn px-3 h-9 text-xs font-black text-amber-300" onClick={() => { sfx.select(); onHQ(); }}>🎖 COMMAND HQ</button> : undefined}>
+    <Screen title="CAMPAIGN" onBack={onBack} right={onHQ ? <button className="hud-btn px-3 h-9 text-xs font-black text-amber-300 bg-amber-500/20 border-amber-400" onClick={() => { sfx.select(); onHQ(); }}>🛒 SHOP / HQ</button> : undefined}>
       <div className="max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-2">
-        <div className="text-xs font-bold"><span className="text-amber-300">🪙 {save.merits}</span> <span className="text-fuchsia-300 ml-2">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</span></div>
+        <div className="text-xs font-bold"><span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span> <span className="text-cyan-300 ml-2">💎 {save.gems ?? 0}</span> <span className="text-fuchsia-300 ml-2">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</span></div>
         {resume && onContinue && (
           <button className="ml-auto rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-left text-slate-950 font-black text-xs leading-tight shadow-[0_0_14px_rgba(16,185,129,0.5)]" onClick={() => { sfx.select(); onContinue(); }}>
             ⏯ CONTINUE BATTLE<span className="block text-[10px] font-bold opacity-75">{resume.mission} · Day {resume.day}</span>

@@ -44,7 +44,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
     const fired = { a: false, b: false, h1: false, h2: false };
     const alive = { L: count(r.aType, r.aBefore), R: count(r.dType, r.dBefore) };
     const PW = W / 2;
-    const us = H * 0.3;
+    const us = Math.min(H * 0.26, PW * 0.19);
     const groundY = H * 0.62;
 
     const slotPos = (side: 0 | 1, i: number, type: UnitType) => {

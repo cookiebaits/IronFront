@@ -596,7 +596,7 @@ export const TUTORIAL: TutorialStep[] = [
       'heal-turn': { button: 'end-turn', label: 'END TURN TO REPAIR' },
     },
   },
-  { title: 'YOUR UNITS', text: 'Ground, artillery, air and navy. Aircraft need fuel; artillery can\'t move and fire. Scroll to see all 19.', event: 'roster', kind: 'info', speaker: 'rhea', units: ['infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'aa', 'artillery', 'rockets', 'missiles', 'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber', 'cruiser', 'sub', 'battleship'] },
+  { title: 'YOUR UNITS', text: 'Forces span 3 main categories: Land, Air, and Navy. You will unlock and command new specialized units as you progress through the campaign.', event: 'roster', kind: 'info', speaker: 'rhea', units: ['tank', 'bcopter', 'battleship'] },
   { title: 'SUMMARY', text: 'WIN: rout all enemies, or capture their HQ.\nCITY: +1,000G/day and a paid 2 HP repair.\nRADIO TOWER: no gold; +1 HP nearby; +1 move every 3rd turn.\nCOVER: cities/towers ★★★; forest ★★.\nAIR: refuel at friendly properties.\n\nTOP BAR: CO gauge and resources.\nBOTTOM BAR: details, Undo, End Turn.\nLOOK UP A UNIT: double-tap it, or tap the large bottom panel for Intel. Main menu → Field Manual lists every unit.', event: 'field-guide', kind: 'info', speaker: 'rhea' },
   { title: '5 · FREE PLAY', text: 'Training complete.\nUse what you learned and defeat every enemy unit.', event: 'free-play', kind: 'info', speaker: 'rhea' },
 ];

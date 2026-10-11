@@ -104,7 +104,8 @@ export default function App() {
     setWon(w);
     dropResume(); // the battle is over; its progress is saved below
 
-    let s: SaveData = { ...save, merits: save.merits + score.merits };
+    const earnedGems = w ? (score.rank === 'S' ? 50 : score.rank === 'A' ? 35 : score.rank === 'B' ? 25 : 15) : 5;
+    let s: SaveData = { ...save, merits: save.merits + score.merits, gems: (save.gems ?? 0) + earnedGems };
     let storyCo: string | undefined;
     if (cfg?.isCampaign && w) {
       const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
@@ -167,8 +168,14 @@ export default function App() {
   const onSettings = (st: Settings) => { persist({ ...save, settings: st }); setSfx(st.sfx); };
 
   const exitGame = () => {
-    if (cfg?.isCampaign && won && cfg.mission.outro.length) setScreen('outro');
-    else setScreen(cfg?.isCampaign ? 'campaign' : 'title');
+    if (cfg?.isCampaign && won && cfg.mission.outro.length) {
+      setScreen('outro');
+    } else if (cfg?.isCampaign && won && cfg.idx === 0) {
+      // After winning the first battle (Boot Camp), redirect to Shop / Command HQ
+      setScreen('workshop');
+    } else {
+      setScreen(cfg?.isCampaign ? 'campaign' : 'title');
+    }
   };
 
   const startSkirmish = (c: SkirmishCfg) => {
@@ -212,9 +219,14 @@ export default function App() {
       )}
       {screen === 'outro' && cfg && (
         <DialogueScreen lines={cfg.mission.outro} title="Debriefing" onDone={() => {
-          // Between missions: stop at Command HQ to upgrade COs/skills, unlock officers, then pick your CO.
-          if (cfg.idx + 1 < MISSIONS.length && nextAfterOutro) { setIdx(cfg.idx + 1); setScreen('prep'); }
-          else setScreen('campaign');
+          // After winning the first battle, send player directly to Shop / Command HQ
+          if (cfg.idx === 0 && won) {
+            setScreen('workshop');
+          } else if (cfg.idx + 1 < MISSIONS.length && nextAfterOutro) {
+            setIdx(cfg.idx + 1); setScreen('prep');
+          } else {
+            setScreen('campaign');
+          }
           nextAfterOutro = false;
         }} />
       )}

@@ -36,10 +36,28 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   }, [onBack, info, slotPick]);
 
   const toast = (t: string) => { setFlash(t); setTimeout(() => setFlash(null), 1400); };
+  const gems = save.gems ?? 0;
   const spend = (price: number, next: SaveData, msg: string) => {
     if (save.merits < price) { sfx.cancel(); toast('Not enough gold'); return; }
     sfx.build(); toast(msg);
     onSave({ ...next, merits: save.merits - price });
+  };
+  const spendGems = (price: number, next: SaveData, msg: string) => {
+    if (gems < price) { sfx.cancel(); toast('Not enough gems'); return; }
+    sfx.build(); toast(msg);
+    onSave({ ...next, gems: gems - price });
+  };
+  const buyPiecesGold = (coId: string, count = 1, costPer = 250) => {
+    const total = count * costPer;
+    if (save.merits < total) { sfx.cancel(); toast(`Need ${total} gold`); return; }
+    const curPieces = save.coPieces?.[coId] ?? 0;
+    spend(total, { ...save, coPieces: { ...save.coPieces, [coId]: curPieces + count } }, `Bought +${count} 🧩 ${COS[coId]?.name} Piece${count > 1 ? 's' : ''}!`);
+  };
+  const buyPiecesGems = (coId: string, count = 1, costPer = 10) => {
+    const total = count * costPer;
+    if (gems < total) { sfx.cancel(); toast(`Need ${total} gems`); return; }
+    const curPieces = save.coPieces?.[coId] ?? 0;
+    spendGems(total, { ...save, coPieces: { ...save.coPieces, [coId]: curPieces + count } }, `Bought +${count} 🧩 ${COS[coId]?.name} Piece${count > 1 ? 's' : ''}!`);
   };
 
   /* ---------- Officers ---------- */
@@ -112,7 +130,13 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
           <div className="font-black text-lg tracking-widest text-amber-300 truncate leading-tight">{next ? 'MISSION PREP' : 'COMMAND HQ'}</div>
           {next && <div className="text-[10px] text-slate-400 truncate">Promote officers, equip skills, upgrade units, unlock new COs — then deploy.</div>}
         </div>
-        <div className="text-sm font-black text-right leading-tight"><span className="text-amber-300">🪙 {save.merits}</span><span className="block text-[10px] text-fuchsia-300">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} pieces</span></div>
+        <div className="text-sm font-black text-right leading-tight">
+          <div className="flex items-center justify-end gap-2">
+            <span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span>
+            <span className="text-cyan-300">💎 {gems}</span>
+          </div>
+          <span className="block text-[10px] text-fuchsia-300 font-bold">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
+        </div>
       </div>
       <div className="flex gap-1.5 p-2 bg-slate-900/60">
         {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units']] as [Tab, string][]).map(([t, l]) => (
@@ -162,8 +186,27 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                         <span className={save.merits >= price ? 'text-emerald-300' : 'text-amber-300'}>🪙 Gold {save.merits}/{price}</span>
                       </div>
                       <div className="h-2.5 mt-1 bg-slate-800 rounded-full overflow-hidden border border-slate-700"><div className="h-full bg-gradient-to-r from-fuchsia-500 to-pink-300 transition-all" style={{ width: `${Math.min(100, (havePieces / Math.max(1, needPieces)) * 100)}%` }} /></div>
-                      <div className="text-[10px] text-slate-400 mt-1">Earn pieces from every battle (more for wins and S/A ranks) and from first-time story clears.</div>
+                      <div className="text-[10px] text-slate-400 mt-1">Earn pieces from every battle, or purchase missing pieces in the CO Piece Store below.</div>
                     </div>
+
+                    <div className="mt-3 rounded-lg border border-cyan-400/50 bg-cyan-500/10 p-2.5">
+                      <div className="text-[11px] font-black tracking-widest text-cyan-200 flex items-center justify-between">
+                        <span>🛒 BUY {co.name.toUpperCase()} PIECES</span>
+                        <span className="text-[10px] text-slate-300 font-bold">Have 🧩 {havePieces}/{needPieces}</span>
+                      </div>
+                      <div className="text-xs text-slate-300 mt-1">Buy missing CO pieces using Gold or Gems to accelerate your officer unlock:</div>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <button disabled={havePieces >= needPieces || save.merits < 250} onClick={() => buyPiecesGold(selCo, 1, 250)}
+                          className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && save.merits >= 250 ? 'bg-amber-500 text-slate-950 border-amber-300' : 'bg-slate-800 text-slate-500'}`}>
+                          +1 Piece · 🪙 250
+                        </button>
+                        <button disabled={havePieces >= needPieces || gems < 10} onClick={() => buyPiecesGems(selCo, 1, 10)}
+                          className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && gems >= 10 ? 'bg-cyan-500 text-slate-950 border-cyan-200' : 'bg-slate-800 text-slate-500'}`}>
+                          +1 Piece · 💎 10
+                        </button>
+                      </div>
+                    </div>
+
                     <button className="menu-btn w-full mt-2 bg-slate-700 text-sm" onClick={() => setInfo(selCo)}>👁 Preview {co.name}'s Powers</button>
                     <button disabled={!piecesOk || save.merits < price} className={`menu-btn w-full mt-2 ${piecesOk && save.merits >= price ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`} onClick={hire}>
                       {!piecesOk ? `NEED ${needPieces - havePieces} MORE PIECES` : save.merits < price ? `NEED ${price - save.merits} MORE GOLD` : `UNLOCK · 🪙 ${price}`}
