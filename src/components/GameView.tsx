@@ -356,13 +356,19 @@ export default function GameView(props: Props) {
     const v = view.current;
     const availableH = Math.max(100, v.vh - TOP - BOT);
     const availableW = Math.max(100, v.vw - 8);
-    // Expand baseline scale so the map stretches comfortably across wide/landscape screens
-    const baseW = availableW / gs.w;
-    const baseH = availableH / gs.h;
-    // Allow tile size to fill width or height naturally for landscape baselines (e.g. Pixel 9)
-    const base = Math.max(baseW, baseH);
-    const minTile = v.vh < 520 ? 24 : 32;
-    v.ts = Math.round(Math.max(minTile, Math.min(110, base)) * v.zoom);
+    if (isVert) {
+      // In vertical mode, fit map perfectly within the available screen viewport without clipping
+      const baseW = availableW / gs.w;
+      const baseH = availableH / gs.h;
+      v.ts = Math.max(16, Math.min(baseW, baseH));
+    } else {
+      // Expand baseline scale so the map stretches comfortably across wide/landscape screens
+      const baseW = availableW / gs.w;
+      const baseH = availableH / gs.h;
+      const base = Math.max(baseW, baseH);
+      const minTile = v.vh < 520 ? 24 : 32;
+      v.ts = Math.round(Math.max(minTile, Math.min(110, base)) * v.zoom);
+    }
   };
   const camBounds = () => {
     const v = view.current;
@@ -1221,6 +1227,7 @@ export default function GameView(props: Props) {
   };
 
   const zoom = (d: number) => {
+    if (isVert) return; // Zoom disabled in vertical mode
     const v = view.current;
     const cx = cam.current.x + v.vw / 2, cy = cam.current.y + v.vh / 2;
     const old = v.ts;
@@ -1324,7 +1331,7 @@ export default function GameView(props: Props) {
       if (activePointers.has(e.pointerId)) {
         activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
       }
-      if (activePointers.size === 2 && initialPinchDist > 0) {
+      if (activePointers.size === 2 && initialPinchDist > 0 && !isVert) {
         const pts = Array.from(activePointers.values());
         const distNow = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
         const scale = distNow / initialPinchDist;
@@ -1796,7 +1803,7 @@ export default function GameView(props: Props) {
   const hudVh = v.vh || window.innerHeight;
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
-  const bottomHudHeight = hudVh < 520 ? 58 : 72;
+  const bottomHudHeight = isVert ? 112 : (hudVh < 520 ? 58 : 72);
   const topHudY = 2;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
@@ -1869,71 +1876,119 @@ export default function GameView(props: Props) {
       <canvas ref={cvRef} className="absolute inset-0" />
 
       {/* TOP HUD */}
-      <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
-        <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
-          <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
-            <Portrait id={gs.cos[localTeam]} size={38} />
-            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-1">
-              <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
-              <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
-                {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
-              </span>
+      {isVert ? (
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-stretch gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+          <div className="flex items-stretch gap-1 w-full">
+            <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+            <div className="battle-middle-panel pointer-events-auto hud-panel px-2 py-1 flex items-center justify-between flex-1 min-w-0">
+              <div className="text-[11px] font-black text-slate-300">
+                DAY <span className="text-xs font-black text-white">{gs.day}</span>
+                {mission.objective.type === 'survive' ? <span className="text-[9px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[9px] text-slate-400">/{mission.dayLimit}</span> : null}
+              </div>
+              <div className="text-xs font-black text-amber-300">{gs.funds[localTeam].toLocaleString()}G</div>
+              <div className="flex items-center gap-1 text-[9px]">
+                <span title={WEATHER_INFO[gs.weather].desc}>{WEATHER_INFO[gs.weather].icon} {WEATHER_INFO[gs.weather].name}</span>
+                <span className={`font-black ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`}>
+                  📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+                </span>
+              </div>
+              <div className="text-[9px] text-slate-300">
+                Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span> · Foe <span className="text-rose-300">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
+              </div>
             </div>
-            {meterBar(localTeam)}
-            {skillBar(localTeam)}
-            <div className="flex gap-1 mt-0.5">
+          </div>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2 py-1.5 w-full ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+            <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
+              <Portrait id={gs.cos[localTeam]} size={40} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+                <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
+                </span>
+              </div>
+              {meterBar(localTeam)}
+              {skillBar(localTeam)}
+            </div>
+            <div className="flex flex-col gap-1 shrink-0 min-w-[110px]">
               <button disabled={!canActivate(gs, localTeam, 2) || !isLocalTurn() || U.mode !== 'idle'} onClick={() => playerPower(2)}
-                className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
+                className={`text-[9px] font-black rounded px-2 py-1 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
               {gs.skills[localTeam].length > 0 && (
                 <button disabled={!readySkill || !isLocalTurn() || U.mode !== 'idle'} onClick={() => readySkill && playerSkill(readySkill)}
-                  className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
+                  className={`text-[9px] font-black rounded px-2 py-1 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
               )}
             </div>
           </div>
         </div>
-        <div className="battle-middle-panel pointer-events-auto hud-panel px-1.5 py-0.5 flex flex-col justify-between items-center min-w-[125px] shrink-0">
-          <div className="flex items-center justify-between w-full gap-1 border-b border-slate-700/80 pb-0.5">
-            <div className="text-[10px] font-black text-slate-300 leading-tight">
-              DAY <span className="text-xs font-black text-white">{gs.day}</span>
-              {mission.objective.type === 'survive' ? <span className="text-[8.5px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[8.5px] text-slate-400">/{mission.dayLimit}</span> : null}
+      ) : (
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+          <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+            <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
+              <Portrait id={gs.cos[localTeam]} size={38} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+                <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
+                </span>
+              </div>
+              {meterBar(localTeam)}
+              {skillBar(localTeam)}
+              <div className="flex gap-1 mt-0.5">
+                <button disabled={!canActivate(gs, localTeam, 2) || !isLocalTurn() || U.mode !== 'idle'} onClick={() => playerPower(2)}
+                  className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
+                {gs.skills[localTeam].length > 0 && (
+                  <button disabled={!readySkill || !isLocalTurn() || U.mode !== 'idle'} onClick={() => readySkill && playerSkill(readySkill)}
+                    className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
+                )}
+              </div>
             </div>
-            <div className="text-xs font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
           </div>
-          <div className="flex items-center justify-between w-full gap-1 text-[8.5px] leading-tight pt-0.5">
-            <div className="flex items-center gap-0.5" title={WEATHER_INFO[gs.weather].desc}>
-              <span className="text-[10px]">{WEATHER_INFO[gs.weather].icon}</span>
-              <span className="text-slate-300 font-bold text-[8px]">{WEATHER_INFO[gs.weather].name}</span>
+          <div className="battle-middle-panel pointer-events-auto hud-panel px-1.5 py-0.5 flex flex-col justify-between items-center min-w-[125px] shrink-0">
+            <div className="flex items-center justify-between w-full gap-1 border-b border-slate-700/80 pb-0.5">
+              <div className="text-[10px] font-black text-slate-300 leading-tight">
+                DAY <span className="text-xs font-black text-white">{gs.day}</span>
+                {mission.objective.type === 'survive' ? <span className="text-[8.5px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[8.5px] text-slate-400">/{mission.dayLimit}</span> : null}
+              </div>
+              <div className="text-xs font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
             </div>
-            <div className={`font-black text-[8px] ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
-              📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+            <div className="flex items-center justify-between w-full gap-1 text-[8.5px] leading-tight pt-0.5">
+              <div className="flex items-center gap-0.5" title={WEATHER_INFO[gs.weather].desc}>
+                <span className="text-[10px]">{WEATHER_INFO[gs.weather].icon}</span>
+                <span className="text-slate-300 font-bold text-[8px]">{WEATHER_INFO[gs.weather].name}</span>
+              </div>
+              <div className={`font-black text-[8px] ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
+                📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+              </div>
+              <div className="text-slate-300 font-bold text-[8px]">
+                Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span>
+              </div>
+              <div className="text-rose-300 font-bold text-[8px]">
+                Foe <span className="text-white">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
+              </div>
             </div>
-            <div className="text-slate-300 font-bold text-[8px]">
-              Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span>
+          </div>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+            <div className="relative shrink-0">
+              <Portrait id={gs.cos[enemyTeam]} size={38} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
             </div>
-            <div className="text-rose-300 font-bold text-[8px]">
-              Foe <span className="text-white">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
+              {meterBar(enemyTeam)}
+              {skillBar(enemyTeam)}
+              <div className={`text-[9px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
+              </div>
             </div>
           </div>
         </div>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
-          <div className="relative shrink-0">
-            <Portrait id={gs.cos[enemyTeam]} size={38} />
-            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
-          </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
-            {meterBar(enemyTeam)}
-            {skillBar(enemyTeam)}
-            <div className={`text-[9px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
-              {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* In-battle briefing: the dimmed battlefield stays visible, but all game input is paused. */}
       {tutNote && (
@@ -2022,55 +2077,125 @@ export default function GameView(props: Props) {
       )}
 
       {/* BOTTOM HUD */}
-      <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
-        <div className="pointer-events-auto hud-panel px-3 py-1.5 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
-          <div className="min-w-[110px] sm:min-w-[130px] shrink-0 pr-2 border-r border-slate-600 flex flex-col justify-center">
-            <div className="text-xs sm:text-sm font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
-            <div className="text-xs font-black text-amber-300 leading-tight mt-0.5">
-              Defense <span className="text-sm">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</span>
+      {isVert ? (
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col gap-1 p-1 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2 py-1.5 w-full cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+            <div className="relative shrink-0">
+              <Portrait id={gs.cos[enemyTeam]} size={40} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
             </div>
-            {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Cap: {curTile.capture}/20</div>}
-          </div>
-          {curUnit ? (() => {
-            const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
-            return (
-              <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3">
-                <div className="shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={42} /></div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <div className={`text-sm sm:text-base font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
-                    <div className="text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
-                  </div>
-                  <div className="flex gap-2 sm:gap-3 flex-wrap mt-1 text-xs font-black leading-none">
-                    <span className="text-cyan-300">MOVE {m.move}</span>
-                    <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
-                    <span className="text-amber-300">ATK {m.atk}%</span>
-                    <span className="text-emerald-300">DEF {m.def}%</span>
-                    {d.fuel && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel}</span>}
-                  </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
+                <div className={`text-[9px] font-black truncate ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
                 </div>
               </div>
-            );
-          })() : (
-            <div className="min-w-0 flex-1 flex items-center">
-              <div className="text-xs sm:text-sm font-black text-slate-400">Select a unit or terrain tile</div>
+              {meterBar(enemyTeam)}
+              {skillBar(enemyTeam)}
             </div>
-          )}
+          </div>
+
+          <div className="flex items-stretch gap-1.5 w-full">
+            <div className="pointer-events-auto hud-panel px-2.5 py-1.5 flex gap-2.5 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" onClick={() => setShowIntel(true)} title="Tap for full Intel">
+              <div className="min-w-[95px] shrink-0 pr-1.5 border-r border-slate-600 flex flex-col justify-center">
+                <div className="text-xs font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
+                <div className="text-[11px] font-black text-amber-300 leading-tight mt-0.5">
+                  Defense <span className="text-xs">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</span>
+                </div>
+                {curTile.capture < 20 && <div className="text-[9px] text-amber-300 font-bold">Cap: {curTile.capture}/20</div>}
+              </div>
+              {curUnit ? (() => {
+                const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
+                return (
+                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                    <div className="shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={36} /></div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <div className={`text-xs font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
+                        <div className="text-[10px] font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
+                      </div>
+                      <div className="flex gap-1.5 flex-wrap mt-1 text-[9.5px] font-black leading-none">
+                        <span className="text-cyan-300">M{m.move}</span>
+                        <span className="text-rose-300">ATK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
+                        <span className="text-amber-300">{m.atk}%</span>
+                        <span className="text-emerald-300">{m.def}%</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })() : (
+                <div className="min-w-0 flex-1 flex items-center">
+                  <div className="text-xs font-black text-slate-400">Select tile</div>
+                </div>
+              )}
+            </div>
+
+            <div className="pointer-events-auto flex flex-col gap-1 w-[100px] shrink-0">
+              <button
+                className={`relative flex-1 rounded-xl font-black text-xs border-2 transition-all active:scale-95 flex items-center justify-center ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
+                onClick={doUndo} title="Undo last action (once per turn) — U">
+                {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
+              </button>
+              <button
+                className={`relative flex-1 rounded-xl font-black text-xs border-2 transition-all active:scale-95 flex items-center justify-center ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
+                onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
+                {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
+              </button>
+            </div>
+          </div>
         </div>
-        {/* Action controls: Bigger, wider UNDO button sitting above END TURN */}
-        <div className="pointer-events-auto flex flex-col gap-1 w-[110px] sm:w-[130px] shrink-0" style={{ height: bottomHudHeight }}>
-          <button
-            className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
-            onClick={doUndo} title="Undo last action (once per turn) — U">
-            {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
-          </button>
-          <button
-            className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
-            onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
-            {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
-          </button>
+      ) : (
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+          <div className="pointer-events-auto hud-panel px-3 py-1.5 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
+            <div className="min-w-[110px] sm:min-w-[130px] shrink-0 pr-2 border-r border-slate-600 flex flex-col justify-center">
+              <div className="text-xs sm:text-sm font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
+              <div className="text-xs font-black text-amber-300 leading-tight mt-0.5">
+                Defense <span className="text-sm">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</span>
+              </div>
+              {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Cap: {curTile.capture}/20</div>}
+            </div>
+            {curUnit ? (() => {
+              const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
+              return (
+                <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3">
+                  <div className="shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={42} /></div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className={`text-sm sm:text-base font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
+                      <div className="text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
+                    </div>
+                    <div className="flex gap-2 sm:gap-3 flex-wrap mt-1 text-xs font-black leading-none">
+                      <span className="text-cyan-300">MOVE {m.move}</span>
+                      <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
+                      <span className="text-amber-300">ATK {m.atk}%</span>
+                      <span className="text-emerald-300">DEF {m.def}%</span>
+                      {d.fuel && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className="min-w-0 flex-1 flex items-center">
+                <div className="text-xs sm:text-sm font-black text-slate-400">Select a unit or terrain tile</div>
+              </div>
+            )}
+          </div>
+          {/* Action controls: Bigger, wider UNDO button sitting above END TURN */}
+          <div className="pointer-events-auto flex flex-col gap-1 w-[110px] sm:w-[130px] shrink-0" style={{ height: bottomHudHeight }}>
+            <button
+              className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
+              onClick={doUndo} title="Undo last action (once per turn) — U">
+              {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
+            </button>
+            <button
+              className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
+              onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
+              {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Action menu */}
       {U.mode === 'menu' && U.pending && (
