@@ -10,10 +10,12 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
 
 ## 🌟 Key Features
 
-- **📱 Fully Responsive Dynamic Screen Scaling:**
+- **📱 Fully Responsive Dynamic Screen Scaling & Calibrated Touch Input:**
   - Auto-fits all phone display aspect ratios (including **Google Pixel 9**, 19.5:9 / 20:9 screens, tablets, and desktop displays).
   - Respects device safe area insets (`env(safe-area-inset-*)`) for display cutouts, camera punch-holes, and gesture navigation bars.
   - Dynamic camera panning, map tile autoscaling, and HUD element height adaptation.
+  - **Ghost-Tap & Passthrough Prevention:** Opening safety buffer prevents synthetic touch/click passthroughs on modals (such as unit deployment or shop purchases).
+  - **Calibrated Touch Sensitivity:** Fine-tuned touchscreen gesture threshold (14px) and double-tap detection window (280ms) for deliberate, mistake-free control.
 
 - **⚡ High Refresh Rate & Smooth Performance (P1):**
   - Buttery smooth rendering loop supporting **90Hz, 120Hz, 144Hz+** high refresh rate displays.
