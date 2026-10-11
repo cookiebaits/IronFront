@@ -133,7 +133,7 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
         <div className="flex items-center gap-2 p-2 border-b-2 border-amber-500/40 bg-slate-900/90 shrink-0">
           <button className="hud-btn w-11 h-10" onClick={onBack}>◀</button>
           <div className="flex-1 min-w-0">
-            <div className="font-black text-lg tracking-widest text-amber-300 truncate leading-tight">{next ? 'MISSION PREP' : 'COMMAND HQ'}</div>
+            <div className="font-black text-lg tracking-widest text-amber-300 truncate leading-tight">{next ? 'UPGRADE SHOP' : 'COMMAND HQ'}</div>
             {next && <div className="text-[10px] text-slate-400 truncate">Promote officers, equip skills, upgrade units, unlock new COs — then deploy.</div>}
           </div>
           <div className="text-sm font-black text-right leading-tight">
@@ -226,6 +226,38 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                           className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && gems >= 10 ? 'bg-cyan-500 text-slate-950 border-cyan-200' : 'bg-slate-800 text-slate-500'}`}>
                           +1 Piece · 💎 10
                         </button>
+                      </div>
+
+                      <div className="mt-3 border-t border-cyan-400/30 pt-2.5">
+                        <div className="text-[11px] font-black text-amber-300 flex items-center justify-between">
+                          <span>🎁 WAR CHEST & GEM CONVERSION</span>
+                          <span className="text-cyan-300">💎 {gems} Diamonds</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          <button disabled={gems < 20} onClick={() => {
+                            if (gems < 20) { sfx.cancel(); toast('Need 20 💎 Diamonds'); return; }
+                            const goldGain = 1000 + Math.floor(Math.random() * 1500);
+                            const locked = PLAYABLE_ORDER.filter((id) => !save.unlockedCos.includes(id));
+                            const targetCo = locked.length ? locked[Math.floor(Math.random() * locked.length)] : 'dax';
+                            const pcsGain = 2 + Math.floor(Math.random() * 4);
+                            const curPcs = save.coPieces?.[targetCo] ?? 0;
+                            spendGems(20, {
+                              ...save,
+                              merits: save.merits + goldGain,
+                              coPieces: { ...save.coPieces, [targetCo]: curPcs + pcsGain },
+                            }, `Opened Chest! 🎁 +${goldGain.toLocaleString()}G & +${pcsGain} 🧩 ${COS[targetCo]?.name}`);
+                          }} className={`hud-btn h-12 text-xs font-black flex flex-col items-center justify-center ${gems >= 20 ? 'bg-gradient-to-r from-amber-500 to-amber-400 text-slate-950 border-amber-200' : 'bg-slate-800 text-slate-500'}`}>
+                            <span>📦 Open War Chest</span>
+                            <span className="text-[10px] opacity-80">20 💎 · Gold + 🧩 Pieces</span>
+                          </button>
+                          <button disabled={gems < 10} onClick={() => {
+                            if (gems < 10) { sfx.cancel(); toast('Need 10 💎 Diamonds'); return; }
+                            spendGems(10, { ...save, merits: save.merits + 1000 }, 'Converted 10 💎 → +1,000 Gold!');
+                          }} className={`hud-btn h-12 text-xs font-black flex flex-col items-center justify-center ${gems >= 10 ? 'bg-cyan-500 text-slate-950 border-cyan-200' : 'bg-slate-800 text-slate-500'}`}>
+                            <span>🪙 Convert to Gold</span>
+                            <span className="text-[10px] opacity-80">10 💎 → 1,000 Gold</span>
+                          </button>
+                        </div>
                       </div>
                     </div>
 

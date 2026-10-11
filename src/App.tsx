@@ -104,7 +104,7 @@ export default function App() {
     setWon(w);
     dropResume(); // the battle is over; its progress is saved below
 
-    const earnedGems = w ? (score.rank === 'S' ? 50 : score.rank === 'A' ? 35 : score.rank === 'B' ? 25 : 15) : 5;
+    const earnedGems = w ? (score.rank === 'S' ? 15 : score.rank === 'A' ? 10 : score.rank === 'B' ? 6 : 3) : 1;
     let s: SaveData = { ...save, merits: save.merits + score.merits, gems: (save.gems ?? 0) + earnedGems };
     let storyCo: string | undefined;
     if (cfg?.isCampaign && w) {
