@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -551,7 +551,38 @@ export const MISSIONS: MissionDef[] = [
     ],
     outro: [
       { who: 'architect', text: 'TITAN CORE ERADICATED... ABSOLUTE PEACE RESTORED...' },
-      { who: 'narrator', text: 'CONGRATULATIONS! You have conquered the entire expanded campaign of Iron Front Tactics!' },
+      { who: 'narrator', text: 'Titan Core defeated! High Command authorizes specialized Sky & Sea Operations.' },
+    ],
+  },
+  {
+    id: 'm30', name: 'Stratosphere Supremacy', act: 14, par: 14, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen',
+    map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]], [['fighter', 13, 1], ['bomber', 12, 2], ['bcopter', 11, 3], ['gundrone', 13, 4]]),
+    funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Air-only battle! Control the skyways with fighters and bombers. Refuel at captured airports.',
+    briefing: [
+      { who: 'narrator', text: 'Stratosphere Supremacy. An air-only dogfight above the cloud deck.' },
+      { who: 'kaelen', text: 'No ground forces, no artillery cover. Only pilots, aircraft, and high-altitude steel.' },
+      { who: 'sora', text: 'Fighters sweep bombers, bombers crush airports. Watch your fuel reserves!' },
+    ],
+    outro: [
+      { who: 'kaelen', text: 'Unmatched air dominance! The skies belong to the Republic.' },
+    ],
+  },
+  {
+    id: 'm31', name: 'Abyssal Clash', act: 14, par: 15, cos: ['mira', 'rhea', 'dax', 'zero'], enemyCo: 'mira',
+    map: sym(['wwwr.P.w', 'wP=w.r.w', 'rws....w', 'wws.w..w', 'rws..P.w', 'wws..Q.w', 'm..f..w.', '....P...', 'mmm.f...']),
+    units: mir(16, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4]], [['battleship', 15, 3], ['cruiser', 14, 2], ['sub', 13, 4]]),
+    funds: [9000, 12000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Sea-only naval battle! Battleships shell at long range; cruisers hunt subs; subs strike unseen.',
+    briefing: [
+      { who: 'narrator', text: 'Abyssal Trench. A pure naval armada battle across deep water and coral reefs.' },
+      { who: 'mira', text: 'Pure naval combat. Cruisers shield your battleships from enemy submarines.' },
+      { who: 'rhea', text: 'Rout the enemy fleet and secure the naval sector.' },
+    ],
+    outro: [
+      { who: 'mira', text: 'The sea is clear. Flawless naval victory, Commander!' },
+      { who: 'narrator', text: 'CONGRATULATIONS! You have mastered every air, land, and sea campaign mission!' },
     ],
   },
 ];
@@ -564,6 +595,7 @@ export const REWARDS: Record<string, string> = {
   m16: 'warbonds', m17: 'strike', m18: 'repair', m19: 'meteor',
   m20: 'airstrike', m21: 'stealth', m22: 'overdrive', m23: 'nanite', m24: 'orbital',
   m25: 'airstrike', m26: 'emp', m27: 'orbital', m28: 'nanite', m29: 'meteor',
+  m30: 'whiteout', m31: 'tempest',
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
@@ -579,6 +611,10 @@ export const ACT_INTROS = [
   'Assault the ancient Desert Citadel where Volkov\'s rogue elite guard has taken refuge.',
   'Fight through the Citadel of Shadows under fog of war to reach the Apex Gate.',
   'The ultimate battle: face the Apex Core across land, sea, and air to secure total peace.',
+  'Titan\'s Citadel: breach the mountain fortress guarded by Flight Captain Kaelen and Cyber Officer Aria Chen.',
+  'Omega Horizon: overcome Siege Director Zero\'s batteries and Medic General Seraphina\'s nanite grid.',
+  'Final Victory: face the Titan Core in the ultimate test of all military branches.',
+  'Sky & Sea Operations: specialized air-only dogfights and deep-water naval fleet clashes.',
 ];
 
 /** Pre-deployed army value used by the hidden title-screen mission audit mode. */

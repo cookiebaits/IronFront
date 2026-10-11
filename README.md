@@ -27,8 +27,8 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
   - Stylized custom tank app icon featuring metallic armor, dual treads, star emblem, and long cannon barrel.
   - Provided in vector SVG (`public/icon.svg`), high-res PNG formats (`512x512`, `192x192`, `apple-touch-icon.png`), and auto-generated Android launcher mipmaps (`ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png`).
 
-- **📜 Expanded 13-Act Campaign:**
-  - **30 Story Campaign Missions** spanning 13 Acts:
+- **📜 Expanded 14-Act Campaign:**
+  - **32 Story Campaign Missions** spanning 14 Acts:
     - *Boot Camp* (Interactive Tutorial)
     - *Act I — Border Fire*
     - *Act II — Skies of Ash*
@@ -43,6 +43,7 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
     - *Act XI — Titan's Citadel*
     - *Act XII — Omega Horizon*
     - *Act XIII — Final Victory*
+    - *Act XIV — Sky & Sea Operations* (Air-Only & Sea-Only armadas)
   - Rich briefing and debriefing dialogues, multi-phase boss encounters (*The Warden*, *Skybreaker*, *Singularity Core*, *Apex Warden*, *Apex Core*, *Omega Core*, *Titan Core*), fog-of-war starting after Mission 4, dynamic weather, and first-clear skill rewards.
 
 - **🔧 Expanded Upgrades, Mods & 14 Commanders:**
