@@ -146,9 +146,6 @@ jobs:
       - name: Sync Capacitor assets
         run: npx cap sync android
 
-      - name: Force landscape and immersive fullscreen
-        run: python3 scripts/patch-android.py
-
       - name: Cache and configure Gradle
         uses: gradle/actions/setup-gradle@v5
         with:
@@ -176,44 +173,46 @@ jobs:
           fi
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
-      - name: Build APK with Gradle
-        working-directory: android
+      - name: Build Landscape APK
         shell: bash
-        timeout-minutes: 55
-        env:
-          GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -Dorg.gradle.jvmargs=-Xmx3g
         run: |
           set -euxo pipefail
+          python3 scripts/patch-android.py landscape
+          npx cap sync android
+          cd android
           chmod +x gradlew
-          ./gradlew --version
-          # Gradle also gets an internal timeout so the diagnostics artifact step can still run.
-          timeout 50m ./gradlew :app:assembleDebug \
-            --no-daemon --max-workers=2 --stacktrace --warning-mode all \
-            2>&1 | tee ../gradle-build.log
-
-      - name: Sign and verify APK
-        shell: bash
-        run: |
-          set -euxo pipefail
+          ./gradlew :app:assembleDebug --no-daemon --max-workers=2
+          cd ..
           BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
-
           "$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
             --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
-            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
-            "$APK"
+            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
+          cp "$APK" iron-front-landscape.apk
 
-          cp "$APK" iron-front-debug.apk
+      - name: Build Portrait APK
+        shell: bash
+        run: |
+          set -euxo pipefail
+          python3 scripts/patch-android.py portrait
+          npx cap sync android
+          cd android
+          ./gradlew :app:assembleDebug --no-daemon --max-workers=2
+          cd ..
+          BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
+          APK="android/app/build/outputs/apk/debug/app-debug.apk"
+          "$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
+            --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
+            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
+          cp "$APK" iron-front-portrait.apk
 
-          "$BUILD_TOOLS/zipalign" -c -v 4 iron-front-debug.apk
-          "$BUILD_TOOLS/apksigner" verify --verbose --print-certs iron-front-debug.apk
-          "$BUILD_TOOLS/aapt" dump badging iron-front-debug.apk | grep -E "package: name=|sdkVersion:|targetSdkVersion:"
-
-      - name: Upload installable APK
+      - name: Upload installable APKs
         uses: actions/upload-artifact@v6
         with:
-          name: iron-front-debug-apk
-          path: iron-front-debug.apk
+          name: iron-front-apks
+          path: |
+            iron-front-landscape.apk
+            iron-front-portrait.apk
           if-no-files-found: error
           retention-days: 30
 

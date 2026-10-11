@@ -13,15 +13,20 @@ export function createGame(
   playerCo: string,
   enemyCo: string,
   loadout: PlayerLoadout,
-  opts?: { weather?: Weather; fog?: boolean; aiLevel?: number; dynamic?: boolean },
+  opts?: { weather?: Weather; fog?: boolean; aiLevel?: number; dynamic?: boolean; vertical?: boolean },
 ): GameState {
-  const h = m.map.length;
-  const w = Math.max(...m.map.map((r) => r.length));
+  const isVert = opts?.vertical ?? false;
+  const origH = m.map.length;
+  const origW = Math.max(...m.map.map((r) => r.length));
+  const h = isVert ? origW : origH;
+  const w = isVert ? origH : origW;
   const tiles: Tile[][] = [];
   for (let y = 0; y < h; y++) {
     const row: Tile[] = [];
     for (let x = 0; x < w; x++) {
-      const ch = m.map[y][x] ?? '.';
+      const origX = isVert ? origW - 1 - y : x;
+      const origY = isVert ? x : y;
+      const ch = m.map[origY]?.[origX] ?? '.';
       const def = CHAR_MAP[ch] ?? CHAR_MAP['.'];
       row.push({ t: def.t, owner: def.owner, capture: 20 });
     }
@@ -55,11 +60,15 @@ export function createGame(
     log: [],
   };
   for (const [type, x, y, team] of m.units) {
-    if (x < w && y < h) addUnit(s, type, x, y, team);
+    const ux = isVert ? y : x;
+    const uy = isVert ? origW - 1 - x : y;
+    if (ux < w && uy < h) addUnit(s, type, ux, uy, team);
   }
   if (m.boss) {
-    const boss = s.units.find((u) => u.type === m.boss!.type && u.team === m.boss!.team && u.x === m.boss!.x && u.y === m.boss!.y)
-      ?? addUnit(s, m.boss.type, m.boss.x, m.boss.y, m.boss.team);
+    const bx = isVert ? m.boss.y : m.boss.x;
+    const by = isVert ? origW - 1 - m.boss.x : m.boss.y;
+    const boss = s.units.find((u) => u.type === m.boss!.type && u.team === m.boss!.team && u.x === bx && u.y === by)
+      ?? addUnit(s, m.boss.type, bx, by, m.boss.team);
     boss.boss = m.boss.name;
     boss.bossPhases = Math.max(1, m.boss.phases ?? 3);
     boss.hp = 100;
