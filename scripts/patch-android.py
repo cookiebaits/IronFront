@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Apply Iron Front's landscape + immersive Android settings after `cap add/sync android`."""
+"""Apply Iron Front's landscape + immersive Android settings and tank app icon after `cap add/sync android`."""
 from pathlib import Path
 import re
+import subprocess
 import sys
 
 root = Path(__file__).resolve().parents[1]
@@ -106,4 +107,12 @@ else:
         raise SystemExit("Could not find MainActivity.java or MainActivity.kt")
     print("Kotlin MainActivity found; manifest/styles patched, but immersive Java replacement skipped.", file=sys.stderr)
 
-print("Android patched: sensorLandscape + fullscreen immersive system bars")
+# Generate and copy tank launcher icons into Android mipmap directories
+try:
+    gen_script = root / "scripts" / "generate_app_icons.py"
+    if gen_script.exists():
+        subprocess.run([sys.executable, str(gen_script)], check=True)
+except Exception as exc:
+    print(f"Warning: Tank launcher icon generation failed: {exc}", file=sys.stderr)
+
+print("Android patched: sensorLandscape + fullscreen immersive system bars + tank app icon")

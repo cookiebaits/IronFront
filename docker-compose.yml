@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  iron-front-tactics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: iron-front-tactics
+    ports:
+      - "8080:80"
+    restart: always

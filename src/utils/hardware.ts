@@ -38,7 +38,9 @@ export function detectHardware(): HardwareInfo {
     gpuLower.includes('adreno (tm) 6') ||
     gpuLower.includes('mali-g7') ||
     gpuLower.includes('mali-g8') ||
-    gpuLower.includes('angle');
+    gpuLower.includes('angle') ||
+    gpuLower.includes('pixel') ||
+    gpuLower.includes('mali');
 
   let tier: 'ultra' | 'high' | 'medium' | 'low' = 'high';
 
