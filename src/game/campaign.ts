@@ -73,7 +73,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm2', name: 'River Crossing', act: 1, par: 9, cos: ['rhea', 'dax'], enemyCo: 'grimm',
     map: sym(['mmf..f~', 'mH=c.f~', 'fB==.=#', '..f.f.~', '.c..mf~', 'f=====#', 'mf.c..~', '..ft.f~', 'mmm..m~']),
-    units: mir(14, [['infantry', 4, 1], ['infantry', 3, 3], ['mech', 2, 4], ['tank', 4, 2], ['artillery', 3, 5], ['recon', 2, 6]], [['mech', 10, 3]]),
+    units: mir(14, [['infantry', 4, 1], ['infantry', 3, 3], ['mech', 2, 4], ['tank', 4, 2], ['artillery', 3, 5], ['recon', 2, 6]], [['mech', 11, 3]]),
     funds: [3000, 3000], weather: 'rain', fog: false, unitCap: [11, 12], objective: { type: 'hq' }, aiLevel: 1,
     hint: 'Capture the enemy HQ. Rain slows vehicles — mechs can wade rivers!',
     briefing: [
@@ -210,7 +210,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm9', name: 'Long Guns', act: 3, par: 11, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov',
     map: sym(['mm.ff...', 'mH=c...m', 'mB==.m..', '...=..c.', 'fc.=====', '...f.t..', 'mA.=..c.', 'm.c=.m..', 'mmm=....']),
-    units: mir(16, [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['tank', 5, 5], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]], [['artillery', 9, 7]]),
+    units: mir(16, [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['tank', 5, 5], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]], [['artillery', 10, 7]]),
     funds: [5000, 6000], weather: 'sand', fog: false, unitCap: [13, 15], objective: { type: 'hq' }, aiLevel: 3,
     hint: 'Sandstorm shortens indirect range. Capture Volkov\'s HQ.',
     briefing: [
@@ -247,7 +247,7 @@ export const MISSIONS: MissionDef[] = [
     units: mir(18, [
       ['battleship', 0, 5], ['cruiser', 1, 9], ['tank', 5, 2], ['tank', 6, 6], ['heavy', 7, 5], ['artillery', 5, 4], ['rockets', 4, 8],
       ['infantry', 6, 1], ['mech', 7, 7], ['bcopter', 5, 3], ['fighter', 4, 3], ['aa', 7, 2],
-    ], [['heavy', 10, 4], ['bomber', 12, 3], ['battleship', 17, 9], ['missiles', 11, 6]]),
+    ], [['heavy', 10, 4], ['bomber', 14, 3], ['battleship', 17, 9], ['missiles', 12, 6]]),
     funds: [7000, 8000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [17, 19], objective: { type: 'hq' }, aiLevel: 3,
     hint: 'Final battle. Land, sea, and air. Capture the Architect\'s core (HQ).',
     briefing: [
@@ -266,7 +266,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm12', name: 'Dead Signal', act: 4, par: 12, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
     map: sym(['mmf..f..', 'mH=c...m', 'fB==..t.', '..f=..c.', '.A.====.', 'f..c.f..', 'mm.f..m.', '...=c...', 'mm..f...']),
-    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 3], ['mech', 4, 6], ['aa', 1, 7]], [['artillery', 11, 6], ['drone', 12, 2]]),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 4], ['gundrone', 5, 3], ['mech', 4, 6], ['aa', 1, 7]], [['artillery', 12, 6], ['drone', 12, 2]]),
     funds: [5000, 6500], weather: 'sand', weatherPool: ['sand', 'clear', 'rain'], fog: true, unitCap: [14, 16], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'The Architect is gone. Destroy the machines following its last transmission.',
     briefing: [
@@ -283,7 +283,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm13', name: 'The Warden', act: 4, par: 13, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
     map: sym(['mmff....', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.=.t..', 'f..=====', 'm..f..c.', '..c.=...', 'mm..f...']),
-    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['mech', 4, 3], ['artillery', 2, 4], ['infantry', 3, 5], ['apc', 4, 6], ['aa', 1, 7]], [['artillery', 11, 6]]),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['mech', 4, 3], ['artillery', 2, 4], ['infantry', 3, 5], ['apc', 4, 6], ['aa', 1, 7]], [['artillery', 12, 6]]),
     boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'THE WARDEN', hp: 100, phases: 3 },
     funds: [5500, 7000], weather: 'clear', fog: false, unitCap: [15, 17], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Boss battle: defeat the Warden through three shield phases. Mechs and focused fire help crack heavy armor.',
@@ -358,7 +358,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm17', name: 'The Pretender', act: 6, par: 13, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'nyx',
     map: sym(['mm.ff...', 'mH=c..m.', 'fB==c...', '.A.=.t..', '...====.', 'fc..f...', 'm..c..f.', '..f.=...', 'mm..f...']),
-    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['infantry', 4, 3], ['mech', 3, 5], ['artillery', 2, 4], ['rockets', 1, 7], ['fighter', 3, 6]], [['heavy', 12, 4], ['bcopter', 11, 1]]),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['infantry', 4, 3], ['mech', 3, 5], ['artillery', 2, 4], ['rockets', 1, 7], ['fighter', 3, 6]], [['heavy', 12, 4], ['bcopter', 11, 2]]),
     boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'PRETENDER COMMAND', hp: 100, phases: 3 },
     funds: [6500, 8000], weather: 'rain', fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Boss battle: break the Pretender’s three command shields while fighting through fog.',
@@ -420,7 +420,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm21', name: 'Shadow Protocol', act: 8, par: 12, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'nyx',
     map: sym(['mm.ff...', 'mH=c..m.', 'fB==c...', '.A.=.t..', '...====.', 'fc..f...', 'm..c..f.', '..f.=...', 'mm..f...']),
-    units: mir(16, [['recon', 3, 1], ['drone', 4, 2], ['tank', 5, 3], ['heavy', 4, 4], ['artillery', 2, 5], ['infantry', 3, 6], ['gundrone', 5, 7]], [['heavy', 12, 3], ['bomber', 11, 2]]),
+    units: mir(16, [['recon', 3, 1], ['drone', 4, 2], ['tank', 5, 3], ['heavy', 4, 4], ['artillery', 2, 5], ['infantry', 3, 6], ['gundrone', 5, 7]], [['heavy', 12, 3], ['bomber', 11, 1]]),
     funds: [7500, 9500], weather: 'rain', fog: true, unitCap: [18, 20], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Fog of war and rain! Use drones and recon units to illuminate stealth batteries before attacking.',
     briefing: [
@@ -479,7 +479,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm25', name: 'Titan Gate', act: 11, par: 15, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'kaelen', unlockCo: 'kaelen',
     map: sym(['mmmf..A.', 'mH=c..f.', 'fB==t.c.', '..f=~~#~', '.A.====.', 'f..c~~#~', 'mm.f..c.', '.c..=...', 'mmm.f...']),
-    units: mir(16, [['infantry', 3, 1], ['mech', 4, 2], ['tank', 4, 3], ['fighter', 2, 4], ['bcopter', 5, 4], ['artillery', 2, 5], ['aa', 3, 6]], [['fighter', 12, 3], ['bomber', 13, 5]]),
+    units: mir(16, [['infantry', 3, 1], ['mech', 4, 2], ['tank', 4, 3], ['fighter', 2, 4], ['bcopter', 5, 4], ['artillery', 2, 5], ['aa', 3, 6]], [['fighter', 12, 3], ['bomber', 12, 5]]),
     funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [18, 22], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Flight Captain Kaelen commands the skies over Titan Gate. Use anti-air and fighters to control the air.',
     briefing: [
@@ -495,7 +495,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm26', name: 'Iron Stronghold', act: 11, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'aria', unlockCo: 'aria',
     map: sym(['mmf.c.f.', 'mH==..t.', 'fB.=c...', '..f===#~', '.c..f.c.', 'fA.===#~', 'm..f.c..', '.c..=...', 'mmm.f...']),
-    units: mir(16, [['infantry', 4, 1], ['mech', 3, 2], ['heavy', 4, 3], ['tank', 5, 4], ['artillery', 2, 5], ['recon', 5, 2], ['gundrone', 2, 6]], [['heavy', 12, 3], ['rockets', 13, 6]]),
+    units: mir(16, [['infantry', 4, 1], ['mech', 3, 2], ['heavy', 4, 3], ['tank', 5, 4], ['artillery', 2, 5], ['recon', 5, 2], ['gundrone', 2, 6]], [['heavy', 12, 3], ['rockets', 12, 6]]),
     funds: [8500, 11000], weather: 'rain', fog: true, unitCap: [20, 24], objective: { type: 'hq' }, aiLevel: 3,
     hint: 'Aria\'s cyber net slows movements and skill charges. Capture the radio relays to break her disruption.',
     briefing: [
@@ -557,7 +557,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm30', name: 'Stratosphere Supremacy', act: 14, par: 14, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen',
     map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]], [['fighter', 13, 1], ['bomber', 12, 2], ['bcopter', 11, 3], ['gundrone', 13, 4]]),
+    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]], [['bomber', 13, 5], ['drone', 14, 2]]),
     funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Air-only battle! Control the skyways with fighters and bombers. Refuel at captured airports.',
     briefing: [
@@ -572,7 +572,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm31', name: 'Abyssal Clash', act: 14, par: 15, cos: ['mira', 'rhea', 'dax', 'zero'], enemyCo: 'mira',
     map: sym(['wwwr.P.w', 'wP=w.r.w', 'rws....w', 'wws.w..w', 'rws..P.w', 'wws..Q.w', 'm..f..w.', '....P...', 'mmm.f...']),
-    units: mir(16, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4]], [['battleship', 15, 3], ['cruiser', 14, 2], ['sub', 13, 4]]),
+    units: mir(16, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4]]),
     funds: [9000, 12000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Sea-only naval battle! Battleships shell at long range; cruisers hunt subs; subs strike unseen.',
     briefing: [

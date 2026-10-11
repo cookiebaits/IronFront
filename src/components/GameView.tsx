@@ -1503,8 +1503,25 @@ export default function GameView(props: Props) {
         fillSet(U.danger.reach, `rgba(249,115,22,${0.35 * pulse})`);
       }
       if (U.mode === 'selected' || U.mode === 'moving') {
-        fillSet(U.atk, `rgba(239,68,68,${0.18})`, U.stops);
-        fillSet(U.stops, `rgba(56,189,248,${0.42 * pulse})`);
+        // High-contrast movement tiles (vibrant cyan fill with sharp glowing cyan outline)
+        g.fillStyle = `rgba(6,182,212,${0.5 * pulse})`;
+        g.strokeStyle = '#22d3ee';
+        g.lineWidth = Math.max(2, ts * 0.08);
+        for (const k of U.stops) {
+          const x = k % s.w, y = Math.floor(k / s.w);
+          g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+          g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+        }
+        // Attack/indirect range tiles (high-contrast red/amber fill and outline for firing reach beyond move)
+        g.fillStyle = `rgba(239,68,68,${0.32 * pulse})`;
+        g.strokeStyle = '#f87171';
+        g.lineWidth = Math.max(1.5, ts * 0.06);
+        for (const k of U.atk) {
+          if (U.stops.has(k)) continue;
+          const x = k % s.w, y = Math.floor(k / s.w);
+          g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+          g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
+        }
         // path preview
         if (U.mode === 'selected' && U.reach) {
           const k = U.cursor.y * s.w + U.cursor.x;
