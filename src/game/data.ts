@@ -1,10 +1,11 @@
 import type { ArmorClass, Category, ModId, MoveType, Owner, TerrainType, UnitDef, UnitType, Weather } from './types';
 
 export const TERRAIN: Record<TerrainType, { name: string; def: number; prop: boolean; income: boolean }> = {
-  plain: { name: 'Open ground', def: 0, prop: false, income: false },
+  plain: { name: 'Fields', def: 0, prop: false, income: false },
   forest: { name: 'Forest', def: 2, prop: false, income: false },
   mountain: { name: 'Mountain', def: 4, prop: false, income: false },
   road: { name: 'Road', def: 0, prop: false, income: false },
+  dirt_road: { name: 'Dirt Road', def: 0, prop: false, income: false },
   bridge: { name: 'Bridge', def: 0, prop: false, income: false },
   river: { name: 'River', def: 0, prop: false, income: false },
   sea: { name: 'Sea', def: 0, prop: false, income: false },
@@ -23,6 +24,7 @@ export const CHAR_MAP: Record<string, { t: TerrainType; owner: Owner }> = {
   f: { t: 'forest', owner: -1 },
   m: { t: 'mountain', owner: -1 },
   '=': { t: 'road', owner: -1 },
+  d: { t: 'dirt_road', owner: -1 },
   '#': { t: 'bridge', owner: -1 },
   '~': { t: 'river', owner: -1 },
   w: { t: 'sea', owner: -1 },
@@ -53,7 +55,7 @@ export const MOVE_COST: Record<TerrainType, Record<MoveType, number>> = {
   plain: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: INF },
   forest: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: INF },
   mountain: { foot: 2, mech: 2, treads: INF, tires: INF, air: 1, sea: INF },
-  road: LAND1, bridge: LAND1, city: LAND1, base: LAND1, airport: LAND1, hq: LAND1, tower: LAND1,
+  road: LAND1, dirt_road: LAND1, bridge: LAND1, city: LAND1, base: LAND1, airport: LAND1, hq: LAND1, tower: LAND1,
   port: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: 1 },
   river: { foot: 2, mech: 1, treads: INF, tires: INF, air: 1, sea: INF },
   sea: { foot: INF, mech: INF, treads: INF, tires: INF, air: 1, sea: 1 },

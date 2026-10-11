@@ -97,7 +97,15 @@ export const isRefuelSite = (s: GameState, team: Team, x: number, y: number) => 
   return !!tile && tile.owner === team && ['city', 'base', 'hq', 'airport'].includes(tile.t);
 };
 export const isIndirect = (t: UnitType) => !!UNITS[t].indirect;
-export const canAttackType = (a: UnitType, d: UnitType) => (UNITS[a].dmg[UNITS[d].armor] ?? 0) > 0;
+export const canAttackType = (a: UnitType, d: UnitType, dUnit?: Unit | null) => {
+  const base = UNITS[a].dmg[UNITS[d].armor] ?? 0;
+  if (base > 0) return true;
+  if (dUnit?.landed) {
+    const landedBase = UNITS[a].dmg['LIGHT'] ?? UNITS[a].dmg['INF'] ?? UNITS[a].dmg['HELI'] ?? 0;
+    return landedBase > 0;
+  }
+  return false;
+};
 export const canAttackAny = (a: UnitType) => Object.keys(UNITS[a].dmg).length > 0;
 export const unitCount = (s: GameState, team: Team) =>
   s.units.reduce((n, u) => n + (u.team === team ? 1 + (u.cargo ? 1 : 0) : 0), 0);
@@ -189,9 +197,13 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
       if (t === 'reef') def += 15;
     }
   }
-  // Vehicles get a one-tile road march bonus when starting their movement on paved road.
-  const vehicle = d.cat === 'vehicle' || d.cat === 'artillery';
-  if (vehicle && s.tiles[u.y]?.[u.x]?.t === 'road') move += 1;
+  // Terrain movement modifier based on starting terrain (excludes air units per P2):
+  // Road +1 movement, Fields (plain) -1 movement, Dirt Road (dirt_road) neutral.
+  if (inBounds(s, x, y) && d.cat !== 'air') {
+    const startT = s.tiles[y][x].t;
+    if (startT === 'road') move += 1;
+    else if (startT === 'plain') move -= 1;
+  }
   // comm towers
   let towers = 0;
   for (const row of s.tiles) for (const tl of row) if (tl.t === 'tower' && tl.owner === u.team) towers++;
@@ -223,7 +235,12 @@ export interface ReachNode { cost: number; prev: number }
 
 /** Dijkstra over the grid. visibleTo: if set, only enemies visible to that team block movement */
 export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOverride?: number): Map<number, ReachNode> {
-  const max = Math.min(maxOverride ?? unitMods(s, u).move, u.fuel ?? Infinity);
+  const startT = s.tiles[u.y]?.[u.x]?.t;
+  const modsWithBonus = unitMods(s, u);
+  let baseMoveNoBonus = modsWithBonus.move;
+  if (startT === 'road') baseMoveNoBonus = Math.max(1, modsWithBonus.move - 1);
+  else if (startT === 'plain') baseMoveNoBonus = modsWithBonus.move + 1;
+
   const res = new Map<number, ReachNode>();
   const start = u.y * s.w + u.x;
   res.set(start, { cost: 0, prev: -1 });
@@ -243,6 +260,15 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
       const o = occ.get(k);
       if (o && o.team !== u.team && (!vis || vis.has(k))) continue;
       const c = cc + moveCost(s, u, nx, ny);
+
+      // Rule P1: Road +1 move, Fields -1 move. Applies on straight line.
+      // If moving 1 square to a different terrain, unaffected by starting bonus/penalty.
+      const isStraight = (u.x === cx && cx === nx) || (u.y === cy && cy === ny);
+      const isOneSquareTerrainChange = dist(u.x, u.y, nx, ny) === 1 && startT !== s.tiles[ny][nx].t;
+      let effectiveMaxMove = isOneSquareTerrainChange ? baseMoveNoBonus : isStraight ? modsWithBonus.move : baseMoveNoBonus;
+      if (maxOverride !== undefined) effectiveMaxMove = Math.min(maxOverride, effectiveMaxMove);
+      const max = Math.min(effectiveMaxMove, u.fuel ?? Infinity);
+
       if (c > max) continue;
       // Keep a one-tile reserve unless the move lands on a friendly refueling property.
       if (u.fuel !== undefined && c >= u.fuel && !isRefuelSite(s, u.team, nx, ny)) continue;
@@ -288,12 +314,15 @@ export function targetsFrom(s: GameState, u: Unit, x: number, y: number, moved: 
     if (o.team === u.team) return false;
     if (vis && !vis.has(o.y * s.w + o.x)) return false;
     const d = dist(x, y, o.x, o.y);
-    return d >= m.rmin && d <= m.rmax && canAttackType(u.type, o.type);
+    return d >= m.rmin && d <= m.rmax && canAttackType(u.type, o.type, o);
   });
 }
 
 export function calcDamage(s: GameState, a: Unit, ax: number, ay: number, d: Unit, dx: number, dy: number, aHp = a.hp, luck = 0): number {
-  const base = UNITS[a.type].dmg[UNITS[d.type].armor] ?? 0;
+  let base = UNITS[a.type].dmg[UNITS[d.type].armor] ?? 0;
+  if (!base && d.landed) {
+    base = UNITS[a.type].dmg['LIGHT'] ?? UNITS[a.type].dmg['INF'] ?? UNITS[a.type].dmg['HELI'] ?? 0;
+  }
   if (!base) return 0;
   const am = unitMods(s, a, ax, ay);
   const dm = unitMods(s, d, dx, dy);
@@ -310,7 +339,7 @@ export function forecast(s: GameState, a: Unit, ax: number, ay: number, d: Unit)
   const hi = calcDamage(s, a, ax, ay, d, d.x, d.y, a.hp, 9);
   let counter = 0;
   const remaining = d.hp - lo;
-  if (remaining > 0 && !isIndirect(d.type) && dist(ax, ay, d.x, d.y) === 1 && canAttackType(d.type, a.type)) {
+  if (remaining > 0 && !isIndirect(d.type) && dist(ax, ay, d.x, d.y) === 1 && canAttackType(d.type, a.type, a)) {
     const tmp = { ...d, hp: remaining };
     counter = calcDamage(s, tmp, d.x, d.y, a, ax, ay, remaining, 4);
   }
@@ -365,7 +394,7 @@ export function resolveAttack(s: GameState, a: Unit, d: Unit, rng = Math.random)
     }
   } else {
     res.dAfter = d.hp;
-    if (!res.indirect && !isIndirect(d.type) && canAttackType(d.type, a.type)) {
+    if (!res.indirect && !isIndirect(d.type) && canAttackType(d.type, a.type, a)) {
       const c = Math.min(a.hp, calcDamage(s, d, d.x, d.y, a, a.x, a.y, d.hp, Math.floor(rng() * 10)));
       a.hp -= c;
       res.counter = c;
@@ -680,7 +709,10 @@ export function endTurn(s: GameState, rng = Math.random): TurnStartInfo {
     }
     let ok = false;
     if (tile.owner === t) {
-      if (d.cat === 'air') ok = tile.t === 'airport';
+      if (d.cat === 'air') {
+        // Air units only get repaired on properties if landed (or on airport)
+        ok = u.landed ? ['city', 'base', 'hq', 'airport'].includes(tile.t) : tile.t === 'airport';
+      }
       else if (d.cat === 'naval') ok = tile.t === 'port';
       else ok = ['city', 'base', 'hq'].includes(tile.t);
     }
@@ -699,6 +731,12 @@ export function endTurn(s: GameState, rng = Math.random): TurnStartInfo {
         o.hp = Math.min(100, o.hp + 10);
         repairs.push({ x: o.x, y: o.y, amount: 10 });
       }
+    }
+  }
+  // Landed air units automatically return to air after turn start repairs/refuels are processed
+  for (const u of s.units) {
+    if (u.team === t && u.landed) {
+      u.landed = false;
     }
   }
   // objectives

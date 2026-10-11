@@ -16,7 +16,7 @@ function hash(x: number, y: number, k = 0) {
 const GRASS = { clear: '#7cb342', rain: '#5f9a3a', snow: '#dfe9f2', sand: '#c9b072' } as Record<Weather, string>;
 const GRASS2 = { clear: '#8bc34a', rain: '#6aa843', snow: '#eef4fa', sand: '#d6be80' } as Record<Weather, string>;
 
-function isRoadish(t: TerrainType) { return t === 'road' || t === 'bridge' || t === 'city' || t === 'base' || t === 'hq' || t === 'airport' || t === 'port' || t === 'tower'; }
+function isRoadish(t: TerrainType) { return t === 'road' || t === 'dirt_road' || t === 'bridge' || t === 'city' || t === 'base' || t === 'hq' || t === 'airport' || t === 'port' || t === 'tower'; }
 function isWaterish(t: TerrainType) { return t === 'river' || t === 'sea' || t === 'bridge' || t === 'reef' || t === 'shoal'; }
 
 export function drawTerrainLayer(s: GameState, ts: number): HTMLCanvasElement {
@@ -85,14 +85,14 @@ export function drawTerrainLayer(s: GameState, ts: number): HTMLCanvasElement {
     g.fillStyle = 'rgba(0,0,0,0.06)';
     for (let i = 0; i < 3; i++) g.fillRect(px + hash(x, y, i) * ts, py + hash(x, y, i + 9) * ts, ts / 16, ts / 10);
 
-    if (t === 'road' || t === 'bridge') {
+    if (t === 'road' || t === 'dirt_road' || t === 'bridge') {
       const rw = ts * 0.42;
       const o = (ts - rw) / 2;
       if (t === 'bridge') {
         g.fillStyle = '#4fa3e0';
         g.fillRect(px, py, ts, ts);
       }
-      g.fillStyle = t === 'bridge' ? '#a1887f' : wx === 'snow' ? '#b8c2cc' : '#9e9e9e';
+      g.fillStyle = t === 'bridge' ? '#a1887f' : t === 'dirt_road' ? (wx === 'snow' ? '#a88b77' : '#8d6e63') : (wx === 'snow' ? '#b8c2cc' : '#9e9e9e');
       g.fillRect(px + o, py + o, rw, rw);
       const conn = (n: TerrainType | null) => n && (isRoadish(n));
       if (conn(nb(1, 0))) g.fillRect(px + o, py + o, ts - o, rw);
@@ -102,6 +102,11 @@ export function drawTerrainLayer(s: GameState, ts: number): HTMLCanvasElement {
       if (t === 'bridge') {
         g.strokeStyle = '#6d4c41'; g.lineWidth = Math.max(1, ts / 24);
         g.strokeRect(px + o, py + 1, rw, ts - 2);
+      }
+      if (t === 'dirt_road') {
+        // Dirt road edge highlights / texture
+        g.fillStyle = 'rgba(0,0,0,0.12)';
+        g.fillRect(px + o, py + o, rw, 2);
       }
       continue;
     }
@@ -204,7 +209,7 @@ export function drawProperty(g: CanvasRenderingContext2D, t: TerrainType, owner:
 }
 
 /** Draw a unit centered at (cx,cy) in a box of size s. Coordinates internally in a 64-unit space. */
-export function drawUnit(g: CanvasRenderingContext2D, type: UnitType, cx: number, cy: number, s: number, team: Team, facing: 1 | -1, time: number, dim = false, shadow = true) {
+export function drawUnit(g: CanvasRenderingContext2D, type: UnitType, cx: number, cy: number, s: number, team: Team, facing: 1 | -1, time: number, dim = false, shadow = true, landed = false) {
   const p = PAL[team];
   const k = s / 64;
   g.save();
@@ -212,12 +217,13 @@ export function drawUnit(g: CanvasRenderingContext2D, type: UnitType, cx: number
   g.scale(k * facing, k);
   const air = ['drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber'].includes(type);
   const sea = ['cruiser', 'sub', 'battleship'].includes(type);
-  const bob = air ? Math.sin(time / 260) * 2.5 : 0;
+  const bob = air && !landed ? Math.sin(time / 260) * 2.5 : 0;
   if (shadow && !sea) {
     g.fillStyle = 'rgba(0,0,0,0.25)';
-    g.beginPath(); g.ellipse(0, air ? 24 : 20, air ? 16 : 22, 5, 0, 0, Math.PI * 2); g.fill();
+    g.beginPath(); g.ellipse(0, air && !landed ? 24 : 20, air && !landed ? 16 : 22, 5, 0, 0, Math.PI * 2); g.fill();
   }
-  if (air) g.translate(0, -8 + bob);
+  if (air && !landed) g.translate(0, -8 + bob);
+  else if (air && landed) g.translate(0, 4); // sitting directly on the ground
   if (dim) g.globalAlpha = 0.55;
   g.lineWidth = 2;
   g.lineJoin = 'round';
