@@ -94,6 +94,7 @@ export default function GameView(props: Props) {
   const { mission, save } = props;
   const settings = save.settings;
   const speed = settings.speed;
+  const isVert = props.opts?.vertical ?? (typeof window !== 'undefined' && window.innerHeight > window.innerWidth);
   const gsRef = useRef<GameState>(null as unknown as GameState);
   if (!gsRef.current && props.resume) {
     // Continue a saved battle: the saved state has no mission object (stored by id), so re-attach it.
@@ -102,7 +103,7 @@ export default function GameView(props: Props) {
   if (!gsRef.current) {
     const rank = props.online ? 0 : save.coRank?.[props.playerCo] ?? 0;
     const skills = props.online ? [] : (save.loadout?.[props.playerCo] ?? []).filter((id) => SKILLS[id] && save.ownedSkills.includes(id)).slice(0, rankSlots(rank));
-    gsRef.current = createGame(mission, props.playerCo, props.enemyCo, { unitUps: props.online ? {} : save.unitUps ?? {}, coRank: rank, skills }, props.opts);
+    gsRef.current = createGame(mission, props.playerCo, props.enemyCo, { unitUps: props.online ? {} : save.unitUps ?? {}, coRank: rank, skills }, { ...props.opts, vertical: isVert });
   }
   const gs = gsRef.current;
   // Forward-compatible resume migration for saves made before the separate skill gauge.
@@ -129,7 +130,7 @@ export default function GameView(props: Props) {
   const topHudRef = useRef<HTMLDivElement>(null);
   const bottomHudRef = useRef<HTMLDivElement>(null);
   const cam = useRef({ x: 0, y: 0, tx: null as number | null, ty: null as number | null });
-  const view = useRef({ vw: 0, vh: 0, ts: 56, zoom: 1, dpr: 1 });
+  const view = useRef({ vw: 0, vh: 0, ts: 56, zoom: isVert ? 1.0 : 0.75, dpr: 1 });
   const anims = useRef(new Map<number, Anim>());
   const parts = useRef<Particle[]>([]);
   const floats = useRef<Float[]>([]);
@@ -227,6 +228,12 @@ export default function GameView(props: Props) {
   const refreshVis = () => { visRef.current = visibility(gs, localTeam); };
   const isVis = (x: number, y: number) => !visRef.current || visRef.current.has(y * gs.w + x);
 
+  const vertCoord = (x: number, y: number) => {
+    if (!isVert) return { x, y };
+    const origW = Math.max(...mission.map.map((r) => r.length));
+    return { x: y, y: origW - 1 - x };
+  };
+
   // A grouped lesson keeps one briefing open while its required actions advance in sequence.
   const tutEvent = (e: string) => {
     if (!mission.tutorial) return;
@@ -240,10 +247,11 @@ export default function GameView(props: Props) {
         // CO dialogue tied to this exact step (e.g. "Capture first!" right after the forest move).
         const note = step.notes?.[tutActionIndex.current];
         if (note) setTutNote(fillNote(note));
-        const nextTarget = step.targets?.[step.events[tutActionIndex.current]];
-        if (nextTarget?.x !== undefined && nextTarget.y !== undefined) {
-          ui.current.cursor = { x: nextTarget.x, y: nextTarget.y };
-          centerOn(nextTarget.x, nextTarget.y);
+        const rawTarget = step.targets?.[step.events[tutActionIndex.current]];
+        if (rawTarget?.x !== undefined && rawTarget.y !== undefined) {
+          const { x, y } = vertCoord(rawTarget.x, rawTarget.y);
+          ui.current.cursor = { x, y };
+          centerOn(x, y);
         }
         bump();
         return;
@@ -256,10 +264,11 @@ export default function GameView(props: Props) {
     setTutIndex(tutIndexRef.current);
   };
   const focusTutorialTarget = () => {
-    const target = guideTarget();
-    if (target?.x === undefined || target.y === undefined) return;
-    ui.current.cursor = { x: target.x, y: target.y };
-    centerOn(target.x, target.y);
+    const rawTarget = guideTarget();
+    if (rawTarget?.x === undefined || rawTarget.y === undefined) return;
+    const { x, y } = vertCoord(rawTarget.x, rawTarget.y);
+    ui.current.cursor = { x, y };
+    centerOn(x, y);
   };
   const continueTutorialPrompt = () => {
     if (tutNote) { sfx.select(); setTutNote(null); bump(); return; }
@@ -350,10 +359,20 @@ export default function GameView(props: Props) {
   const computeTs = () => {
     const v = view.current;
     const availableH = Math.max(100, v.vh - TOP - BOT);
-    const availableW = Math.max(100, v.vw - 12);
-    const base = Math.floor(Math.min(availableW / gs.w, availableH / gs.h));
-    const minTile = v.vh < 520 ? 20 : 30;
-    v.ts = Math.round(Math.max(minTile, Math.min(96, base)) * v.zoom);
+    const availableW = Math.max(100, v.vw - 8);
+    if (isVert) {
+      // In vertical mode, fit map perfectly within the available screen viewport without clipping
+      const baseW = availableW / gs.w;
+      const baseH = availableH / gs.h;
+      v.ts = Math.max(16, Math.min(baseW, baseH));
+    } else {
+      // Expand baseline scale so the map stretches comfortably across wide/landscape screens
+      const baseW = availableW / gs.w;
+      const baseH = availableH / gs.h;
+      const base = Math.max(baseW, baseH);
+      const minTile = v.vh < 520 ? 24 : 32;
+      v.ts = Math.round(Math.max(minTile, Math.min(110, base)) * v.zoom);
+    }
   };
   const camBounds = () => {
     const v = view.current;
@@ -454,12 +473,18 @@ export default function GameView(props: Props) {
     u.atk = attackRangeTiles(gs, unit, reach);
     u.danger = null;
     sfx.select();
-    if (mission.tutorial && guideEvent() === 'select-infantry' && unit.type === 'infantry' && unit.x === 4 && unit.y === 2) tutEvent('select-infantry');
-    if (mission.tutorial && guideEvent() === 'select-capturer' && unit.capturing && unit.x === 4 && unit.y === 1) tutEvent('select-capturer');
-    if (mission.tutorial && guideEvent() === 'select-support-infantry' && unit.type === 'infantry' && unit.x === 2 && unit.y === 4) tutEvent('select-support-infantry');
-    if (mission.tutorial && guideEvent() === 'select-tank' && unit.type === 'tank' && unit.x === 3 && unit.y === 3) tutEvent('select-tank');
-    if (mission.tutorial && guideEvent() === 'select-radio-infantry' && unit.type === 'infantry' && unit.x === 3 && unit.y === 5) tutEvent('select-radio-infantry');
-    if (mission.tutorial && guideEvent() === 'select-damaged-tank' && unit.type === 'tank' && unit.x === 5 && unit.y === 3) tutEvent('select-damaged-tank');
+    const tInf = vertCoord(4, 2);
+    const tCapt = vertCoord(4, 1);
+    const tSupp = vertCoord(2, 4);
+    const tTank = vertCoord(3, 3);
+    const tRadioInf = vertCoord(3, 5);
+    const tDmgTank = vertCoord(5, 3);
+    if (mission.tutorial && guideEvent() === 'select-infantry' && unit.type === 'infantry' && unit.x === tInf.x && unit.y === tInf.y) tutEvent('select-infantry');
+    if (mission.tutorial && guideEvent() === 'select-capturer' && unit.capturing && unit.x === tCapt.x && unit.y === tCapt.y) tutEvent('select-capturer');
+    if (mission.tutorial && guideEvent() === 'select-support-infantry' && unit.type === 'infantry' && unit.x === tSupp.x && unit.y === tSupp.y) tutEvent('select-support-infantry');
+    if (mission.tutorial && guideEvent() === 'select-tank' && unit.type === 'tank' && unit.x === tTank.x && unit.y === tTank.y) tutEvent('select-tank');
+    if (mission.tutorial && guideEvent() === 'select-radio-infantry' && unit.type === 'infantry' && unit.x === tRadioInf.x && unit.y === tRadioInf.y) tutEvent('select-radio-infantry');
+    if (mission.tutorial && guideEvent() === 'select-damaged-tank' && unit.type === 'tank' && unit.x === tDmgTank.x && unit.y === tDmgTank.y) tutEvent('select-damaged-tank');
     bump();
   };
 
@@ -591,7 +616,8 @@ export default function GameView(props: Props) {
       unit.moved = true;
       sfx.move();
       if (u.pending.ambush) { float(unit.x, unit.y, 'AMBUSH!', '#f87171', 1.2); shake.current = 10; }
-      if (mission.tutorial && guideEvent() === 'wait-tank-city' && unit.type === 'tank' && unit.x === 4 && unit.y === 1) tutEvent('wait-tank-city');
+      const tTankCity = vertCoord(4, 1);
+      if (mission.tutorial && guideEvent() === 'wait-tank-city' && unit.type === 'tank' && unit.x === tTankCity.x && unit.y === tTankCity.y) tutEvent('wait-tank-city');
     } else if (id === 'capture') {
       // Boot Camp properties are weakened so each lesson demonstrates capture in one action.
       if (mission.tutorial && (guideEvent() === 'first-capture' || guideEvent() === 'capture-radio')) {
@@ -604,8 +630,10 @@ export default function GameView(props: Props) {
       if (mission.tutorial && guideEvent() === 'first-capture') tutEvent('first-capture');
       if (mission.tutorial && guideEvent() === 'capture-radio' && res.done) {
         // Move the city-capturing infantry aside so the damaged Tank can use the captured city.
-        const cityInf = gs.units.find((o) => o.team === 0 && o.type === 'infantry' && o.x === 4 && o.y === 1);
-        if (cityInf) { cityInf.x = 3; cityInf.y = 1; cityInf.moved = true; }
+        const cityTile = vertCoord(4, 1);
+        const cityAside = vertCoord(3, 1);
+        const cityInf = gs.units.find((o) => o.team === 0 && o.type === 'infantry' && o.x === cityTile.x && o.y === cityTile.y);
+        if (cityInf) { cityInf.x = cityAside.x; cityInf.y = cityAside.y; cityInf.moved = true; }
         tutEvent('capture-radio');
       }
     } else if (id === 'load') {
@@ -665,14 +693,22 @@ export default function GameView(props: Props) {
       const clicked = unitAt(gs, x, y);
       const blocked = (message: string) => { float(x, y, message, '#fde047', 0.72); sfx.cancel(); };
       const event = guideEvent();
-      if (event === 'select-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === 4 && y === 2)) { blocked('SELECT THE MARKED INFANTRY'); return; }
-      if (event === 'reach-city' && (ui.current.mode !== 'selected' || x !== 4 || y !== 1)) { blocked('MOVE TO THE CITY'); return; }
-      if (event === 'select-radio-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === 3 && y === 5)) { blocked('SELECT THE LOWER INFANTRY'); return; }
-      if (event === 'move-radio' && (ui.current.mode !== 'selected' || x !== 5 || y !== 5)) { blocked('MOVE TO THE RADIO TOWER'); return; }
-      if (event === 'select-damaged-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === 5 && y === 3)) { blocked('SELECT THE DAMAGED TANK'); return; }
-      if (event === 'move-tank-city' && (ui.current.mode !== 'selected' || x !== 4 || y !== 1)) { blocked('MOVE THE TANK TO THE CITY'); return; }
-      if (event === 'select-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === 3 && y === 3)) { blocked('SELECT THE BLUE TANK'); return; }
-      if ((event === 'attack-bottom' || event === 'attack-forest') && !(clicked?.team === 1 && clicked.type === 'tank' && x === 6 && y === 3)) { blocked('TARGET THE RED TANK'); return; }
+      const tInf = vertCoord(4, 2);
+      const tCity = vertCoord(4, 1);
+      const tRadioInf = vertCoord(3, 5);
+      const tRadioTower = vertCoord(5, 5);
+      const tDmgTank = vertCoord(5, 3);
+      const tTank = vertCoord(3, 3);
+      const tEnemyTank = vertCoord(6, 3);
+
+      if (event === 'select-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === tInf.x && y === tInf.y)) { blocked('SELECT THE MARKED INFANTRY'); return; }
+      if (event === 'reach-city' && (ui.current.mode !== 'selected' || x !== tCity.x || y !== tCity.y)) { blocked('MOVE TO THE CITY'); return; }
+      if (event === 'select-radio-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === tRadioInf.x && y === tRadioInf.y)) { blocked('SELECT THE MARKED INFANTRY'); return; }
+      if (event === 'move-radio' && (ui.current.mode !== 'selected' || x !== tRadioTower.x || y !== tRadioTower.y)) { blocked('MOVE TO THE RADIO TOWER'); return; }
+      if (event === 'select-damaged-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === tDmgTank.x && y === tDmgTank.y)) { blocked('SELECT THE DAMAGED TANK'); return; }
+      if (event === 'move-tank-city' && (ui.current.mode !== 'selected' || x !== tCity.x || y !== tCity.y)) { blocked('MOVE THE TANK TO THE CITY'); return; }
+      if (event === 'select-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === tTank.x && y === tTank.y)) { blocked('SELECT THE BLUE TANK'); return; }
+      if ((event === 'attack-bottom' || event === 'attack-forest') && !(clicked?.team === 1 && clicked.type === 'tank' && x === tEnemyTank.x && y === tEnemyTank.y)) { blocked('TARGET THE RED TANK'); return; }
       if (event === 'heal-turn') { blocked('USE END TURN TO REPAIR'); return; }
       if (isUndoEvent(event) || event === 'field-guide') { blocked(isUndoEvent(event) ? 'USE THE CYAN UNDO BUTTON' : 'READ THE FIELD GUIDE'); return; }
     }
@@ -729,9 +765,11 @@ export default function GameView(props: Props) {
           if (isIndirect(unit.type)) { float(x, y, 'OUT OF RANGE', '#fca5a5', 0.8); sfx.cancel(); return; }
           if (u.reach) {
             let bestK = -1, bestScore = -Infinity;
-            // Tutorial: first strike from the open ground south of the enemy, then redo from the forest.
+            // Tutorial: first strike from open ground, then redo from the forest.
             const lessonEvent = mission.tutorial ? guideEvent() : '';
-            const forcedTile = lessonEvent === 'attack-bottom' ? 4 * gs.w + 6 : lessonEvent === 'attack-forest' ? 3 * gs.w + 5 : -1;
+            const forcedTileOrig = lessonEvent === 'attack-bottom' ? { x: 6, y: 4 } : lessonEvent === 'attack-forest' ? { x: 5, y: 3 } : null;
+            const forcedTileCoord = forcedTileOrig ? vertCoord(forcedTileOrig.x, forcedTileOrig.y) : null;
+            const forcedTile = forcedTileCoord ? forcedTileCoord.y * gs.w + forcedTileCoord.x : -1;
             for (const kk of u.stops) {
               if (forcedTile >= 0 && kk !== forcedTile) continue;
               const sx = kk % gs.w, sy = Math.floor(kk / gs.w);
@@ -770,9 +808,11 @@ export default function GameView(props: Props) {
           await animateMove(unit, path);
           const [ex, ey] = path[path.length - 1];
           u.pending = { x: ex, y: ey, path, ambush };
-          if (mission.tutorial && guideEvent() === 'reach-city' && ex === 4 && ey === 1) tutEvent('reach-city');
-          if (mission.tutorial && guideEvent() === 'move-radio' && unit.type === 'infantry' && ex === 5 && ey === 5) tutEvent('move-radio');
-          if (mission.tutorial && guideEvent() === 'move-tank-city' && unit.type === 'tank' && ex === 4 && ey === 1) tutEvent('move-tank-city');
+          const tCity = vertCoord(4, 1);
+          const tRadioTower = vertCoord(5, 5);
+          if (mission.tutorial && guideEvent() === 'reach-city' && ex === tCity.x && ey === tCity.y) tutEvent('reach-city');
+          if (mission.tutorial && guideEvent() === 'move-radio' && unit.type === 'infantry' && ex === tRadioTower.x && ey === tRadioTower.y) tutEvent('move-radio');
+          if (mission.tutorial && guideEvent() === 'move-tank-city' && unit.type === 'tank' && ex === tCity.x && ey === tCity.y) tutEvent('move-tank-city');
           if (ambush) { float(ex, ey, '!', '#f87171', 1.5); sfx.cancel(); shake.current = 8; }
           openMenu(unit, ex, ey);
           return;
@@ -1212,6 +1252,7 @@ export default function GameView(props: Props) {
   };
 
   const zoom = (d: number) => {
+    if (isVert) return; // Zoom disabled in vertical mode
     const v = view.current;
     const cx = cam.current.x + v.vw / 2, cy = cam.current.y + v.vh / 2;
     const old = v.ts;
@@ -1224,6 +1265,8 @@ export default function GameView(props: Props) {
     terrCache.current.key = '';
     bump();
   };
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
 
   const handleDoubleTap = (x: number, y: number) => {
     if (!inBounds(gs, x, y) || !isLocalTurn() || !isVis(x, y)) return;
@@ -1247,7 +1290,7 @@ export default function GameView(props: Props) {
   useEffect(() => {
     const cv = cvRef.current!;
     const wrap = wrapRef.current!;
-    const g = cv.getContext('2d')!;
+    const g = cv.getContext('2d', { alpha: false, desynchronized: true })!;
     let raf = 0;
     refreshVis();
     let first = true;
@@ -1261,14 +1304,14 @@ export default function GameView(props: Props) {
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
 
       if (topHudRef.current) {
-        TOP = Math.ceil(topHudRef.current.getBoundingClientRect().height) + 6;
+        TOP = Math.ceil(topHudRef.current.getBoundingClientRect().height) + 4;
       } else {
-        TOP = v.vh < 520 ? 78 : 90;
+        TOP = v.vh < 520 ? 56 : 72;
       }
       if (bottomHudRef.current) {
-        BOT = Math.ceil(bottomHudRef.current.getBoundingClientRect().height) + 6;
+        BOT = Math.ceil(bottomHudRef.current.getBoundingClientRect().height) + 4;
       } else {
-        BOT = v.vh < 520 ? 76 : 104;
+        BOT = v.vh < 520 ? 56 : 72;
       }
 
       cv.width = v.vw * v.dpr; cv.height = v.vh * v.dpr;
@@ -1286,11 +1329,23 @@ export default function GameView(props: Props) {
     onResize();
     window.addEventListener('resize', onResize);
 
-    // pointer
+    // pointer & pinch-to-zoom tracking
     let down: { x: number; y: number; cx: number; cy: number; id: number; panned: boolean } | null = null;
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let initialPinchDist = 0;
+    let initialPinchZoom = 1;
+
     const onDown = (e: PointerEvent) => {
-      down = { x: e.clientX, y: e.clientY, cx: cam.current.x, cy: cam.current.y, id: e.pointerId, panned: false };
-      cam.current.tx = null;
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values());
+        initialPinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        initialPinchZoom = view.current.zoom;
+        if (down) down.panned = true; // prevent tap on gesture end
+      } else if (activePointers.size === 1) {
+        down = { x: e.clientX, y: e.clientY, cx: cam.current.x, cy: cam.current.y, id: e.pointerId, panned: false };
+        cam.current.tx = null;
+      }
     };
     const tileFromEvent = (e: PointerEvent) => {
       const r = cv.getBoundingClientRect();
@@ -1298,7 +1353,19 @@ export default function GameView(props: Props) {
       return { x: Math.floor((e.clientX - r.left + cam.current.x) / ts), y: Math.floor((e.clientY - r.top + cam.current.y) / ts) };
     };
     const onMove = (e: PointerEvent) => {
-      if (down && down.id === e.pointerId) {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+      if (activePointers.size === 2 && initialPinchDist > 0 && !isVert) {
+        const pts = Array.from(activePointers.values());
+        const distNow = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        const scale = distNow / initialPinchDist;
+        const targetZoom = Math.max(0.4, Math.min(2.0, initialPinchZoom * scale));
+        const deltaZoom = (targetZoom - view.current.zoom) / 0.2;
+        if (Math.abs(deltaZoom) > 0.05) {
+          zoomRef.current(deltaZoom);
+        }
+      } else if (down && down.id === e.pointerId && activePointers.size === 1) {
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
         if (!down.panned && Math.hypot(dx, dy) > 10) down.panned = true;
         if (down.panned) { cam.current.x = down.cx - dx; cam.current.y = down.cy - dy; clampCam(); }
@@ -1311,6 +1378,10 @@ export default function GameView(props: Props) {
       }
     };
     const onUp = (e: PointerEvent) => {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size < 2) {
+        initialPinchDist = 0;
+      }
       if (!down || down.id !== e.pointerId) return;
       const wasPan = down.panned;
       down = null;
@@ -1513,7 +1584,10 @@ export default function GameView(props: Props) {
         g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.moveTo(cx - r - 6, cy); g.lineTo(cx - r + 8, cy); g.moveTo(cx + r - 8, cy); g.lineTo(cx + r + 6, cy); g.moveTo(cx, cy - r - 6); g.lineTo(cx, cy - r + 8); g.moveTo(cx, cy + r - 8); g.lineTo(cx, cy + r + 6); g.stroke();
       }
       const liveLesson = mission.tutorial ? TUTORIAL[tutIndexRef.current] : null;
-      const lessonTarget = liveLesson ? liveLesson.targets?.[guideEvent()] ?? liveLesson.target : undefined;
+      const rawTarget = liveLesson ? liveLesson.targets?.[guideEvent()] ?? liveLesson.target : undefined;
+      const lessonTarget = rawTarget && rawTarget.x !== undefined && rawTarget.y !== undefined
+        ? { ...rawTarget, ...vertCoord(rawTarget.x, rawTarget.y) }
+        : rawTarget;
       if (lessonTarget && lessonTarget.x !== undefined && lessonTarget.y !== undefined && tutorialDismissedRef.current) {
         const tx = lessonTarget.x, ty = lessonTarget.y;
         const cx = tx * ts + ts / 2, cy = ty * ts + ts / 2;
@@ -1659,8 +1733,6 @@ export default function GameView(props: Props) {
 
   const handleTapRef = useRef(handleTap);
   handleTapRef.current = handleTap;
-  const zoomRef = useRef(zoom);
-  zoomRef.current = zoom;
 
   // ---------- watchdog: guarantees the game can never soft-lock ----------
   const overlayRef = useRef(false);
@@ -1759,8 +1831,9 @@ export default function GameView(props: Props) {
   const hudVh = v.vh || window.innerHeight;
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
-  const bottomHudHeight = hudVh < 520 ? 76 : 96;
-  const topHudY = 4;
+  const bottomHudHeight = isVert ? 112 : (hudVh < 520 ? 58 : 72);
+  // Shift top HUD bar closer to the map (away from Pixel 9 camera cutout / status bar)
+  const topHudY = isVert ? 16 : 8;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
   const terrainText = (() => {
@@ -1832,64 +1905,123 @@ export default function GameView(props: Props) {
       <canvas ref={cvRef} className="absolute inset-0" />
 
       {/* TOP HUD */}
-      <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
-        <button className="battle-pause pointer-events-auto hud-btn w-11 text-lg" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.35] ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
-          <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
-            <Portrait id={gs.cos[localTeam]} size={44} />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-sky-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
-          </button>
-          <div className="min-w-0 flex-1">
-            <div className="flex items-center justify-between gap-1">
-              <button className="text-sm font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
-              <span className={`text-[11px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
-                {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
-              </span>
+      {isVert ? (
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-stretch gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+          <div className="flex items-stretch gap-1 w-full">
+            <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+            <div className="battle-middle-panel pointer-events-auto hud-panel px-2 py-1 flex items-center justify-between flex-1 min-w-0">
+              <div className="text-[11px] font-black text-slate-300">
+                DAY <span className="text-xs font-black text-white">{gs.day}</span>
+                {mission.objective.type === 'survive' ? <span className="text-[9px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[9px] text-slate-400">/{mission.dayLimit}</span> : null}
+              </div>
+              <div className="text-xs font-black text-amber-300">{gs.funds[localTeam].toLocaleString()}G</div>
+              <div className="flex items-center gap-1 text-[9px]">
+                <span title={WEATHER_INFO[gs.weather].desc}>{WEATHER_INFO[gs.weather].icon} {WEATHER_INFO[gs.weather].name}</span>
+                <span className={`font-black ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`}>
+                  📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+                </span>
+              </div>
+              <div className="text-[9px] text-slate-300">
+                Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span> · Foe <span className="text-rose-300">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
+              </div>
             </div>
-            {meterBar(localTeam)}
-            {skillBar(localTeam)}
-            <div className="flex gap-1 mt-1">
+          </div>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2 py-1.5 w-full ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+            <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
+              <Portrait id={gs.cos[localTeam]} size={40} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+                <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
+                </span>
+              </div>
+              {meterBar(localTeam)}
+              {skillBar(localTeam)}
+            </div>
+            <div className="flex flex-col gap-1 shrink-0 min-w-[110px]">
               <button disabled={!canActivate(gs, localTeam, 2) || !isLocalTurn() || U.mode !== 'idle'} onClick={() => playerPower(2)}
-                className={`flex-1 text-[10px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
+                className={`text-[9px] font-black rounded px-2 py-1 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
               {gs.skills[localTeam].length > 0 && (
                 <button disabled={!readySkill || !isLocalTurn() || U.mode !== 'idle'} onClick={() => readySkill && playerSkill(readySkill)}
-                  className={`flex-1 text-[10px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
+                  className={`text-[9px] font-black rounded px-2 py-1 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
               )}
             </div>
           </div>
         </div>
-        <div className="battle-day-panel pointer-events-auto hud-panel px-2 py-1 flex flex-col justify-center items-center min-w-[76px]">
-          <div className="text-[10px] text-slate-400 leading-none">DAY</div>
-          <div className="text-xl font-black leading-none text-white">{gs.day}{mission.objective.type === 'survive' ? <span className="text-xs text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-xs text-slate-400">/{mission.dayLimit}</span> : null}</div>
-          <div className="text-xs leading-none mt-0.5" title={WEATHER_INFO[gs.weather].desc}>{WEATHER_INFO[gs.weather].icon} <span className="text-[10px] text-slate-300">{WEATHER_INFO[gs.weather].name}</span></div>
-          <div className={`text-[9px] font-black leading-none mt-1 ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-600'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
-            📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST READY' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+      ) : (
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+          <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+            <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
+              <Portrait id={gs.cos[localTeam]} size={38} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </button>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+                <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
+                </span>
+              </div>
+              {meterBar(localTeam)}
+              {skillBar(localTeam)}
+              <div className="flex gap-1 mt-0.5">
+                <button disabled={!canActivate(gs, localTeam, 2) || !isLocalTurn() || U.mode !== 'idle'} onClick={() => playerPower(2)}
+                  className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
+                {gs.skills[localTeam].length > 0 && (
+                  <button disabled={!readySkill || !isLocalTurn() || U.mode !== 'idle'} onClick={() => readySkill && playerSkill(readySkill)}
+                    className={`flex-1 text-[8.5px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="battle-funds-panel pointer-events-auto hud-panel px-2.5 py-1 flex flex-col justify-center min-w-[96px]">
-          <div className="text-sm font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
-          <div className="text-[10px] text-slate-300 leading-tight">Units {unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</div>
-          <div className="text-[10px] text-rose-300 leading-tight">Foe {gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</div>
-        </div>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.15] cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
-          <div className="relative shrink-0">
-            <Portrait id={gs.cos[enemyTeam]} size={44} />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
+          <div className="battle-middle-panel pointer-events-auto hud-panel px-1.5 py-0.5 flex flex-col justify-between items-center min-w-[125px] shrink-0">
+            <div className="flex items-center justify-between w-full gap-1 border-b border-slate-700/80 pb-0.5">
+              <div className="text-[10px] font-black text-slate-300 leading-tight">
+                DAY <span className="text-xs font-black text-white">{gs.day}</span>
+                {mission.objective.type === 'survive' ? <span className="text-[8.5px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[8.5px] text-slate-400">/{mission.dayLimit}</span> : null}
+              </div>
+              <div className="text-xs font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
+            </div>
+            <div className="flex items-center justify-between w-full gap-1 text-[8.5px] leading-tight pt-0.5">
+              <div className="flex items-center gap-0.5" title={WEATHER_INFO[gs.weather].desc}>
+                <span className="text-[10px]">{WEATHER_INFO[gs.weather].icon}</span>
+                <span className="text-slate-300 font-bold text-[8px]">{WEATHER_INFO[gs.weather].name}</span>
+              </div>
+              <div className={`font-black text-[8px] ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
+                📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
+              </div>
+              <div className="text-slate-300 font-bold text-[8px]">
+                Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span>
+              </div>
+              <div className="text-rose-300 font-bold text-[8px]">
+                Foe <span className="text-white">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
+              </div>
+            </div>
           </div>
-          <div className="min-w-0 flex-1">
-            <div className="text-sm font-black text-rose-300 truncate">{foeCo.name}</div>
-            {meterBar(enemyTeam)}
-            {skillBar(enemyTeam)}
-            <div className={`text-[10px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
-              {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+            <div className="relative shrink-0">
+              <Portrait id={gs.cos[enemyTeam]} size={38} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
+              {meterBar(enemyTeam)}
+              {skillBar(enemyTeam)}
+              <div className={`text-[9px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* In-battle briefing: the dimmed battlefield stays visible, but all game input is paused. */}
+      {/* In-battle briefing: dialogue positioned at the bottom of the screen above bottom HUD */}
       {tutNote && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 z-[70] flex items-end justify-center pb-16 bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
           <div className="hud-panel border-cyan-300 bg-slate-950/90 p-4 w-[min(460px,94vw)] shadow-[0_16px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(34,211,238,0.35)] anim-zoom">
             {/* CO dialogue: portrait + short speech */}
             <div className="flex items-start gap-3">
@@ -1909,7 +2041,7 @@ export default function GameView(props: Props) {
       )}
 
       {briefingOpen && guideStep && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div className="absolute inset-0 z-[70] flex items-end justify-center pb-16 bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
           <div className="hud-panel border-amber-400/90 bg-slate-950/90 p-3 sm:p-4 w-[min(620px,96vw)] max-h-[84vh] overflow-auto shadow-[0_16px_60px_rgba(0,0,0,0.8)] anim-zoom">
             <div className="flex gap-3 items-start">
               <Portrait id={guideStep.speaker ?? 'rhea'} size={52} className="shadow-lg" />
@@ -1974,62 +2106,125 @@ export default function GameView(props: Props) {
       )}
 
       {/* BOTTOM HUD */}
-      <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
-        <div className="pointer-events-auto hud-panel px-3 py-2 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
-          <div className="min-w-[126px] max-w-[180px] shrink-0 pr-3 border-r border-slate-600">
-            <div className="text-sm sm:text-base font-black text-white leading-tight">{TERRAIN[curTile.t].name}</div>
-            {/* UI always shows at least one star so zero-cover terrain is still easy to compare. Engine defense remains zero. */}
-            <div className="text-sm sm:text-base text-amber-300 tracking-tight leading-tight">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</div>
-            <div className="text-[9px] sm:text-xs text-slate-300 leading-tight mt-0.5 line-clamp-2">{terrainText}</div>
-            {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Capture: {curTile.capture}/20</div>}
-          </div>
-          {curUnit ? (() => {
-            const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
-            const isVehicle = d.cat === 'vehicle' || d.cat === 'artillery';
-            return (
-              <div className="min-w-0 flex-1 flex items-center gap-3">
-                <div className="hidden xs:block shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={54} /></div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-baseline gap-2 flex-wrap">
-                    <div className={`text-base sm:text-lg font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
-                    <div className="text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-slate-200 leading-snug mt-1 line-clamp-2">{d.desc}</div>
-                  <div className="flex gap-2 sm:gap-4 flex-wrap mt-1 text-xs sm:text-sm font-black">
-                    <span className="text-cyan-300">MOVE {m.move} {isVehicle ? 'SQUARES' : ''}</span>
-                    <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`} {isVehicle ? 'SQUARES' : ''}</span>
-                    <span className="text-amber-300">ATK {m.atk}%</span>
-                    <span className="text-emerald-300">DEF {m.def}%</span>
-                    {d.fuel && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel}</span>}
-                  </div>
+      {isVert ? (
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col gap-1 p-1 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+          <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2 py-1.5 w-full cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+            <div className="relative shrink-0">
+              <Portrait id={gs.cos[enemyTeam]} size={40} />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-1">
+                <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
+                <div className={`text-[9px] font-black truncate ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+                  {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
                 </div>
               </div>
-            );
-          })() : (
-            <div className="min-w-0 flex-1">
-              <div className="text-sm sm:text-base font-black text-amber-300">AREA INFORMATION</div>
-              <div className="text-xs sm:text-sm text-slate-200 leading-snug">{terrainText}</div>
-              <div className="text-[10px] sm:text-xs text-slate-400 mt-1">Tap this panel for full Intel. Double-tap a unit for movement and weapon range.</div>
+              {meterBar(enemyTeam)}
+              {skillBar(enemyTeam)}
             </div>
-          )}
+          </div>
+
+          <div className="flex items-stretch gap-1.5 w-full">
+            <div className="pointer-events-auto hud-panel px-2.5 py-1.5 flex gap-2.5 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" onClick={() => setShowIntel(true)} title="Tap for full Intel">
+              <div className="min-w-[95px] shrink-0 pr-1.5 border-r border-slate-600 flex flex-col justify-center">
+                <div className="text-xs font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
+                <div className="text-[11px] font-black text-amber-300 leading-tight mt-0.5">
+                  Defense <span className="text-xs">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</span>
+                </div>
+                {curTile.capture < 20 && <div className="text-[9px] text-amber-300 font-bold">Cap: {curTile.capture}/20</div>}
+              </div>
+              {curUnit ? (() => {
+                const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
+                return (
+                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                    <div className="shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={36} /></div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline gap-1.5 flex-wrap">
+                        <div className={`text-xs font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
+                        <div className="text-[10px] font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
+                      </div>
+                      <div className="flex gap-1.5 flex-wrap mt-1 text-[9.5px] font-black leading-none">
+                        <span className="text-cyan-300">M{m.move}</span>
+                        <span className="text-rose-300">ATK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
+                        <span className="text-amber-300">{m.atk}%</span>
+                        <span className="text-emerald-300">{m.def}%</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })() : (
+                <div className="min-w-0 flex-1 flex items-center">
+                  <div className="text-xs font-black text-slate-400">Select tile</div>
+                </div>
+              )}
+            </div>
+
+            <div className="pointer-events-auto flex flex-col gap-1 w-[100px] shrink-0">
+              <button
+                className={`relative flex-1 rounded-xl font-black text-xs border-2 transition-all active:scale-95 flex items-center justify-center ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
+                onClick={doUndo} title="Undo last action (once per turn) — U">
+                {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
+              </button>
+              <button
+                className={`relative flex-1 rounded-xl font-black text-xs border-2 transition-all active:scale-95 flex items-center justify-center ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
+                onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
+                {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
+              </button>
+            </div>
+          </div>
         </div>
-        {/* Four utility controls align above an End Turn button of the same combined width. */}
-        <div className="pointer-events-auto grid grid-cols-2 grid-rows-[1fr_1fr_1.25fr] gap-1 w-[112px] shrink-0" style={{ height: bottomHudHeight }}>
-          <button className="hud-btn min-h-0 text-lg" onClick={() => zoom(-1)}>−</button>
-          <button className="hud-btn min-h-0 text-lg" onClick={() => zoom(1)}>+</button>
-          <button className="hud-btn min-h-0 text-[10px] font-bold" onClick={nextUnit}>NEXT ▸</button>
-          <button
-            className={`relative min-h-0 rounded-[10px] border-2 text-[10px] font-black leading-none transition active:scale-95 ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
-            onClick={doUndo} title="Undo last action (once per turn) — U">
-            {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
-          </button>
-          <button
-            className={`relative col-span-2 min-h-0 rounded-xl font-black text-sm border-2 transition-all active:scale-95 ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
-            onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
-            {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
-          </button>
+      ) : (
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+          <div className="pointer-events-auto hud-panel px-3 py-1.5 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
+            <div className="min-w-[110px] sm:min-w-[130px] shrink-0 pr-2 border-r border-slate-600 flex flex-col justify-center">
+              <div className="text-xs sm:text-sm font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
+              <div className="text-xs font-black text-amber-300 leading-tight mt-0.5">
+                Defense <span className="text-sm">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</span>
+              </div>
+              {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Cap: {curTile.capture}/20</div>}
+            </div>
+            {curUnit ? (() => {
+              const d = UNITS[curUnit.type], m = unitMods(gs, curUnit);
+              return (
+                <div className="min-w-0 flex-1 flex items-center gap-2 sm:gap-3">
+                  <div className="shrink-0"><UnitIcon type={curUnit.type} team={curUnit.team} size={42} /></div>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className={`text-sm sm:text-base font-black leading-none ${curUnit.team === localTeam ? 'text-sky-300' : 'text-rose-300'}`}>{d.name} {curUnit.vet ? '★'.repeat(curUnit.vet) : ''}</div>
+                      <div className="text-xs font-black text-white">HP {dispHp(curUnit.hp)}/10</div>
+                    </div>
+                    <div className="flex gap-2 sm:gap-3 flex-wrap mt-1 text-xs font-black leading-none">
+                      <span className="text-cyan-300">MOVE {m.move}</span>
+                      <span className="text-rose-300">ATTACK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
+                      <span className="text-amber-300">ATK {m.atk}%</span>
+                      <span className="text-emerald-300">DEF {m.def}%</span>
+                      {d.fuel && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel}</span>}
+                    </div>
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className="min-w-0 flex-1 flex items-center">
+                <div className="text-xs sm:text-sm font-black text-slate-400">Select a unit or terrain tile</div>
+              </div>
+            )}
+          </div>
+          {/* Action controls: Bigger, wider UNDO button sitting above END TURN */}
+          <div className="pointer-events-auto flex flex-col gap-1 w-[110px] sm:w-[130px] shrink-0" style={{ height: bottomHudHeight }}>
+            <button
+              className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${canUndo() ? 'bg-cyan-600 border-cyan-300 text-white shadow-[0_0_10px_rgba(34,211,238,0.5)]' : 'bg-slate-800 border-slate-700 text-slate-500'} ${highlightUndo ? 'tutorial-end-glow' : ''}`}
+              onClick={doUndo} title="Undo last action (once per turn) — U">
+              {highlightUndo && <span className="tutorial-button-label">TAP HERE</span>}↶ {undoUsedDay.current === gs.day ? 'USED' : 'UNDO'}
+            </button>
+            <button
+              className={`relative flex-1 rounded-xl font-black text-xs sm:text-sm border-2 transition-all active:scale-95 flex items-center justify-center ${!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost) ? 'bg-slate-800 border-slate-700 text-slate-500' : allMoved ? 'bg-amber-400 border-amber-200 text-slate-900 shadow-[0_0_20px_#fbbf24] animate-pulse' : 'bg-sky-600 border-sky-300 text-white'} ${highlightEndTurn ? 'tutorial-end-glow' : ''}`}
+              onClick={requestEnd} disabled={!isLocalTurn() || (props.online?.mode === 'coop' && !props.online.isHost)}>
+              {highlightEndTurn && <span className="tutorial-button-label">TAP HERE</span>} END TURN
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Action menu */}
       {U.mode === 'menu' && U.pending && (

@@ -92,10 +92,17 @@ button:disabled { cursor: not-allowed; }
 .title-subtitle { margin-top: -4px; font-size: clamp(20px, 4.5vh, 32px); }
 .title-actions { width: min(360px, 92vw); }
 
+canvas {
+  will-change: transform;
+  transform: translateZ(0);
+}
+
 /* Battlefield HUD: consume the full landscape safe width while keeping gauges readable. */
 .battle-top-hud,
 .battle-bottom-hud {
   max-width: calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right) - 8px);
+  will-change: transform;
+  transform: translateZ(0);
 }
 .battle-co-panel { overflow: hidden; }
 .battle-co-panel button { white-space: nowrap; }

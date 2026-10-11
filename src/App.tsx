@@ -40,7 +40,7 @@ export default function App() {
   const [cfg, setCfg] = useState<GameCfg | null>(null);
   const [gameKey, setGameKey] = useState(0);
   const [won, setWon] = useState(false);
-  const [dismissRotate, setDismissRotate] = useState(false);
+  const [dismissRotate, setDismissRotate] = useState(true);
 
   useEffect(() => { setSfx(save.settings.sfx); }, [save.settings.sfx]);
 
