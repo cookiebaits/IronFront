@@ -117,6 +117,7 @@ export interface Upgrades {
 export interface SaveData {
   progress: number; // index of highest unlocked mission
   merits: number;
+  gems?: number; // premium currency earned from battle victories & achievements
   upgrades: Upgrades;
   mods: Partial<Record<UnitType, ModId>>;
   ownedMods: ModId[];

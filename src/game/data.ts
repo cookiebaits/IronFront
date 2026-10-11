@@ -193,9 +193,9 @@ export const RANK_MAX = 4;
 export const RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Ace', 'Legend'];
 export const rankSlots = (rank: number) => 1 + Math.floor(rank / 2);
 export const rankDesc = (rank: number) => `+${rank * 3}% atk & def · +${rank * 6}% charge speed · ${rankSlots(rank)} skill slot${rankSlots(rank) > 1 ? 's' : ''}`;
-export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 800, sora: 1000, mira: 1200, brann: 1200, grimm: 1500, frost: 1600, nyx: 1700, volkov: 1900, architect: 2500 };
+export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 1500, sora: 2000, mira: 2200, brann: 2200, grimm: 3000, frost: 3200, nyx: 3500, volkov: 4000, architect: 5000 };
 /** CO Pieces required (in addition to Gold) to unlock each officer. Rhea is free. */
-export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 6, sora: 8, mira: 8, brann: 8, grimm: 10, frost: 10, nyx: 12, volkov: 14, architect: 20 };
+export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, grimm: 20, frost: 20, nyx: 24, volkov: 28, architect: 40 };
 
 /** Only the Ultimate is field-activatable. It charges 20% slower than the old Super threshold. */
 export function ultimateCost(coId: string) {

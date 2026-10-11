@@ -24,6 +24,7 @@ export function defaultSave(): SaveData {
   return {
     progress: 0,
     merits: 0,
+    gems: 0,
     upgrades: emptyUpgrades(),
     mods: {},
     ownedMods: [],
