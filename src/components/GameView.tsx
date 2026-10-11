@@ -178,6 +178,10 @@ export default function GameView(props: Props) {
   const [coInfo, setCoInfo] = useState<Team | null>(null);
   const [showGraphicsSettings, setShowGraphicsSettings] = useState(false);
   const [rangePeek, setRangePeek] = useState<{ text: string; until: number } | null>(null);
+  const [hudY, setHudY] = useState({
+    topHudY: isVert ? 16 : 8,
+    bottomHudY: typeof window !== 'undefined' ? window.innerHeight - 116 : 600,
+  });
   const [chargeFx, setChargeFx] = useState<{ team: Team; level: 1 | 2; id: number } | null>(null);
   const chargeFxRef = useRef<{ team: Team; level: 1 | 2; id: number } | null>(null);
   const chargeFxId = useRef(0);
@@ -378,6 +382,11 @@ export default function GameView(props: Props) {
     const v = view.current;
     const MW = gs.w * v.ts, MH = gs.h * v.ts;
     const avH = v.vh - TOP - BOT;
+    if (isVert) {
+      const bx: [number, number] = [-(v.vw - MW) / 2, -(v.vw - MW) / 2];
+      const by: [number, number] = [-TOP, -TOP];
+      return { bx, by };
+    }
     const bx: [number, number] = MW <= v.vw ? [-(v.vw - MW) / 2, -(v.vw - MW) / 2] : [-16, MW - v.vw + 16];
     const by: [number, number] = MH <= avH ? [-(TOP + (avH - MH) / 2), -(TOP + (avH - MH) / 2)] : [-TOP - 8, MH - v.vh + BOT + 8];
     return { bx, by };
@@ -1303,15 +1312,32 @@ export default function GameView(props: Props) {
       v.dpr = dprOpt === 'auto' ? Math.min(2, native) : typeof dprOpt === 'number' ? dprOpt : Math.min(2, native);
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
 
-      if (topHudRef.current) {
-        TOP = Math.ceil(topHudRef.current.getBoundingClientRect().height) + 4;
+      const topH = topHudRef.current ? Math.ceil(topHudRef.current.getBoundingClientRect().height) : (v.vh < 520 ? 56 : 72);
+      const botH = bottomHudRef.current ? Math.ceil(bottomHudRef.current.getBoundingClientRect().height) : (v.vh < 520 ? 56 : 72);
+
+      if (isVert) {
+        const gap = 6;
+        const availableW = Math.max(100, v.vw - 8);
+        const availableH = Math.max(100, v.vh - topH - botH - gap * 2);
+        v.ts = Math.max(16, Math.min(availableW / gs.w, availableH / gs.h));
+        const MH = gs.h * v.ts;
+        const blockH = topH + gap + MH + gap + botH;
+        const blockTop = Math.max(4, Math.floor((v.vh - blockH) / 2));
+        const computedTopHudY = blockTop;
+        const mapTop = blockTop + topH + gap;
+        const mapBottom = mapTop + MH;
+        const computedBottomHudY = mapBottom + gap;
+
+        TOP = mapTop;
+        BOT = Math.max(0, v.vh - mapBottom);
+
+        setHudY((prev) => (prev.topHudY !== computedTopHudY || prev.bottomHudY !== computedBottomHudY ? { topHudY: computedTopHudY, bottomHudY: computedBottomHudY } : prev));
       } else {
-        TOP = v.vh < 520 ? 56 : 72;
-      }
-      if (bottomHudRef.current) {
-        BOT = Math.ceil(bottomHudRef.current.getBoundingClientRect().height) + 4;
-      } else {
-        BOT = v.vh < 520 ? 56 : 72;
+        TOP = topH + 4;
+        BOT = botH + 4;
+        const computedTopHudY = 8;
+        const computedBottomHudY = v.vh - botH - 4;
+        setHudY((prev) => (prev.topHudY !== computedTopHudY || prev.bottomHudY !== computedBottomHudY ? { topHudY: computedTopHudY, bottomHudY: computedBottomHudY } : prev));
       }
 
       cv.width = v.vw * v.dpr; cv.height = v.vh * v.dpr;
@@ -1328,6 +1354,11 @@ export default function GameView(props: Props) {
     };
     onResize();
     window.addEventListener('resize', onResize);
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(() => onResize()) : null;
+    if (ro) {
+      if (topHudRef.current) ro.observe(topHudRef.current);
+      if (bottomHudRef.current) ro.observe(bottomHudRef.current);
+    }
 
     // pointer & pinch-to-zoom tracking
     let down: { x: number; y: number; cx: number; cy: number; id: number; panned: boolean } | null = null;
@@ -1722,6 +1753,7 @@ export default function GameView(props: Props) {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener('resize', onResize);
+      ro?.disconnect();
       cv.removeEventListener('pointerdown', onDown);
       window.removeEventListener('pointermove', onMove);
       window.removeEventListener('pointerup', onUp);
@@ -1832,9 +1864,6 @@ export default function GameView(props: Props) {
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
   const bottomHudHeight = isVert ? 112 : (hudVh < 520 ? 58 : 72);
-  // Shift top HUD bar closer to the map (away from Pixel 9 camera cutout / status bar)
-  const topHudY = isVert ? 16 : 8;
-  const bottomHudY = hudVh - bottomHudHeight - 4;
 
   const terrainText = (() => {
     const owner = curTile.owner === localTeam ? 'Yours' : curTile.owner === enemyTeam ? 'Enemy' : 'Neutral';
@@ -1906,7 +1935,7 @@ export default function GameView(props: Props) {
 
       {/* TOP HUD */}
       {isVert ? (
-        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-stretch gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col items-stretch gap-1 p-1 pointer-events-none" style={{ top: hudY.topHudY, width: hudWidth }}>
           <div className="flex items-stretch gap-1 w-full">
             <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
             <div className="battle-middle-panel pointer-events-auto hud-panel px-2 py-1 flex items-center justify-between flex-1 min-w-0">
@@ -1952,7 +1981,7 @@ export default function GameView(props: Props) {
           </div>
         </div>
       ) : (
-        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+        <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: hudY.topHudY, width: hudWidth }}>
           <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
           <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-1.5 py-0.5 min-w-0 flex-1 ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
             <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
@@ -2100,14 +2129,14 @@ export default function GameView(props: Props) {
       )}
 
       {rangePeek && rangePeek.until > performance.now() && (
-        <div className="absolute z-30 top-[72px] left-1/2 -translate-x-1/2 max-w-[94vw] hud-panel border-cyan-300 px-3 py-2 text-[11px] sm:text-sm font-black text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.35)] pointer-events-none anim-pop">
+        <div className="absolute z-30 left-1/2 -translate-x-1/2 max-w-[94vw] hud-panel border-cyan-300 px-3 py-2 text-[11px] sm:text-sm font-black text-cyan-100 shadow-[0_0_18px_rgba(34,211,238,0.35)] pointer-events-none anim-pop" style={{ top: isVert ? hudY.topHudY + 80 + 8 : 72 }}>
           {rangePeek.text}
         </div>
       )}
 
       {/* BOTTOM HUD */}
       {isVert ? (
-        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col gap-1 p-1 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex flex-col gap-1 p-1 pointer-events-none" style={{ top: hudY.bottomHudY, width: hudWidth }}>
           <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2 py-1.5 w-full cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
             <div className="relative shrink-0">
               <Portrait id={gs.cos[enemyTeam]} size={40} />
@@ -2175,7 +2204,7 @@ export default function GameView(props: Props) {
           </div>
         </div>
       ) : (
-        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+        <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: hudY.bottomHudY, width: hudWidth }}>
           <div className="pointer-events-auto hud-panel px-3 py-1.5 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
             <div className="min-w-[110px] sm:min-w-[130px] shrink-0 pr-2 border-r border-slate-600 flex flex-col justify-center">
               <div className="text-xs sm:text-sm font-black text-white leading-tight truncate">{TERRAIN[curTile.t].name}</div>
@@ -2242,7 +2271,7 @@ export default function GameView(props: Props) {
 
       {/* Forecast */}
       {fc && selUnit && U.targets[U.tIdx] && (
-        <div className="absolute z-30 left-1/2 -translate-x-1/2 top-[70px] hud-panel border-rose-400 px-3 py-2 flex items-center gap-3 anim-pop">
+        <div className="absolute z-30 left-1/2 -translate-x-1/2 hud-panel border-rose-400 px-3 py-2 flex items-center gap-3 anim-pop" style={{ top: isVert ? hudY.topHudY + 80 + 8 : 70 }}>
           <div className="text-center">
             <div className="text-[10px] text-slate-400">DAMAGE</div>
             <div className="text-2xl font-black text-amber-300">{fc.lo}–{fc.hi}%</div>
@@ -2352,7 +2381,7 @@ export default function GameView(props: Props) {
             </div>
           </div>
         ) : (
-          <div key={chargeFx.id} onPointerDown={(e) => { e.stopPropagation(); dismissChargeFx(); }} className={`absolute z-[35] top-[74px] left-1/2 -translate-x-1/2 cursor-pointer anim-charge ${fxClosing ? 'ultimate-closing' : ''}`}>
+          <div key={chargeFx.id} onPointerDown={(e) => { e.stopPropagation(); dismissChargeFx(); }} className={`absolute z-[35] left-1/2 -translate-x-1/2 cursor-pointer anim-charge ${fxClosing ? 'ultimate-closing' : ''}`} style={{ top: isVert ? hudY.topHudY + 80 + 8 : 74 }}>
             <div className="hud-panel px-4 py-2 border-2 border-amber-300 flex items-center gap-2 shadow-[0_0_28px_rgba(250,204,21,0.6)]">
               <span className="text-2xl">⚡</span>
               <div>

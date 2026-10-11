@@ -13,7 +13,7 @@ interface Props {
 }
 
 const RAPID: UnitType[] = ['infantry', 'aa', 'recon', 'drone', 'gundrone'];
-const BIG: UnitType[] = ['battleship', 'cruiser', 'sub', 'bomber', 'heavy', 'fighter'];
+const BIG: UnitType[] = ['battleship', 'cruiser', 'sub', 'bomber', 'heavy', 'fighter', 'tank', 'artillery', 'rockets', 'aa', 'apc', 'missiles', 'recon', 'bcopter', 'tcopter'];
 const count = (t: UnitType, hp: number) => (hp <= 0 ? 0 : BIG.includes(t) ? Math.ceil(hp / 34) : Math.ceil(hp / 20));
 const SLOTS = [[0.58, 0.02], [0.34, 0.08], [0.8, 0.12], [0.48, 0.2], [0.22, 0.24]];
 
@@ -44,7 +44,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
     const fired = { a: false, b: false, h1: false, h2: false };
     const alive = { L: count(r.aType, r.aBefore), R: count(r.dType, r.dBefore) };
     const PW = W / 2;
-    const us = H * 0.3;
+    const us = Math.min(H * 0.28, PW * 0.22);
     const groundY = H * 0.62;
 
     const slotPos = (side: 0 | 1, i: number, type: UnitType) => {
