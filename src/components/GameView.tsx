@@ -228,6 +228,12 @@ export default function GameView(props: Props) {
   const refreshVis = () => { visRef.current = visibility(gs, localTeam); };
   const isVis = (x: number, y: number) => !visRef.current || visRef.current.has(y * gs.w + x);
 
+  const vertCoord = (x: number, y: number) => {
+    if (!isVert) return { x, y };
+    const origW = Math.max(...mission.map.map((r) => r.length));
+    return { x: y, y: origW - 1 - x };
+  };
+
   // A grouped lesson keeps one briefing open while its required actions advance in sequence.
   const tutEvent = (e: string) => {
     if (!mission.tutorial) return;
@@ -241,10 +247,11 @@ export default function GameView(props: Props) {
         // CO dialogue tied to this exact step (e.g. "Capture first!" right after the forest move).
         const note = step.notes?.[tutActionIndex.current];
         if (note) setTutNote(fillNote(note));
-        const nextTarget = step.targets?.[step.events[tutActionIndex.current]];
-        if (nextTarget?.x !== undefined && nextTarget.y !== undefined) {
-          ui.current.cursor = { x: nextTarget.x, y: nextTarget.y };
-          centerOn(nextTarget.x, nextTarget.y);
+        const rawTarget = step.targets?.[step.events[tutActionIndex.current]];
+        if (rawTarget?.x !== undefined && rawTarget.y !== undefined) {
+          const { x, y } = vertCoord(rawTarget.x, rawTarget.y);
+          ui.current.cursor = { x, y };
+          centerOn(x, y);
         }
         bump();
         return;
@@ -257,14 +264,11 @@ export default function GameView(props: Props) {
     setTutIndex(tutIndexRef.current);
   };
   const focusTutorialTarget = () => {
-    let target = guideTarget();
-    if (target?.x === undefined || target.y === undefined) return;
-    if (isVert) {
-      const origW = Math.max(...mission.map.map((r) => r.length));
-      target = { ...target, x: target.y, y: origW - 1 - target.x };
-    }
-    ui.current.cursor = { x: target.x, y: target.y };
-    centerOn(target.x, target.y);
+    const rawTarget = guideTarget();
+    if (rawTarget?.x === undefined || rawTarget.y === undefined) return;
+    const { x, y } = vertCoord(rawTarget.x, rawTarget.y);
+    ui.current.cursor = { x, y };
+    centerOn(x, y);
   };
   const continueTutorialPrompt = () => {
     if (tutNote) { sfx.select(); setTutNote(null); bump(); return; }
@@ -469,12 +473,18 @@ export default function GameView(props: Props) {
     u.atk = attackRangeTiles(gs, unit, reach);
     u.danger = null;
     sfx.select();
-    if (mission.tutorial && guideEvent() === 'select-infantry' && unit.type === 'infantry' && unit.x === 4 && unit.y === 2) tutEvent('select-infantry');
-    if (mission.tutorial && guideEvent() === 'select-capturer' && unit.capturing && unit.x === 4 && unit.y === 1) tutEvent('select-capturer');
-    if (mission.tutorial && guideEvent() === 'select-support-infantry' && unit.type === 'infantry' && unit.x === 2 && unit.y === 4) tutEvent('select-support-infantry');
-    if (mission.tutorial && guideEvent() === 'select-tank' && unit.type === 'tank' && unit.x === 3 && unit.y === 3) tutEvent('select-tank');
-    if (mission.tutorial && guideEvent() === 'select-radio-infantry' && unit.type === 'infantry' && unit.x === 3 && unit.y === 5) tutEvent('select-radio-infantry');
-    if (mission.tutorial && guideEvent() === 'select-damaged-tank' && unit.type === 'tank' && unit.x === 5 && unit.y === 3) tutEvent('select-damaged-tank');
+    const tInf = vertCoord(4, 2);
+    const tCapt = vertCoord(4, 1);
+    const tSupp = vertCoord(2, 4);
+    const tTank = vertCoord(3, 3);
+    const tRadioInf = vertCoord(3, 5);
+    const tDmgTank = vertCoord(5, 3);
+    if (mission.tutorial && guideEvent() === 'select-infantry' && unit.type === 'infantry' && unit.x === tInf.x && unit.y === tInf.y) tutEvent('select-infantry');
+    if (mission.tutorial && guideEvent() === 'select-capturer' && unit.capturing && unit.x === tCapt.x && unit.y === tCapt.y) tutEvent('select-capturer');
+    if (mission.tutorial && guideEvent() === 'select-support-infantry' && unit.type === 'infantry' && unit.x === tSupp.x && unit.y === tSupp.y) tutEvent('select-support-infantry');
+    if (mission.tutorial && guideEvent() === 'select-tank' && unit.type === 'tank' && unit.x === tTank.x && unit.y === tTank.y) tutEvent('select-tank');
+    if (mission.tutorial && guideEvent() === 'select-radio-infantry' && unit.type === 'infantry' && unit.x === tRadioInf.x && unit.y === tRadioInf.y) tutEvent('select-radio-infantry');
+    if (mission.tutorial && guideEvent() === 'select-damaged-tank' && unit.type === 'tank' && unit.x === tDmgTank.x && unit.y === tDmgTank.y) tutEvent('select-damaged-tank');
     bump();
   };
 
@@ -606,7 +616,8 @@ export default function GameView(props: Props) {
       unit.moved = true;
       sfx.move();
       if (u.pending.ambush) { float(unit.x, unit.y, 'AMBUSH!', '#f87171', 1.2); shake.current = 10; }
-      if (mission.tutorial && guideEvent() === 'wait-tank-city' && unit.type === 'tank' && unit.x === 4 && unit.y === 1) tutEvent('wait-tank-city');
+      const tTankCity = vertCoord(4, 1);
+      if (mission.tutorial && guideEvent() === 'wait-tank-city' && unit.type === 'tank' && unit.x === tTankCity.x && unit.y === tTankCity.y) tutEvent('wait-tank-city');
     } else if (id === 'capture') {
       // Boot Camp properties are weakened so each lesson demonstrates capture in one action.
       if (mission.tutorial && (guideEvent() === 'first-capture' || guideEvent() === 'capture-radio')) {
@@ -619,8 +630,10 @@ export default function GameView(props: Props) {
       if (mission.tutorial && guideEvent() === 'first-capture') tutEvent('first-capture');
       if (mission.tutorial && guideEvent() === 'capture-radio' && res.done) {
         // Move the city-capturing infantry aside so the damaged Tank can use the captured city.
-        const cityInf = gs.units.find((o) => o.team === 0 && o.type === 'infantry' && o.x === 4 && o.y === 1);
-        if (cityInf) { cityInf.x = 3; cityInf.y = 1; cityInf.moved = true; }
+        const cityTile = vertCoord(4, 1);
+        const cityAside = vertCoord(3, 1);
+        const cityInf = gs.units.find((o) => o.team === 0 && o.type === 'infantry' && o.x === cityTile.x && o.y === cityTile.y);
+        if (cityInf) { cityInf.x = cityAside.x; cityInf.y = cityAside.y; cityInf.moved = true; }
         tutEvent('capture-radio');
       }
     } else if (id === 'load') {
@@ -680,14 +693,22 @@ export default function GameView(props: Props) {
       const clicked = unitAt(gs, x, y);
       const blocked = (message: string) => { float(x, y, message, '#fde047', 0.72); sfx.cancel(); };
       const event = guideEvent();
-      if (event === 'select-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === 4 && y === 2)) { blocked('SELECT THE MARKED INFANTRY'); return; }
-      if (event === 'reach-city' && (ui.current.mode !== 'selected' || x !== 4 || y !== 1)) { blocked('MOVE TO THE CITY'); return; }
-      if (event === 'select-radio-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === 3 && y === 5)) { blocked('SELECT THE LOWER INFANTRY'); return; }
-      if (event === 'move-radio' && (ui.current.mode !== 'selected' || x !== 5 || y !== 5)) { blocked('MOVE TO THE RADIO TOWER'); return; }
-      if (event === 'select-damaged-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === 5 && y === 3)) { blocked('SELECT THE DAMAGED TANK'); return; }
-      if (event === 'move-tank-city' && (ui.current.mode !== 'selected' || x !== 4 || y !== 1)) { blocked('MOVE THE TANK TO THE CITY'); return; }
-      if (event === 'select-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === 3 && y === 3)) { blocked('SELECT THE BLUE TANK'); return; }
-      if ((event === 'attack-bottom' || event === 'attack-forest') && !(clicked?.team === 1 && clicked.type === 'tank' && x === 6 && y === 3)) { blocked('TARGET THE RED TANK'); return; }
+      const tInf = vertCoord(4, 2);
+      const tCity = vertCoord(4, 1);
+      const tRadioInf = vertCoord(3, 5);
+      const tRadioTower = vertCoord(5, 5);
+      const tDmgTank = vertCoord(5, 3);
+      const tTank = vertCoord(3, 3);
+      const tEnemyTank = vertCoord(6, 3);
+
+      if (event === 'select-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === tInf.x && y === tInf.y)) { blocked('SELECT THE MARKED INFANTRY'); return; }
+      if (event === 'reach-city' && (ui.current.mode !== 'selected' || x !== tCity.x || y !== tCity.y)) { blocked('MOVE TO THE CITY'); return; }
+      if (event === 'select-radio-infantry' && !(clicked?.team === 0 && clicked.type === 'infantry' && x === tRadioInf.x && y === tRadioInf.y)) { blocked('SELECT THE MARKED INFANTRY'); return; }
+      if (event === 'move-radio' && (ui.current.mode !== 'selected' || x !== tRadioTower.x || y !== tRadioTower.y)) { blocked('MOVE TO THE RADIO TOWER'); return; }
+      if (event === 'select-damaged-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === tDmgTank.x && y === tDmgTank.y)) { blocked('SELECT THE DAMAGED TANK'); return; }
+      if (event === 'move-tank-city' && (ui.current.mode !== 'selected' || x !== tCity.x || y !== tCity.y)) { blocked('MOVE THE TANK TO THE CITY'); return; }
+      if (event === 'select-tank' && !(clicked?.team === 0 && clicked.type === 'tank' && x === tTank.x && y === tTank.y)) { blocked('SELECT THE BLUE TANK'); return; }
+      if ((event === 'attack-bottom' || event === 'attack-forest') && !(clicked?.team === 1 && clicked.type === 'tank' && x === tEnemyTank.x && y === tEnemyTank.y)) { blocked('TARGET THE RED TANK'); return; }
       if (event === 'heal-turn') { blocked('USE END TURN TO REPAIR'); return; }
       if (isUndoEvent(event) || event === 'field-guide') { blocked(isUndoEvent(event) ? 'USE THE CYAN UNDO BUTTON' : 'READ THE FIELD GUIDE'); return; }
     }
@@ -744,9 +765,11 @@ export default function GameView(props: Props) {
           if (isIndirect(unit.type)) { float(x, y, 'OUT OF RANGE', '#fca5a5', 0.8); sfx.cancel(); return; }
           if (u.reach) {
             let bestK = -1, bestScore = -Infinity;
-            // Tutorial: first strike from the open ground south of the enemy, then redo from the forest.
+            // Tutorial: first strike from open ground, then redo from the forest.
             const lessonEvent = mission.tutorial ? guideEvent() : '';
-            const forcedTile = lessonEvent === 'attack-bottom' ? 4 * gs.w + 6 : lessonEvent === 'attack-forest' ? 3 * gs.w + 5 : -1;
+            const forcedTileOrig = lessonEvent === 'attack-bottom' ? { x: 6, y: 4 } : lessonEvent === 'attack-forest' ? { x: 5, y: 3 } : null;
+            const forcedTileCoord = forcedTileOrig ? vertCoord(forcedTileOrig.x, forcedTileOrig.y) : null;
+            const forcedTile = forcedTileCoord ? forcedTileCoord.y * gs.w + forcedTileCoord.x : -1;
             for (const kk of u.stops) {
               if (forcedTile >= 0 && kk !== forcedTile) continue;
               const sx = kk % gs.w, sy = Math.floor(kk / gs.w);
@@ -785,9 +808,11 @@ export default function GameView(props: Props) {
           await animateMove(unit, path);
           const [ex, ey] = path[path.length - 1];
           u.pending = { x: ex, y: ey, path, ambush };
-          if (mission.tutorial && guideEvent() === 'reach-city' && ex === 4 && ey === 1) tutEvent('reach-city');
-          if (mission.tutorial && guideEvent() === 'move-radio' && unit.type === 'infantry' && ex === 5 && ey === 5) tutEvent('move-radio');
-          if (mission.tutorial && guideEvent() === 'move-tank-city' && unit.type === 'tank' && ex === 4 && ey === 1) tutEvent('move-tank-city');
+          const tCity = vertCoord(4, 1);
+          const tRadioTower = vertCoord(5, 5);
+          if (mission.tutorial && guideEvent() === 'reach-city' && ex === tCity.x && ey === tCity.y) tutEvent('reach-city');
+          if (mission.tutorial && guideEvent() === 'move-radio' && unit.type === 'infantry' && ex === tRadioTower.x && ey === tRadioTower.y) tutEvent('move-radio');
+          if (mission.tutorial && guideEvent() === 'move-tank-city' && unit.type === 'tank' && ex === tCity.x && ey === tCity.y) tutEvent('move-tank-city');
           if (ambush) { float(ex, ey, '!', '#f87171', 1.5); sfx.cancel(); shake.current = 8; }
           openMenu(unit, ex, ey);
           return;
@@ -1265,7 +1290,7 @@ export default function GameView(props: Props) {
   useEffect(() => {
     const cv = cvRef.current!;
     const wrap = wrapRef.current!;
-    const g = cv.getContext('2d')!;
+    const g = cv.getContext('2d', { alpha: false, desynchronized: true })!;
     let raf = 0;
     refreshVis();
     let first = true;
@@ -1559,7 +1584,10 @@ export default function GameView(props: Props) {
         g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.moveTo(cx - r - 6, cy); g.lineTo(cx - r + 8, cy); g.moveTo(cx + r - 8, cy); g.lineTo(cx + r + 6, cy); g.moveTo(cx, cy - r - 6); g.lineTo(cx, cy - r + 8); g.moveTo(cx, cy + r - 8); g.lineTo(cx, cy + r + 6); g.stroke();
       }
       const liveLesson = mission.tutorial ? TUTORIAL[tutIndexRef.current] : null;
-      const lessonTarget = liveLesson ? liveLesson.targets?.[guideEvent()] ?? liveLesson.target : undefined;
+      const rawTarget = liveLesson ? liveLesson.targets?.[guideEvent()] ?? liveLesson.target : undefined;
+      const lessonTarget = rawTarget && rawTarget.x !== undefined && rawTarget.y !== undefined
+        ? { ...rawTarget, ...vertCoord(rawTarget.x, rawTarget.y) }
+        : rawTarget;
       if (lessonTarget && lessonTarget.x !== undefined && lessonTarget.y !== undefined && tutorialDismissedRef.current) {
         const tx = lessonTarget.x, ty = lessonTarget.y;
         const cx = tx * ts + ts / 2, cy = ty * ts + ts / 2;
@@ -1804,7 +1832,8 @@ export default function GameView(props: Props) {
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
   const bottomHudHeight = isVert ? 112 : (hudVh < 520 ? 58 : 72);
-  const topHudY = 2;
+  // Shift top HUD bar closer to the map (away from Pixel 9 camera cutout / status bar)
+  const topHudY = isVert ? 16 : 8;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
   const terrainText = (() => {
@@ -1990,9 +2019,9 @@ export default function GameView(props: Props) {
         </div>
       )}
 
-      {/* In-battle briefing: the dimmed battlefield stays visible, but all game input is paused. */}
+      {/* In-battle briefing: dialogue positioned at the bottom of the screen above bottom HUD */}
       {tutNote && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
+        <div className="absolute inset-0 z-[70] flex items-end justify-center pb-16 bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
           <div className="hud-panel border-cyan-300 bg-slate-950/90 p-4 w-[min(460px,94vw)] shadow-[0_16px_60px_rgba(0,0,0,0.8),0_0_30px_rgba(34,211,238,0.35)] anim-zoom">
             {/* CO dialogue: portrait + short speech */}
             <div className="flex items-start gap-3">
@@ -2012,7 +2041,7 @@ export default function GameView(props: Props) {
       )}
 
       {briefingOpen && guideStep && (
-        <div className="absolute inset-0 z-[70] flex items-center justify-center bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
+        <div className="absolute inset-0 z-[70] flex items-end justify-center pb-16 bg-slate-950/70 backdrop-blur-[2px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true" aria-labelledby="tutorial-title">
           <div className="hud-panel border-amber-400/90 bg-slate-950/90 p-3 sm:p-4 w-[min(620px,96vw)] max-h-[84vh] overflow-auto shadow-[0_16px_60px_rgba(0,0,0,0.8)] anim-zoom">
             <div className="flex gap-3 items-start">
               <Portrait id={guideStep.speaker ?? 'rhea'} size={52} className="shadow-lg" />

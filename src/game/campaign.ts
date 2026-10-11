@@ -539,25 +539,25 @@ export const TUTORIAL: TutorialStep[] = [
   { title: 'WELCOME, COMMANDER', text: 'I\'m Captain Rhea. Follow the gold markers.\n\nTOP BAR: CO gauge, Power, Super, day and funds.\nBOTTOM BAR: unit/terrain details, Undo and End Turn. Tap the large info panel for full Intel.', event: 'intro', kind: 'info', speaker: 'rhea' },
   {
     title: '1 · CAPTURE THE CITY',
-    text: 'Move the top Infantry onto the city and capture it.\nCities pay +1,000G every day — capture early.',
+    text: 'Move the Infantry onto the city and capture it.\nCities pay +1,000G every day — capture early.',
     event: 'capture-city', kind: 'action', speaker: 'rhea',
     events: ['select-infantry', 'reach-city', 'first-capture'],
     targets: {
-      'select-infantry': { x: 4, y: 2, label: 'SELECT TOP INFANTRY' },
-      'reach-city': { x: 4, y: 1, label: 'MOVE TO TOP CITY' },
+      'select-infantry': { x: 4, y: 2, label: 'SELECT INFANTRY' },
+      'reach-city': { x: 4, y: 1, label: 'MOVE TO CITY' },
       'first-capture': { x: 4, y: 1, label: 'CAPTURE THIS CITY' },
     },
   },
   {
     title: '2 · COVER CUTS COUNTER DAMAGE',
-    text: 'Attack the red Tank from below.\nThen Undo and attack again from the forest.',
+    text: 'Attack the red Tank from open ground.\nThen Undo and attack again from the forest.',
     event: 'tank-cover', kind: 'action', speaker: 'rhea',
     events: ['select-tank', 'attack-bottom', 'undo-attack', 'select-tank', 'attack-forest'],
     targets: {
       'select-tank': { x: 3, y: 3, label: 'SELECT BLUE TANK' },
-      'attack-bottom': { x: 6, y: 3, label: 'ATTACK FROM BELOW' },
+      'attack-bottom': { x: 6, y: 3, label: 'ATTACK OPEN TANK' },
       'undo-attack': { button: 'undo', label: 'REDO: TAP UNDO' },
-      'attack-forest': { x: 6, y: 3, label: 'ATTACK FROM THE FOREST' },
+      'attack-forest': { x: 6, y: 3, label: 'ATTACK FROM FOREST' },
     },
     notes: {
       // This is shown immediately after the first (open-ground) tank attack,
@@ -575,11 +575,11 @@ export const TUTORIAL: TutorialStep[] = [
   },
   {
     title: '3 · CAPTURE THE RADIO TOWER',
-    text: 'Move the lower Infantry to the Radio Tower and capture it.\nTower: +1 move to all units every 3rd turn, and +1 HP nearby each turn.',
+    text: 'Move the second Infantry to the Radio Tower and capture it.\nTower: +1 move to all units every 3rd turn, and +1 HP nearby each turn.',
     event: 'capture-radio', kind: 'action', speaker: 'rhea',
     events: ['select-radio-infantry', 'move-radio', 'capture-radio'],
     targets: {
-      'select-radio-infantry': { x: 3, y: 5, label: 'SELECT LOWER INFANTRY' },
+      'select-radio-infantry': { x: 3, y: 5, label: 'SELECT INFANTRY' },
       'move-radio': { x: 5, y: 5, label: 'MOVE TO RADIO TOWER' },
       'capture-radio': { x: 5, y: 5, label: 'CAPTURE RADIO TOWER' },
     },
