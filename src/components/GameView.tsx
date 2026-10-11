@@ -191,6 +191,8 @@ export default function GameView(props: Props) {
   // When resuming a saved battle, start from the saved charge so old "ready" banners don't replay.
   const chargeLevels = useRef<[number, number]>(props.resume ? [chargeLevelFor(gs, 0), chargeLevelFor(gs, 1)] : [0, 0]);
   const lastTap = useRef<{ x: number; y: number; at: number } | null>(null);
+  const buildOpenedAt = useRef<number>(0);
+  const menuOpenedAt = useRef<number>(0);
   const finished = useRef(false);
 
   // ---------- undo (one per turn) ----------
@@ -536,6 +538,7 @@ export default function GameView(props: Props) {
       u.menu = menu.filter((m) => m.id === 'wait');
     } else u.menu = menu;
     u.mIdx = 0; u.mode = 'menu';
+    menuOpenedAt.current = performance.now();
     if (!u.pending) u.pending = { x: px, y: py, path: [[unit.x, unit.y]], ambush: false };
     sfx.menu();
     bump();
@@ -593,6 +596,7 @@ export default function GameView(props: Props) {
     const u = ui.current;
     const unit = u.selId != null ? unitById(gs, u.selId) : null;
     if (!unit || !u.pending) return;
+    if (id !== 'cancel' && performance.now() - menuOpenedAt.current < 200) return;
     if (mission.tutorial && (guideEvent() === 'first-capture' || guideEvent() === 'capture-radio') && id !== 'capture') return;
     if (mission.tutorial && guideEvent() === 'wait-tank-city' && id !== 'wait') return;
     const { x: px, y: py } = u.pending;
@@ -845,6 +849,7 @@ export default function GameView(props: Props) {
         if (canBuildHere(gs, localTeam, x, y)) {
           u.build = { x, y, list: buildsAt(gs.tiles[y][x].t) };
           u.bIdx = 0; u.mode = 'build';
+          buildOpenedAt.current = performance.now();
           sfx.menu(); bump();
           return;
         }
@@ -857,6 +862,9 @@ export default function GameView(props: Props) {
   const doBuild = (type: UnitType) => {
     const b = ui.current.build;
     if (!b) return;
+    // Prevent synthetic passthrough clicks from the tap that opened the modal, or rapid double taps
+    if (performance.now() - buildOpenedAt.current < 300) return;
+    buildOpenedAt.current = performance.now();
     if (mission.tutorial && guideEvent() === 'build-infantry' && (type !== 'infantry' || b.x !== 1 || b.y !== 2)) {
       float(b.x, b.y, 'BUILD INFANTRY AT BASE', '#fde047', 0.8);
       sfx.cancel();
@@ -1398,7 +1406,7 @@ export default function GameView(props: Props) {
         }
       } else if (down && down.id === e.pointerId && activePointers.size === 1) {
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
-        if (!down.panned && Math.hypot(dx, dy) > 10) down.panned = true;
+        if (!down.panned && Math.hypot(dx, dy) > 14) down.panned = true;
         if (down.panned) { cam.current.x = down.cx - dx; cam.current.y = down.cy - dy; clampCam(); }
       } else if (e.pointerType === 'mouse') {
         const t = tileFromEvent(e);
@@ -1420,7 +1428,7 @@ export default function GameView(props: Props) {
       const t = tileFromEvent(e);
       const now = performance.now();
       const prev = lastTap.current;
-      if (prev && prev.x === t.x && prev.y === t.y && now - prev.at <= 360) {
+      if (prev && prev.x === t.x && prev.y === t.y && now - prev.at <= 280) {
         lastTap.current = null;
         doubleTapRef.current(t.x, t.y);
         return;
@@ -2288,7 +2296,7 @@ export default function GameView(props: Props) {
 
       {/* Build menu */}
       {U.mode === 'build' && U.build && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50 anim-fade p-2" onClick={() => { resetUI(); bump(); }}>
+        <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/50 anim-fade p-2" onClick={() => { if (performance.now() - buildOpenedAt.current >= 300) { resetUI(); bump(); } }}>
           <div className="hud-panel border-sky-400 p-3 w-[min(940px,98vw)] max-h-[96vh] overflow-y-auto overflow-x-hidden anim-zoom" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-2">
               <div className="font-black text-sky-300">DEPLOY — {TERRAIN[gs.tiles[U.build.y][U.build.x].t].name}</div>
@@ -2303,7 +2311,7 @@ export default function GameView(props: Props) {
                 const ok = cost <= gs.funds[localTeam] && unitCount(gs, localTeam) < gs.unitCap[localTeam];
                 const d = UNITS[t];
                 return (
-                  <button key={t} disabled={!ok} onClick={() => doBuild(t)} onPointerEnter={() => { U.bIdx = i; bump(); }}
+                  <button key={t} disabled={!ok} onClick={(e) => { e.stopPropagation(); doBuild(t); }} onMouseEnter={() => { U.bIdx = i; bump(); }}
                     className={`flex items-center gap-2 p-1.5 rounded-lg border text-left transition ${i === U.bIdx && ok ? 'bg-sky-700 border-sky-300' : ok ? 'bg-slate-800 border-slate-600' : 'bg-slate-900 border-slate-800 opacity-50'}`}>
                     <UnitIcon type={t} />
                     <div className="flex-1 min-w-0 overflow-hidden">

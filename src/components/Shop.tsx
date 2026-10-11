@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   COS, CO_PIECES, CO_PRICE, PLAYABLE_ORDER, RANK_MAX, RANK_NAMES, RANK_PRICE, SKILLS, SKILL_ORDER, TRACKS, TRACK_MAX, TRACK_ORDER, TRACK_PRICE,
   UNITS, UNIT_ORDER, rankDesc, rankSlots, ultimateCost, upgradeEffects,
@@ -28,6 +28,7 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   const [slotPick, setSlotPick] = useState<number | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const lastBuyAt = useRef<number>(0);
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && !info && slotPick === null) onBack(); };
@@ -38,12 +39,16 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   const toast = (t: string) => { setFlash(t); setTimeout(() => setFlash(null), 1400); };
   const gems = save.gems ?? 0;
   const spend = (price: number, next: SaveData, msg: string) => {
+    if (performance.now() - lastBuyAt.current < 250) return;
     if (save.merits < price) { sfx.cancel(); toast('Not enough gold'); return; }
+    lastBuyAt.current = performance.now();
     sfx.build(); toast(msg);
     onSave({ ...next, merits: save.merits - price });
   };
   const spendGems = (price: number, next: SaveData, msg: string) => {
+    if (performance.now() - lastBuyAt.current < 250) return;
     if (gems < price) { sfx.cancel(); toast('Not enough gems'); return; }
+    lastBuyAt.current = performance.now();
     sfx.build(); toast(msg);
     onSave({ ...next, gems: gems - price });
   };

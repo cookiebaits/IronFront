@@ -10,10 +10,12 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
 
 ## 🌟 Key Features
 
-- **📱 Fully Responsive Dynamic Screen Scaling:**
+- **📱 Fully Responsive Dynamic Screen Scaling & Calibrated Touch Input:**
   - Auto-fits all phone display aspect ratios (including **Google Pixel 9**, 19.5:9 / 20:9 screens, tablets, and desktop displays).
   - Respects device safe area insets (`env(safe-area-inset-*)`) for display cutouts, camera punch-holes, and gesture navigation bars.
   - Dynamic camera panning, map tile autoscaling, and HUD element height adaptation.
+  - **Ghost-Tap & Passthrough Prevention:** Opening safety buffer prevents synthetic touch/click passthroughs on modals (such as unit deployment or shop purchases).
+  - **Calibrated Touch Sensitivity:** Fine-tuned touchscreen gesture threshold (14px) and double-tap detection window (280ms) for deliberate, mistake-free control.
 
 - **⚡ High Refresh Rate & Smooth Performance (P1):**
   - Buttery smooth rendering loop supporting **90Hz, 120Hz, 144Hz+** high refresh rate displays.
@@ -25,8 +27,8 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
   - Stylized custom tank app icon featuring metallic armor, dual treads, star emblem, and long cannon barrel.
   - Provided in vector SVG (`public/icon.svg`), high-res PNG formats (`512x512`, `192x192`, `apple-touch-icon.png`), and auto-generated Android launcher mipmaps (`ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png`).
 
-- **📜 Expanded 10-Act Campaign (P4):**
-  - **25 Story Campaign Missions** spanning 10 Acts:
+- **📜 Expanded 14-Act Campaign:**
+  - **32 Story Campaign Missions** spanning 14 Acts:
     - *Boot Camp* (Interactive Tutorial)
     - *Act I — Border Fire*
     - *Act II — Skies of Ash*
@@ -38,12 +40,17 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
     - *Act VIII — Desert Citadel*
     - *Act IX — Citadel of Shadows*
     - *Act X — Apex Vanguard*
-  - Rich briefing and debriefing dialogues, multi-phase boss encounters (*The Warden*, *Skybreaker*, *Singularity Core*, *Apex Warden*, *Apex Core*), fog-of-war, dynamic weather, and first-clear skill rewards.
+    - *Act XI — Titan's Citadel*
+    - *Act XII — Omega Horizon*
+    - *Act XIII — Final Victory*
+    - *Act XIV — Sky & Sea Operations* (Air-Only & Sea-Only armadas)
+  - Rich briefing and debriefing dialogues, multi-phase boss encounters (*The Warden*, *Skybreaker*, *Singularity Core*, *Apex Warden*, *Apex Core*, *Omega Core*, *Titan Core*), fog-of-war starting after Mission 4, dynamic weather, and first-clear skill rewards.
 
-- **🔧 Expanded Upgrades & Tactical Skills (P4):**
-  - **Unit Upgrade Tracks:** Firepower, Heavy Plating, Light Frame, Mass Production, Extended Barrel, and Tactical Subsystems up to Level 5.
+- **🔧 Expanded Upgrades, Mods & 14 Commanders:**
+  - **8 Unit Upgrade Tracks:** Firepower, Heavy Plating, Light Frame, Mass Production, Extended Barrel, Tactical Subsystems, **Veterancy** (exp & chevron power), and **Logistics** (fuel/ammo & income boost) up to Level 5.
+  - **7 Vehicle Mods:** Reactive Armor, AP Munitions, Turbo Engine, Target Optics, **Targeting Matrix**, **Nanite Coating**, and **Composite Armor**.
   - **Tactical CO Skills:** 24 unlockable skills including *Air Strike*, *Nanite Surge*, *Overdrive*, *Aegis Shield*, *Ghost Camo*, *Airborne Resupply*, and *Orbital Beam*.
-  - **10 Unique Commanders:** Rhea Vance, Dax Kord, Sora Akai, Mira Tull, Brann Hale, Grimm, Frost, Nyx, Volkov, and The Architect.
+  - **14 Unique Commanders:** Rhea Vance, Dax Kord, Sora Akai, Mira Tull, Brann Hale, **Kaelen Vance**, **Aria Chen**, Grimm, Frost, Nyx, Volkov, **Zero**, **Seraphina**, and The Architect.
 
 - **🌐 Online PvP & Co-op:**
   - Real-time online rooms powered by PeerJS for head-to-head tactical battles and co-op campaign play.

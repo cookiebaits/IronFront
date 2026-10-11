@@ -129,7 +129,7 @@ export const UNIT_ORDER: UnitType[] = [
 
 /* ---------------- Unit upgrade tracks (every upgrade has a trade-off) ---------------- */
 import type { TrackId, UnitUps } from './types';
-export const TRACK_ORDER: TrackId[] = ['fire', 'armor', 'mobility', 'economy', 'range', 'tactical'];
+export const TRACK_ORDER: TrackId[] = ['fire', 'armor', 'mobility', 'economy', 'range', 'tactical', 'veterancy', 'logistics'];
 export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; down: string; indirectOnly?: boolean }> = {
   fire: { name: 'Firepower', icon: '💥', up: '+10% attack / lvl', down: '+8% deploy cost / lvl' },
   armor: { name: 'Heavy Plating', icon: '🛡️', up: '+12% defense / lvl', down: '−1 move at Lv2+, +4% cost / lvl' },
@@ -137,20 +137,22 @@ export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; d
   economy: { name: 'Mass Production', icon: '🏭', up: '−10% deploy cost / lvl', down: '−6% attack, −3% defense / lvl' },
   range: { name: 'Extended Barrel', icon: '🎯', up: '+1 max range / lvl', down: '−1 move at Lv2+, +10% cost / lvl', indirectOnly: true },
   tactical: { name: 'Tactical Subsystems', icon: '📡', up: '+10% skill charge speed / lvl', down: '+5% deploy cost / lvl' },
+  veterancy: { name: 'Veterancy', icon: '⭐', up: '+5% attack & +15% veteran exp / lvl', down: '+6% deploy cost / lvl' },
+  logistics: { name: 'Logistics', icon: '📦', up: '+20% fuel/ammo & +5% income bonus', down: '−3% defense / lvl' },
 };
 export const TRACK_PRICE = [200, 350, 550, 800, 1100];
 export const TRACK_MAX = 5;
 
 export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
-  const f = u?.fire ?? 0, a = u?.armor ?? 0, m = u?.mobility ?? 0, e = u?.economy ?? 0, r = indirect ? u?.range ?? 0 : 0, t = u?.tactical ?? 0;
+  const f = u?.fire ?? 0, a = u?.armor ?? 0, m = u?.mobility ?? 0, e = u?.economy ?? 0, r = indirect ? u?.range ?? 0 : 0, t = u?.tactical ?? 0, v = u?.veterancy ?? 0, l = u?.logistics ?? 0;
   return {
-    atk: f * 10 - e * 6,
-    def: a * 12 - m * 7 - e * 3,
+    atk: f * 10 - e * 6 + v * 5,
+    def: a * 12 - m * 7 - e * 3 - l * 3,
     move: (a >= 2 ? -1 : 0) + [0, 1, 1, 2, 2, 3][Math.min(5, m)] + (r >= 2 ? -1 : 0),
     vision: m,
     rmax: r,
     tacticalCharge: t * 10,
-    costMul: Math.max(0.5, 1 + f * 0.08 + a * 0.04 - e * 0.1 + r * 0.1 + t * 0.05),
+    costMul: Math.max(0.5, 1 + f * 0.08 + a * 0.04 - e * 0.1 + r * 0.1 + t * 0.05 + v * 0.06),
   };
 }
 
@@ -227,6 +229,9 @@ export const MODS: Record<ModId, { name: string; icon: string; desc: string; pri
   weapons: { name: 'AP Munitions', icon: '💥', desc: '+15% attack', price: 600 },
   engine: { name: 'Turbo Engine', icon: '⚙️', desc: '+1 movement', price: 900 },
   optics: { name: 'Target Optics', icon: '🔭', desc: '+2 vision, indirect +1 max range', price: 800 },
+  targeting: { name: 'Targeting Matrix', icon: '🎯', desc: '+10% attack & +1 vision', price: 700 },
+  coating: { name: 'Nanite Coating', icon: '🧪', desc: 'Heals 1 HP each turn', price: 850 },
+  composite: { name: 'Composite Armor', icon: '🧱', desc: '+20% defense vs indirect fire', price: 750 },
 };
 
 export const ARMOR_NAMES: Record<ArmorClass, string> = {
@@ -272,6 +277,14 @@ export const COS: Record<string, CODef> = {
     bio: 'Grizzled artillery colonel. Patient, methodical, and terrifyingly precise.',
     d2d: 'Indirect +15% attack. Direct −10% attack.', powerName: 'Spotter Net', powerDesc: 'Indirect +1 range, +15% attack.',
     superName: 'Thunder Barrage', superDesc: '3 HP strikes on 2 enemy clusters. Indirect +1 range.', powerCost: 50, superCost: 110 },
+  kaelen: { id: 'kaelen', name: 'Kaelen Vance', title: 'Flight Captain', faction: 'azure', color: '#0284c7', emoji: '✈️',
+    bio: 'Ace squadron commander. Master of high-altitude dominance and aerial strikes.',
+    d2d: 'Air units +15% attack, +1 move. Naval −10% defense.', powerName: 'Tailwind', powerDesc: 'Air units +1 move, +10% attack.',
+    superName: 'Sky Supremacy', superDesc: 'Air units +2 move, +35% attack. Ground units +1 move.', powerCost: 45, superCost: 95 },
+  aria: { id: 'aria', name: 'Aria Chen', title: 'Cyber Officer', faction: 'azure', color: '#8b5cf6', emoji: '⚡',
+    bio: 'Master of cyber warfare and electronic countermeasures. Disruption is her art.',
+    d2d: 'Vision +1 for all units. Enemy skill charge 15% slower.', powerName: 'Disruptor', powerDesc: 'All enemy units −1 move on next turn.',
+    superName: 'Overclock', superDesc: 'All enemy units −2 move. Friendly units +25% attack.', powerCost: 50, superCost: 100 },
   grimm: { id: 'grimm', name: 'Grimm', title: 'Warlord', faction: 'crimson', color: '#ef4444', emoji: '💀',
     bio: 'Brutal Dominion warlord who drowns enemies in endless infantry waves.',
     d2d: 'Infantry +20% attack, −20% cost. Vehicles −10% defense.', powerName: 'Human Wave', powerDesc: 'Infantry +2 move, +20% attack.',
@@ -288,13 +301,21 @@ export const COS: Record<string, CODef> = {
     bio: 'The Iron General. Commands the Dominion\'s elite with crushing force.',
     d2d: 'All units +10% atk & def. Units cost +20%.', powerName: 'Iron Fist', powerDesc: '+20% attack.',
     superName: 'Red Storm', superDesc: '+40% attack, +20% defense, heal 2 HP.', powerCost: 60, superCost: 120 },
+  zero: { id: 'zero', name: 'Zero', title: 'Siege Director', faction: 'crimson', color: '#be123c', emoji: '🎯',
+    bio: 'Cold-blooded siege strategist. Specializes in long-range destruction.',
+    d2d: 'Indirect fire +15% attack, +1 max range. Direct units −10% defense.', powerName: 'Artillery Sweep', powerDesc: 'Indirect units +1 range, +15% attack.',
+    superName: 'Global Siege', superDesc: 'All enemy units take 2 HP damage and −15% defense.', powerCost: 55, superCost: 110 },
+  seraphina: { id: 'seraphina', name: 'Seraphina', title: 'Medic General', faction: 'crimson', color: '#059669', emoji: '🏥',
+    bio: 'Renowned military doctor whose nanite fields keep troops in the fight endlessly.',
+    d2d: 'Friendly units on properties heal +1 HP per turn automatically.', powerName: 'Field Triage', powerDesc: 'All friendly units recover 2 HP.',
+    superName: 'Nanite Restoration', superDesc: 'All friendly units recover 4 HP and +30% defense.', powerCost: 45, superCost: 95 },
   architect: { id: 'architect', name: 'The Architect', title: 'Strategist', faction: 'crimson', color: '#e11d48', emoji: '🔺',
     bio: 'A war-machine intelligence that orchestrated the entire conflict. Calculates everything.',
     d2d: 'All units +10% atk & def. Unaffected by sandstorms.', powerName: 'Recalibrate', powerDesc: 'All units heal 3 HP.',
     superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 120, immune: 'sand' },
 };
 
-export const PLAYABLE_ORDER = ['rhea', 'dax', 'sora', 'mira', 'brann', 'grimm', 'frost', 'nyx', 'volkov', 'architect'];
+export const PLAYABLE_ORDER = ['rhea', 'dax', 'sora', 'mira', 'brann', 'kaelen', 'aria', 'grimm', 'frost', 'nyx', 'volkov', 'zero', 'seraphina', 'architect'];
 
 export function coCost(coId: string, type: UnitType): number {
   const d = UNITS[type];
