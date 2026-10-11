@@ -1792,7 +1792,7 @@ export default function GameView(props: Props) {
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
   const bottomHudHeight = hudVh < 520 ? 58 : 72;
-  const topHudY = 4;
+  const topHudY = 2;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
   const terrainText = (() => {
@@ -1864,66 +1864,66 @@ export default function GameView(props: Props) {
       <canvas ref={cvRef} className="absolute inset-0" />
 
       {/* TOP HUD */}
-      <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
-        <button className="battle-pause pointer-events-auto hud-btn w-11 text-lg" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.35] ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
+      <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1 p-1 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+        <button className="battle-pause pointer-events-auto hud-btn w-10 text-base" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
+        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-2 py-0.5 min-w-0 flex-[1.35] ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
           <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
-            <Portrait id={gs.cos[localTeam]} size={44} />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-sky-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
+            <Portrait id={gs.cos[localTeam]} size={41} />
+            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-sky-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
           </button>
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-1">
-              <button className="text-sm font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
-              <span className={`text-[11px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+              <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+              <span className={`text-[10px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
                 {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
               </span>
             </div>
             {meterBar(localTeam)}
             {skillBar(localTeam)}
-            <div className="flex gap-1 mt-1">
+            <div className="flex gap-1 mt-0.5">
               <button disabled={!canActivate(gs, localTeam, 2) || !isLocalTurn() || U.mode !== 'idle'} onClick={() => playerPower(2)}
-                className={`flex-1 text-[10px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
+                className={`flex-1 text-[9px] font-black rounded px-1 py-0.5 border ${canActivate(gs, localTeam, 2) && isLocalTurn() ? 'bg-fuchsia-500 text-white border-fuchsia-300 animate-pulse shadow-[0_0_10px_#d946ef]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}>ULTIMATE ACTIVATE</button>
               {gs.skills[localTeam].length > 0 && (
                 <button disabled={!readySkill || !isLocalTurn() || U.mode !== 'idle'} onClick={() => readySkill && playerSkill(readySkill)}
-                  className={`flex-1 text-[10px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
+                  className={`flex-1 text-[9px] font-black rounded px-1 py-0.5 border ${isLocalTurn() && readySkill ? 'bg-emerald-500 text-white border-emerald-300 animate-pulse shadow-[0_0_10px_#10b981]' : 'bg-slate-800 text-slate-400 border-slate-700'}`} title={readySkill ? `Activate ${SKILLS[readySkill].name}` : 'Skill is still charging'}>SKILL ACTIVATE</button>
               )}
             </div>
           </div>
         </div>
-        <div className="battle-middle-panel pointer-events-auto hud-panel px-2.5 py-1 flex flex-col justify-between items-center min-w-[155px] shrink-0">
+        <div className="battle-middle-panel pointer-events-auto hud-panel px-2 py-0.5 flex flex-col justify-between items-center min-w-[145px] shrink-0">
           <div className="flex items-center justify-between w-full gap-2 border-b border-slate-700/80 pb-0.5">
-            <div className="text-xs font-black text-slate-300 leading-tight">
-              DAY <span className="text-sm font-black text-white">{gs.day}</span>
-              {mission.objective.type === 'survive' ? <span className="text-[10px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[10px] text-slate-400">/{mission.dayLimit}</span> : null}
+            <div className="text-[11px] font-black text-slate-300 leading-tight">
+              DAY <span className="text-xs font-black text-white">{gs.day}</span>
+              {mission.objective.type === 'survive' ? <span className="text-[9px] text-slate-400">/{mission.objective.days + 1}</span> : mission.dayLimit ? <span className="text-[9px] text-slate-400">/{mission.dayLimit}</span> : null}
             </div>
-            <div className="text-sm font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
+            <div className="text-xs font-black text-amber-300 leading-tight">{gs.funds[localTeam].toLocaleString()}G</div>
           </div>
-          <div className="flex items-center justify-between w-full gap-1.5 text-[10px] leading-tight pt-0.5">
+          <div className="flex items-center justify-between w-full gap-1 text-[9px] leading-tight pt-0.5">
             <div className="flex items-center gap-0.5" title={WEATHER_INFO[gs.weather].desc}>
-              <span className="text-xs">{WEATHER_INFO[gs.weather].icon}</span>
-              <span className="text-slate-300 font-bold text-[9px]">{WEATHER_INFO[gs.weather].name}</span>
+              <span className="text-[11px]">{WEATHER_INFO[gs.weather].icon}</span>
+              <span className="text-slate-300 font-bold text-[8.5px]">{WEATHER_INFO[gs.weather].name}</span>
             </div>
-            <div className={`font-black text-[9px] ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
+            <div className={`font-black text-[8.5px] ${playerRadio ? gs.radioMove[localTeam] ? 'text-cyan-200 animate-pulse' : 'text-cyan-400' : 'text-slate-500'}`} title={playerRadio ? 'Radio Tower: +1 HP to units on/next to it; +1 move for all units every 3rd turn; ★★★ defense' : 'Capture a Radio Tower'}>
               📡 {playerRadio ? gs.radioMove[localTeam] ? 'BOOST' : `${gs.radioCycle[localTeam]}/3` : 'NO RELAY'}
             </div>
-            <div className="text-slate-300 font-bold text-[9px]">
+            <div className="text-slate-300 font-bold text-[8.5px]">
               Units <span className="text-white">{unitCount(gs, localTeam)}/{gs.unitCap[localTeam]}</span>
             </div>
-            <div className="text-rose-300 font-bold text-[9px]">
+            <div className="text-rose-300 font-bold text-[8.5px]">
               Foe <span className="text-white">{gs.units.filter((o) => o.team === enemyTeam && isVis(o.x, o.y)).length}{gs.fog ? '?' : ''}</span>
             </div>
           </div>
         </div>
-        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.15] cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
+        <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-1.5 px-2 py-0.5 min-w-0 flex-[1.15] cursor-pointer ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`} onClick={() => { sfx.menu(); setCoInfo(enemyTeam); }}>
           <div className="relative shrink-0">
-            <Portrait id={gs.cos[enemyTeam]} size={44} />
-            <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-rose-500 text-[10px] font-black flex items-center justify-center border border-white">i</span>
+            <Portrait id={gs.cos[enemyTeam]} size={41} />
+            <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-rose-500 text-[9px] font-black flex items-center justify-center border border-white">i</span>
           </div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-black text-rose-300 truncate">{foeCo.name}</div>
+            <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
             {meterBar(enemyTeam)}
             {skillBar(enemyTeam)}
-            <div className={`text-[10px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
+            <div className={`text-[9px] font-black truncate mt-0.5 ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
               {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
             </div>
           </div>
