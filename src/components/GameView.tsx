@@ -82,7 +82,7 @@ interface Particle { x: number; y: number; vx: number; vy: number; life: number;
 interface Float { x: number; y: number; text: string; c: string; t0: number; dur: number; size: number }
 interface Anim { path: [number, number][]; t0: number; per: number; resolve: () => void; last: number }
 
-// HUD heights reserved above/below the map. These match the actual compact landscape HUD.
+// HUD heights reserved above/below the map. These update dynamically based on element measurements.
 let TOP = 90, BOT = 104;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /** The retired basic Power no longer creates a ready notice; only the Ultimate does. */
@@ -126,6 +126,8 @@ export default function GameView(props: Props) {
   });
   const cvRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
+  const topHudRef = useRef<HTMLDivElement>(null);
+  const bottomHudRef = useRef<HTMLDivElement>(null);
   const cam = useRef({ x: 0, y: 0, tx: null as number | null, ty: null as number | null });
   const view = useRef({ vw: 0, vh: 0, ts: 56, zoom: 1, dpr: 1 });
   const anims = useRef(new Map<number, Anim>());
@@ -347,11 +349,11 @@ export default function GameView(props: Props) {
   // ---------- camera ----------
   const computeTs = () => {
     const v = view.current;
-    const availableH = Math.max(120, v.vh - TOP - BOT);
-    const base = Math.floor(Math.min((v.vw - 12) / gs.w, availableH / gs.h));
-    // The old 44px floor forced maps taller than Android's short WebView and clipped the board.
-    const minTile = v.vh < 520 ? 22 : 34;
-    v.ts = Math.round(Math.max(minTile, Math.min(84, base)) * v.zoom);
+    const availableH = Math.max(100, v.vh - TOP - BOT);
+    const availableW = Math.max(100, v.vw - 12);
+    const base = Math.floor(Math.min(availableW / gs.w, availableH / gs.h));
+    const minTile = v.vh < 520 ? 20 : 30;
+    v.ts = Math.round(Math.max(minTile, Math.min(96, base)) * v.zoom);
   };
   const camBounds = () => {
     const v = view.current;
@@ -1257,9 +1259,18 @@ export default function GameView(props: Props) {
       const dprOpt = st.dprScale ?? 'auto';
       v.dpr = dprOpt === 'auto' ? Math.min(2, native) : typeof dprOpt === 'number' ? dprOpt : Math.min(2, native);
       v.vw = wrap.clientWidth; v.vh = wrap.clientHeight;
-      const shortScreen = v.vh < 520;
-      TOP = shortScreen ? 78 : 90;
-      BOT = shortScreen ? 76 : 104;
+
+      if (topHudRef.current) {
+        TOP = Math.ceil(topHudRef.current.getBoundingClientRect().height) + 6;
+      } else {
+        TOP = v.vh < 520 ? 78 : 90;
+      }
+      if (bottomHudRef.current) {
+        BOT = Math.ceil(bottomHudRef.current.getBoundingClientRect().height) + 6;
+      } else {
+        BOT = v.vh < 520 ? 76 : 104;
+      }
+
       cv.width = v.vw * v.dpr; cv.height = v.vh * v.dpr;
       cv.style.width = v.vw + 'px'; cv.style.height = v.vh + 'px';
       computeTs();
@@ -1748,7 +1759,7 @@ export default function GameView(props: Props) {
   const hudVh = v.vh || window.innerHeight;
   // HUD uses the full safe landscape width. The map stays centered beneath it.
   const hudWidth = Math.max(300, hudVw - 12);
-  const bottomHudHeight = hudVh < 520 ? 70 : 96;
+  const bottomHudHeight = hudVh < 520 ? 76 : 96;
   const topHudY = 4;
   const bottomHudY = hudVh - bottomHudHeight - 4;
 
@@ -1821,7 +1832,7 @@ export default function GameView(props: Props) {
       <canvas ref={cvRef} className="absolute inset-0" />
 
       {/* TOP HUD */}
-      <div className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
+      <div ref={topHudRef} className="battle-top-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-stretch justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: topHudY, width: hudWidth }}>
         <button className="battle-pause pointer-events-auto hud-btn w-11 text-lg" onClick={() => setPaused(true)} aria-label="Pause">⏸</button>
         <div className={`battle-co-panel pointer-events-auto hud-panel flex items-center gap-2 px-2.5 py-1 min-w-0 flex-[1.35] ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'border-fuchsia-300 shadow-[0_0_20px_rgba(232,121,249,0.55)]' : ''}`}>
           <button className="relative shrink-0 active:scale-95 transition" onClick={() => { sfx.menu(); setCoInfo(localTeam); }} aria-label="Commander info">
@@ -1963,13 +1974,13 @@ export default function GameView(props: Props) {
       )}
 
       {/* BOTTOM HUD */}
-      <div className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
+      <div ref={bottomHudRef} className="battle-bottom-hud absolute left-1/2 -translate-x-1/2 z-20 flex items-end justify-center gap-1.5 p-1.5 pointer-events-none" style={{ top: bottomHudY, width: hudWidth }}>
         <div className="pointer-events-auto hud-panel px-3 py-2 flex gap-3 items-center min-w-0 flex-1 cursor-pointer border-amber-400/50 overflow-hidden" style={{ height: bottomHudHeight }} onClick={() => setShowIntel(true)} title="Tap for full Intel">
           <div className="min-w-[126px] max-w-[180px] shrink-0 pr-3 border-r border-slate-600">
             <div className="text-sm sm:text-base font-black text-white leading-tight">{TERRAIN[curTile.t].name}</div>
             {/* UI always shows at least one star so zero-cover terrain is still easy to compare. Engine defense remains zero. */}
             <div className="text-sm sm:text-base text-amber-300 tracking-tight leading-tight">{'★'.repeat(Math.max(1, TERRAIN[curTile.t].def))}</div>
-            <div className="text-[10px] sm:text-xs text-slate-300 leading-snug mt-0.5">{terrainText}</div>
+            <div className="text-[9px] sm:text-xs text-slate-300 leading-tight mt-0.5 line-clamp-2">{terrainText}</div>
             {curTile.capture < 20 && <div className="text-[10px] text-amber-300 font-bold">Capture: {curTile.capture}/20</div>}
           </div>
           {curUnit ? (() => {

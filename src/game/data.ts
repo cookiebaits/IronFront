@@ -129,26 +129,28 @@ export const UNIT_ORDER: UnitType[] = [
 
 /* ---------------- Unit upgrade tracks (every upgrade has a trade-off) ---------------- */
 import type { TrackId, UnitUps } from './types';
-export const TRACK_ORDER: TrackId[] = ['fire', 'armor', 'mobility', 'economy', 'range'];
+export const TRACK_ORDER: TrackId[] = ['fire', 'armor', 'mobility', 'economy', 'range', 'tactical'];
 export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; down: string; indirectOnly?: boolean }> = {
   fire: { name: 'Firepower', icon: '💥', up: '+10% attack / lvl', down: '+8% deploy cost / lvl' },
   armor: { name: 'Heavy Plating', icon: '🛡️', up: '+12% defense / lvl', down: '−1 move at Lv2+, +4% cost / lvl' },
-  mobility: { name: 'Light Frame', icon: '⚙️', up: '+1 move (Lv1), +2 move (Lv3), +1 vision / lvl', down: '−7% defense / lvl' },
+  mobility: { name: 'Light Frame', icon: '⚙️', up: '+1 move (Lv1, Lv3, Lv5), +1 vision / lvl', down: '−7% defense / lvl' },
   economy: { name: 'Mass Production', icon: '🏭', up: '−10% deploy cost / lvl', down: '−6% attack, −3% defense / lvl' },
   range: { name: 'Extended Barrel', icon: '🎯', up: '+1 max range / lvl', down: '−1 move at Lv2+, +10% cost / lvl', indirectOnly: true },
+  tactical: { name: 'Tactical Subsystems', icon: '📡', up: '+10% skill charge speed / lvl', down: '+5% deploy cost / lvl' },
 };
-export const TRACK_PRICE = [200, 350, 550];
-export const TRACK_MAX = 3;
+export const TRACK_PRICE = [200, 350, 550, 800, 1100];
+export const TRACK_MAX = 5;
 
 export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
-  const f = u?.fire ?? 0, a = u?.armor ?? 0, m = u?.mobility ?? 0, e = u?.economy ?? 0, r = indirect ? u?.range ?? 0 : 0;
+  const f = u?.fire ?? 0, a = u?.armor ?? 0, m = u?.mobility ?? 0, e = u?.economy ?? 0, r = indirect ? u?.range ?? 0 : 0, t = u?.tactical ?? 0;
   return {
     atk: f * 10 - e * 6,
     def: a * 12 - m * 7 - e * 3,
-    move: (a >= 2 ? -1 : 0) + [0, 1, 1, 2][m] + (r >= 2 ? -1 : 0),
+    move: (a >= 2 ? -1 : 0) + [0, 1, 1, 2, 2, 3][Math.min(5, m)] + (r >= 2 ? -1 : 0),
     vision: m,
     rmax: r,
-    costMul: 1 + f * 0.08 + a * 0.04 - e * 0.1 + r * 0.1,
+    tacticalCharge: t * 10,
+    costMul: Math.max(0.5, 1 + f * 0.08 + a * 0.04 - e * 0.1 + r * 0.1 + t * 0.05),
   };
 }
 
@@ -175,6 +177,13 @@ export const SKILLS: Record<string, SkillDef> = {
   tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 800, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
   whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 950, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
   meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 1200, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
+  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 500, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
+  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 450, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
+  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 600, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
+  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 750, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
+  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 500, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
+  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 300, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
+  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 1000, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
 };
 export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.cost - b.cost).map((s) => s.id);
 

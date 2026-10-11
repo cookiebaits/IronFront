@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -401,6 +401,81 @@ export const MISSIONS: MissionDef[] = [
       { who: 'narrator', text: 'At dawn, the last war machine falls silent. The frontier belongs to its people again.' },
     ],
   },
+  {
+    id: 'm20', name: 'Citadel Siege', act: 8, par: 14, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'volkov',
+    map: sym(['mmf..f..', 'mH=c...m', 'fB==~.#.', '..f=~.c.', '.A.====.', 'f..c~f..', 'mm.f~.m.', '...=#c..', 'mm..f...']),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['artillery', 2, 4], ['rockets', 1, 6], ['infantry', 4, 3], ['mech', 3, 5], ['aa', 2, 7]], [['heavy', 12, 3], ['artillery', 13, 6], ['rockets', 11, 7]]),
+    funds: [7000, 9000], weather: 'clear', fog: false, unitCap: [18, 20], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'Assault the Citadel. Break through the river line and capture Volkov\'s fortress HQ.',
+    briefing: [
+      { who: 'narrator', text: 'The Desert Citadel. An ancient fortress fortified with modern heavy artillery.' },
+      { who: 'volkov', text: 'You enter the Citadel at your own peril.' },
+      { who: 'brann', text: 'Heavy guns guard the moat. Use rockets and heavy armor to force a breach.' },
+    ],
+    outro: [
+      { who: 'volkov', text: 'The Citadel has fallen. But the shadow network runs deeper than these stone walls.' },
+      { who: 'rhea', text: 'Push forward into the Citadel of Shadows.' },
+    ],
+  },
+  {
+    id: 'm21', name: 'Shadow Protocol', act: 8, par: 12, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'nyx',
+    map: sym(['mm.ff...', 'mH=c..m.', 'fB==c...', '.A.=.t..', '...====.', 'fc..f...', 'm..c..f.', '..f.=...', 'mm..f...']),
+    units: mir(16, [['recon', 3, 1], ['drone', 4, 2], ['tank', 5, 3], ['heavy', 4, 4], ['artillery', 2, 5], ['infantry', 3, 6], ['gundrone', 5, 7]], [['heavy', 12, 3], ['bomber', 11, 2]]),
+    funds: [7500, 9500], weather: 'rain', fog: true, unitCap: [18, 20], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Fog of war and rain! Use drones and recon units to illuminate stealth batteries before attacking.',
+    briefing: [
+      { who: 'nyx', text: 'Shadow Protocol active. Every tree is a target, every shadow a strike.' },
+      { who: 'sora', text: 'Drones give us vision through the rain. Scout before committing your heavy tanks.' },
+    ],
+    outro: [
+      { who: 'nyx', text: 'Your vision cuts through the dark. The Apex Gate is open.' },
+    ],
+  },
+  {
+    id: 'm22', name: 'Apex Gate', act: 9, par: 15, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'architect',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['tank', 5, 2], ['heavy', 4, 4], ['fighter', 2, 3], ['bomber', 3, 6], ['rockets', 2, 8]], [['heavy', 12, 2], ['bomber', 13, 4], ['battleship', 15, 8]]),
+    funds: [8500, 11000], weather: 'clear', weatherPool: ['clear', 'sand', 'snow'], fog: false, unitCap: [20, 22], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'Multi-front assault: secure the airbases and ports to supply your front line armor.',
+    briefing: [
+      { who: 'architect', text: 'APEX GATE ONLINE. PREPARE FOR DESTRUCTION.' },
+      { who: 'mira', text: 'Naval artillery will clear the shore. Move air and ground units in unison.' },
+    ],
+    outro: [
+      { who: 'rhea', text: 'The Apex Gate is destroyed. Now we enter the Core.' },
+    ],
+  },
+  {
+    id: 'm23', name: 'Vanguard Apex', act: 9, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'architect',
+    map: sym(['mmff....', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.=.t..', 'f..=====', 'm..f..c.', '..c.=...', 'mm..f...']),
+    units: mir(16, [['tank', 4, 1], ['heavy', 5, 2], ['mech', 4, 3], ['artillery', 2, 4], ['rockets', 1, 6], ['aa', 3, 7]], [['artillery', 11, 5]]),
+    boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'APEX WARDEN', hp: 100, phases: 4 },
+    funds: [9000, 12000], weather: 'clear', fog: false, unitCap: [20, 24], objective: { type: 'rout' }, aiLevel: 3,
+    hint: 'Boss battle: destroy all 4 shield phases of the APEX WARDEN while holding off mechanized columns.',
+    briefing: [
+      { who: 'architect', text: 'APEX WARDEN DEPLOYED. FOUR SHIELD PHASES ACTIVE.' },
+      { who: 'dax', text: 'Focus fire on the Warden! Use mechs and heavy tanks for maximum damage.' },
+    ],
+    outro: [
+      { who: 'brann', text: 'The Warden is down! Only the Apex Core remains.' },
+    ],
+  },
+  {
+    id: 'm24', name: 'Iron Supremacy', act: 10, par: 18, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'architect',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=t.', 'wwsfA.=.', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['heavy', 5, 2], ['tank', 5, 5], ['rockets', 3, 6], ['mech', 4, 3], ['fighter', 2, 3], ['bomber', 4, 7], ['aa', 5, 8]], [['heavy', 11, 4], ['bomber', 12, 3], ['battleship', 15, 7], ['rockets', 13, 6]]),
+    boss: { x: 11, y: 4, team: 1, type: 'heavy', name: 'APEX CORE', hp: 100, phases: 5 },
+    funds: [11000, 15000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [22, 26], objective: { type: 'hq' }, aiLevel: 3,
+    hint: 'Ultimate final boss: destroy the 5 shield phases of the APEX CORE and capture its fortress HQ!',
+    briefing: [
+      { who: 'architect', text: 'APEX CORE ONLINE. FIVE SHIELD PHASES. ERASED.' },
+      { who: 'rhea', text: 'This is the final battle for total peace. All armies, charge!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'CORE ERADICATED... NETWORK OFFLINE... FAREWELL...' },
+      { who: 'narrator', text: 'VICTORY! The war machine is destroyed forever. Iron Front Tactics is complete!' },
+    ],
+  },
 ];
 
 /** First-clear skill rewards — the story hands you new tactical skills as you progress. */
@@ -409,6 +484,7 @@ export const REWARDS: Record<string, string> = {
   m6: 'emp', m7: 'warbonds', m8: 'tempest', m9: 'strike', m10: 'bombard', m11: 'meteor',
   m12: 'clear', m13: 'blitz', m14: 'whiteout', m15: 'fury',
   m16: 'warbonds', m17: 'strike', m18: 'repair', m19: 'meteor',
+  m20: 'airstrike', m21: 'stealth', m22: 'overdrive', m23: 'nanite', m24: 'orbital',
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
@@ -421,6 +497,9 @@ export const ACT_INTROS = [
   'A final broadcast rises from orbit. Break the last defense platforms and end the war-machine network.',
   'Peace fractures as rogue armies rebuild the old machine network. Hunt the Pretender beneath the capital.',
   'The last signal races east. Cross the frozen horizon and stop Zero Dawn before it erases every nation.',
+  'Assault the ancient Desert Citadel where Volkov\'s rogue elite guard has taken refuge.',
+  'Fight through the Citadel of Shadows under fog of war to reach the Apex Gate.',
+  'The ultimate battle: face the Apex Core across land, sea, and air to secure total peace.',
 ];
 
 /** Pre-deployed army value used by the hidden title-screen mission audit mode. */

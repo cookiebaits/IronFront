@@ -14,7 +14,7 @@ export type UnitType =
   | 'cruiser' | 'sub' | 'battleship';
 export type Weather = 'clear' | 'rain' | 'snow' | 'sand';
 export type ModId = 'armor' | 'weapons' | 'engine' | 'optics';
-export type TrackId = 'fire' | 'armor' | 'mobility' | 'economy' | 'range';
+export type TrackId = 'fire' | 'armor' | 'mobility' | 'economy' | 'range' | 'tactical';
 export type UnitUps = Partial<Record<TrackId, number>>;
 export interface PlayerLoadout {
   unitUps: Partial<Record<UnitType, UnitUps>>;
