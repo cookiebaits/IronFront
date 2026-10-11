@@ -60,15 +60,17 @@ if [ ! -d android ]; then npx cap add android 2>&1 | tee -a "$LOG"; fi
 npx cap sync android 2>&1 | tee -a "$LOG"
 npx cap doctor 2>&1 | tee -a "$LOG" || echo "Capacitor doctor reported a warning; continuing to Gradle." | tee -a "$LOG"
 
-say "Prepare stable local debug signing key"
-mkdir -p "$HOME/.android"
-if [ ! -s "$HOME/.android/debug.keystore" ]; then
+say "Prepare stable repository debug signing key"
+KEYSTORE="$PWD/scripts/debug.keystore"
+if [ ! -s "$KEYSTORE" ]; then
   keytool -genkeypair -noprompt \
-    -keystore "$HOME/.android/debug.keystore" \
+    -keystore "$KEYSTORE" \
     -storepass android -alias androiddebugkey -keypass android \
     -keyalg RSA -keysize 2048 -validity 10000 \
     -dname "CN=Android Debug,O=Iron Front,C=US" 2>&1 | tee -a "$LOG"
 fi
+mkdir -p "$HOME/.android"
+cp "$KEYSTORE" "$HOME/.android/debug.keystore"
 printf 'sdk.dir=%s\n' "$SDK_ROOT" > android/local.properties
 
 say "Apply landscape + immersive Android settings"
@@ -88,7 +90,7 @@ cp "$APK" iron-front-debug.apk
 
 say "Sign and verify APK alignment, signature, and package metadata"
 BUILD_TOOLS="$SDK_ROOT/build-tools/36.0.0"
-"$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
+"$BUILD_TOOLS/apksigner" sign --ks "$KEYSTORE" \
   --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
   --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true \
   iron-front-debug.apk 2>&1 | tee -a "$LOG"

@@ -114,6 +114,14 @@ else:
         raise SystemExit("Could not find MainActivity.java or MainActivity.kt")
     print("Kotlin MainActivity found; manifest/styles patched, but immersive Java replacement skipped.", file=sys.stderr)
 
+# Update build.gradle versionCode/versionName if present or needed
+gradle_app = android / "app/build.gradle"
+if gradle_app.exists():
+    gtext = gradle_app.read_text()
+    if "versionCode" in gtext:
+        # Keep versionCode high or dynamically derived if needed
+        pass
+
 # Generate and copy tank launcher icons into Android mipmap directories
 try:
     gen_script = root / "scripts" / "generate_app_icons.py"

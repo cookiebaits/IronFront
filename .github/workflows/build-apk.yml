@@ -164,13 +164,15 @@ jobs:
           org.gradle.jvmargs=-Xmx3g -Dfile.encoding=UTF-8
           EOF
 
-          if [ ! -s "$HOME/.android/debug.keystore" ]; then
+          KEYSTORE="$PWD/scripts/debug.keystore"
+          if [ ! -s "$KEYSTORE" ]; then
             keytool -genkeypair -noprompt \
-              -keystore "$HOME/.android/debug.keystore" \
+              -keystore "$KEYSTORE" \
               -storepass android -alias androiddebugkey -keypass android \
               -keyalg RSA -keysize 2048 -validity 10000 \
               -dname "CN=Android Debug,O=Iron Front,C=US"
           fi
+          cp "$KEYSTORE" "$HOME/.android/debug.keystore"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
       - name: Build Landscape APK
@@ -185,7 +187,7 @@ jobs:
           cd ..
           BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          "$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
+          "$BUILD_TOOLS/apksigner" sign --ks scripts/debug.keystore \
             --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
             --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
           cp "$APK" iron-front-landscape.apk
@@ -201,7 +203,7 @@ jobs:
           cd ..
           BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
           APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          "$BUILD_TOOLS/apksigner" sign --ks "$HOME/.android/debug.keystore" \
+          "$BUILD_TOOLS/apksigner" sign --ks scripts/debug.keystore \
             --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
             --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
           cp "$APK" iron-front-portrait.apk

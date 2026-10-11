@@ -128,28 +128,29 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   );
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-slate-950 bg-grid">
-      <div className="flex items-center gap-2 p-2 border-b-2 border-amber-500/40 bg-slate-900/90">
-        <button className="hud-btn w-11 h-10" onClick={onBack}>◀</button>
-        <div className="flex-1 min-w-0">
-          <div className="font-black text-lg tracking-widest text-amber-300 truncate leading-tight">{next ? 'MISSION PREP' : 'COMMAND HQ'}</div>
-          {next && <div className="text-[10px] text-slate-400 truncate">Promote officers, equip skills, upgrade units, unlock new COs — then deploy.</div>}
-        </div>
-        <div className="text-sm font-black text-right leading-tight">
-          <div className="flex items-center justify-end gap-2">
-            <span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span>
-            <span className="text-cyan-300">💎 {gems}</span>
+    <div className="absolute inset-0 flex flex-col bg-slate-950 bg-grid p-2 sm:p-3 overflow-hidden pt-[max(8px,env(safe-area-inset-top))] pb-[max(8px,env(safe-area-inset-bottom))] pl-[max(8px,env(safe-area-inset-left))] pr-[max(8px,env(safe-area-inset-right))]">
+      <div className="w-full max-w-[1280px] mx-auto flex-1 flex flex-col min-h-0 bg-slate-950/80 rounded-xl border-2 border-slate-800 overflow-hidden">
+        <div className="flex items-center gap-2 p-2 border-b-2 border-amber-500/40 bg-slate-900/90 shrink-0">
+          <button className="hud-btn w-11 h-10" onClick={onBack}>◀</button>
+          <div className="flex-1 min-w-0">
+            <div className="font-black text-lg tracking-widest text-amber-300 truncate leading-tight">{next ? 'MISSION PREP' : 'COMMAND HQ'}</div>
+            {next && <div className="text-[10px] text-slate-400 truncate">Promote officers, equip skills, upgrade units, unlock new COs — then deploy.</div>}
           </div>
-          <span className="block text-[10px] text-fuchsia-300 font-bold">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
+          <div className="text-sm font-black text-right leading-tight">
+            <div className="flex items-center justify-end gap-2">
+              <span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span>
+              <span className="text-cyan-300">💎 {gems}</span>
+            </div>
+            <span className="block text-[10px] text-fuchsia-300 font-bold">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
+          </div>
         </div>
-      </div>
-      <div className="flex gap-1.5 p-2 bg-slate-900/60">
-        {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units']] as [Tab, string][]).map(([t, l]) => (
-          <button key={t} onClick={() => { sfx.cursor(); setTab(t); }} className={`flex-1 menu-btn h-10 text-sm ${tab === t ? 'bg-amber-400 text-slate-900' : 'bg-slate-800'}`}>{l}</button>
-        ))}
-      </div>
+        <div className="flex gap-1.5 p-2 bg-slate-900/60 shrink-0">
+          {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units']] as [Tab, string][]).map(([t, l]) => (
+            <button key={t} onClick={() => { sfx.cursor(); setTab(t); }} className={`flex-1 menu-btn h-10 text-sm ${tab === t ? 'bg-amber-400 text-slate-900' : 'bg-slate-800'}`}>{l}</button>
+          ))}
+        </div>
 
-      <div className="flex-1 overflow-auto p-3 anim-fade" key={tab}>
+        <div className="flex-1 overflow-auto p-3 anim-fade" key={tab}>
         <div className="max-w-3xl mx-auto">
           {tab === 'cos' && (
             <>
@@ -348,10 +349,11 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
       </div>
 
       {next && (
-        <div className="p-2 border-t-2 border-emerald-400/50 bg-slate-900/95">
+        <div className="p-2 border-t-2 border-emerald-400/50 bg-slate-900/95 shrink-0">
           <button className="menu-btn w-full bg-emerald-400 text-slate-950 text-base shadow-[0_0_20px_rgba(52,211,153,0.5)]" onClick={() => { sfx.select(); next.onGo(); }}>{next.label}</button>
         </div>
       )}
+      </div>
 
       {slotPick !== null && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 anim-fade p-2" onClick={() => setSlotPick(null)}>

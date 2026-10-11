@@ -58,12 +58,12 @@ export const MISSIONS: MissionDef[] = [
     map: sym(['mmf..f.', 'mH=c...', 'fB==..c', '..f=.f.', '.c.====', 'f..f...', 'mm.c.ff', '.f...t.', 'mmm.f..']),
     units: mir(14, [['infantry', 4, 1], ['infantry', 4, 5], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 3], ['mech', 4, 3]], [['infantry', 9, 7]]),
     funds: [2000, 2000], weather: 'clear', fog: false, unitCap: [10, 10], objective: { type: 'rout' }, aiLevel: 1,
-    hint: 'Rout Grimm\'s raiders. Use artillery behind your tanks.',
+    hint: 'Eliminate Grimm\'s raiders. Use artillery behind your tanks.',
     briefing: [
       { who: 'narrator', text: 'Dawn breaks over Kessel Valley. Crimson Dominion forces strike without warning.' },
       { who: 'grimm', text: 'HAHAHA! The Republic sleeps! My horde will feast on your little cities!' },
       { who: 'dax', text: 'That loudmouth\'s got numbers, but no discipline. Hit him hard and hit him first.' },
-      { who: 'rhea', text: 'Keep artillery behind your front line. Tanks screen, guns punish. Rout every unit.' },
+      { who: 'rhea', text: 'Keep artillery behind your front line. Tanks screen, guns punish. Eliminate every unit.' },
     ],
     outro: [
       { who: 'grimm', text: 'Grr... this isn\'t over! The Baron will freeze your bones!' },
@@ -234,7 +234,7 @@ export const MISSIONS: MissionDef[] = [
       { who: 'narrator', text: 'The Ghost Range. The Architect\'s signal relay pulses beneath shifting sands.' },
       { who: 'nyx', text: 'The Architect gave me sight in the dark. I will not give it back.' },
       { who: 'sora', text: 'She\'s guarding the relay. Fog and sandstorms — the worst of both worlds.' },
-      { who: 'rhea', text: 'Rout her forces. Use every trick we\'ve learned.' },
+      { who: 'rhea', text: 'Eliminate her forces. Use every trick we\'ve learned.' },
     ],
     outro: [
       { who: 'nyx', text: 'The shadows... are leaving me. Perhaps that\'s for the best.' },
@@ -348,7 +348,7 @@ export const MISSIONS: MissionDef[] = [
     briefing: [
       { who: 'narrator', text: 'Six months of peace end with artillery fire along the new border.' },
       { who: 'volkov', text: 'These soldiers wear my uniform, but they do not follow my orders.' },
-      { who: 'rhea', text: 'Then we stop them together. Take the relay and rout the rogue column.' },
+      { who: 'rhea', text: 'Then we stop them together. Take the relay and eliminate the rogue column.' },
     ],
     outro: [
       { who: 'volkov', text: 'Their orders came from beneath the old capital.' },
@@ -578,7 +578,7 @@ export const MISSIONS: MissionDef[] = [
     briefing: [
       { who: 'narrator', text: 'Abyssal Trench. A pure naval armada battle across deep water and coral reefs.' },
       { who: 'mira', text: 'Pure naval combat. Cruisers shield your battleships from enemy submarines.' },
-      { who: 'rhea', text: 'Rout the enemy fleet and secure the naval sector.' },
+      { who: 'rhea', text: 'Eliminate the enemy fleet and secure the naval sector.' },
     ],
     outro: [
       { who: 'mira', text: 'The sea is clear. Flawless naval victory, Commander!' },
@@ -712,6 +712,6 @@ export const TUTORIAL: TutorialStep[] = [
     },
   },
   { title: 'YOUR UNITS', text: 'Forces span 3 main categories: Land, Air, and Navy. You will unlock and command new specialized units as you progress through the campaign.', event: 'roster', kind: 'info', speaker: 'rhea', units: ['tank', 'bcopter', 'battleship'] },
-  { title: 'SUMMARY', text: 'WIN: rout all enemies, or capture their HQ.\nCITY: +1,000G/day and a paid 2 HP repair.\nRADIO TOWER: no gold; +1 HP nearby; +1 move every 3rd turn.\nCOVER: cities/towers ★★★; forest ★★.\nAIR: refuel at friendly properties.\n\nTOP BAR: CO gauge and resources.\nBOTTOM BAR: details, Undo, End Turn.\nLOOK UP A UNIT: double-tap it, or tap the large bottom panel for Intel. Main menu → Field Manual lists every unit.', event: 'field-guide', kind: 'info', speaker: 'rhea' },
+  { title: 'SUMMARY', text: 'WIN: eliminate all enemies, or capture their HQ.\nCITY: +1,000G/day and a paid 2 HP repair.\nRADIO TOWER: no gold; +1 HP nearby; +1 move every 3rd turn.\nCOVER: cities/towers ★★★; forest ★★.\nAIR: refuel at friendly properties.\n\nTOP BAR: CO gauge and resources.\nBOTTOM BAR: details, Undo, End Turn.\nLOOK UP A UNIT: double-tap it, or tap the large bottom panel for Intel. Main menu → Field Manual lists every unit.', event: 'field-guide', kind: 'info', speaker: 'rhea' },
   { title: '5 · FREE PLAY', text: 'Training complete.\nUse what you learned and defeat every enemy unit.', event: 'free-play', kind: 'info', speaker: 'rhea' },
 ];

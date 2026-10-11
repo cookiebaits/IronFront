@@ -390,7 +390,7 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
           </div>
         </>
       ) : (
-        <div className="absolute inset-0 flex flex-col bg-grid">
+        <div className="absolute inset-0 flex flex-col bg-grid pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
           <div className="flex items-center gap-2 p-2 border-b-2 border-cyan-400/40 bg-slate-900/90">
             <button className="hud-btn w-11 h-10" onClick={backToLobby}>◀</button>
             <div className="font-black text-lg tracking-widest text-cyan-300 flex-1">ONLINE COMMAND</div>

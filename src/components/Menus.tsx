@@ -161,13 +161,15 @@ function Screen({ title, onBack, children, right }: { title: string; onBack: () 
     return () => removeEventListener('keydown', k);
   }, [onBack]);
   return (
-    <div className="absolute inset-0 flex flex-col bg-slate-950 bg-grid">
-      <div className="flex items-center gap-2 p-2 border-b-2 border-amber-500/40 bg-slate-900/90">
-        <button className="hud-btn w-11 h-10" onClick={onBack}>◀</button>
-        <div className="font-black text-lg tracking-widest text-amber-300 flex-1 truncate">{title}</div>
-        {right}
+    <div className="absolute inset-0 flex flex-col bg-slate-950 bg-grid p-2 sm:p-3 overflow-hidden pt-[max(8px,env(safe-area-inset-top))] pb-[max(8px,env(safe-area-inset-bottom))] pl-[max(8px,env(safe-area-inset-left))] pr-[max(8px,env(safe-area-inset-right))]">
+      <div className="w-full max-w-[1280px] mx-auto flex-1 flex flex-col min-h-0">
+        <div className="flex items-center gap-2 p-2 border-b-2 border-amber-500/40 bg-slate-900/90 rounded-t-xl shrink-0">
+          <button className="hud-btn w-11 h-10" onClick={onBack}>◀</button>
+          <div className="font-black text-lg tracking-widest text-amber-300 flex-1 truncate">{title}</div>
+          {right}
+        </div>
+        <div className="flex-1 overflow-auto p-3 bg-slate-950/80 rounded-b-xl border-x-2 border-b-2 border-slate-800 anim-fade">{children}</div>
       </div>
-      <div className="flex-1 overflow-auto p-3 anim-fade">{children}</div>
     </div>
   );
 }
@@ -204,7 +206,7 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
                       <div className="text-[11px] mt-0.5 flex gap-2 text-slate-300">
                         <span>{WEATHER_INFO[m.weather].icon}{m.weatherPool ? '🔄' : ''}</span>
                         {m.fog && <span>🌫 Fog</span>}
-                        <span>{m.objective.type === 'rout' ? '⚔ Rout' : m.objective.type === 'hq' ? '🏛 HQ' : `🛡 Survive ${m.objective.days}d`}</span>
+                        <span>{m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ' : `🛡 Survive ${m.objective.days}d`}</span>
                         <span>Lv{m.aiLevel}</span>
                       </div>
                       {save.missionAuditUnlocked && <div className="text-[9px] text-cyan-300 mt-1 font-bold">AUDIT DEPLOYMENT · YOU {deploymentValue(m, 0).toLocaleString()}G · FOE {deploymentValue(m, 1).toLocaleString()}G{m.boss ? ` · ${m.boss.phases ?? 1} boss phases` : ''}</div>}
@@ -322,14 +324,14 @@ export function DialogueScreen({ lines, title, onDone }: { lines: Dialogue[]; ti
   const co = COS[line.who];
   const right = co?.faction === 'crimson';
   return (
-    <div className="absolute inset-0 overflow-hidden" onClick={next}>
+    <div className="absolute inset-0 overflow-hidden pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]" onClick={next}>
       <TitleBg />
-      <div className="absolute top-3 left-0 right-0 text-center z-10">
+      <div className="absolute top-[max(12px,env(safe-area-inset-top))] left-0 right-0 text-center z-10">
         <div className="text-xs tracking-[0.4em] text-amber-300 font-bold">BRIEFING</div>
         <div className="text-2xl font-black text-white">{title}</div>
       </div>
-      <button className="absolute top-3 right-3 z-20 hud-btn px-3 h-9 text-xs font-bold" onClick={(e) => { e.stopPropagation(); onDone(); }}>SKIP ▶▶</button>
-      <div className="absolute bottom-0 left-0 right-0 z-10 p-3 flex flex-col items-stretch">
+      <button className="absolute top-[max(12px,env(safe-area-inset-top))] right-[max(12px,env(safe-area-inset-right))] z-20 hud-btn px-3 h-9 text-xs font-bold" onClick={(e) => { e.stopPropagation(); onDone(); }}>SKIP ▶▶</button>
+      <div className="absolute bottom-[env(safe-area-inset-bottom)] left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-10 p-3 flex flex-col items-stretch">
         <div className={`flex ${right ? 'justify-end' : 'justify-start'} mb-[-12px] relative z-10`} key={i}>
           <div className={right ? 'anim-slide-left' : 'anim-slide-right'}>
             <Portrait id={line.who} size={Math.min(170, innerHeight * 0.26)} className="shadow-2xl" />
@@ -565,7 +567,7 @@ export function Help({ onBack, onTutorial }: { onBack: () => void; onTutorial: (
             <li>Damage scales with attacker HP. Defenders get ★ terrain stars × HP as protection (air units get none).</li>
             <li>Direct units counter-attack adjacent attackers. Indirect units (artillery, rockets, missiles, battleships) cannot move and fire in the same turn and never counter. Indirect fire ignores intervening units: it shoots over occupied squares.</li>
             <li>Infantry & Mechs capture properties (20 points; capture rate = HP). Moving off resets progress.</li>
-            <li>Cities, bases, airports, ports and HQs pay +1000G per day. Units can repair on friendly properties for funds. Capture the enemy HQ to win instantly, or rout all enemy units on rout missions.</li>
+            <li>Cities, bases, airports, ports and HQs pay +1000G per day. Units can repair on friendly properties for funds. Capture the enemy HQ to win instantly, or eliminate all enemy units on elimination missions.</li>
             <li><b>Cities vs Radio Towers:</b> a City pays +1,000G a day and repairs 2 HP (for a fee). A Radio Tower pays no gold, but heals units on or beside it +1 HP free, gives +10% attack, and grants +1 movement to all your units every 3rd turn. Both give ★★★ defense (like a forest ★★).</li>
             <li>Units are limited per mission — check the slot counter. Each factory deploys once per day.</li>
             <li>Kills grant veteran chevrons (+5% attack each, max 3).</li>

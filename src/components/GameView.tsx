@@ -1819,7 +1819,7 @@ export default function GameView(props: Props) {
       return;
     }
     const obj = mission.objective;
-    const sub = obj.type === 'rout' ? 'Objective: Rout all enemy units' : obj.type === 'hq' ? 'Objective: Capture the enemy HQ' : `Objective: Survive ${obj.days} days`;
+    const sub = obj.type === 'rout' ? 'Objective: Eliminate all enemy units' : obj.type === 'hq' ? 'Objective: Capture the enemy HQ' : `Objective: Survive ${obj.days} days`;
     ui.current.mode = 'busy';
     (async () => {
       if (props.resume) await showBanner('BATTLE RESUMED', `${mission.name} · Day ${gs.day}`, 0, 1500);
