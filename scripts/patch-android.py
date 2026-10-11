@@ -15,9 +15,16 @@ text = manifest.read_text()
 activity_match = re.search(r"<activity\b[^>]*android:name=\"\.MainActivity\"[^>]*>", text, re.S)
 if not activity_match:
     raise SystemExit("Could not find MainActivity in AndroidManifest.xml")
+orientation_mode = "sensorLandscape"
+if len(sys.argv) > 1 and sys.argv[1].lower() in ("portrait", "sensorportrait"):
+    orientation_mode = "sensorPortrait"
+
 tag = activity_match.group(0)
-if "android:screenOrientation=" not in tag:
-    tag = tag[:-1] + '\n            android:screenOrientation="sensorLandscape">'
+if "android:screenOrientation=" in tag:
+    tag = re.sub(r'android:screenOrientation="[^"]*"', f'android:screenOrientation="{orientation_mode}"', tag)
+else:
+    tag = tag[:-1] + f'\n            android:screenOrientation="{orientation_mode}">'
+
 if "android:configChanges=" in tag and "orientation" not in tag:
     tag = re.sub(r'android:configChanges="([^"]*)"', lambda m: f'android:configChanges="{m.group(1)}|orientation|screenSize"', tag)
 text = text[:activity_match.start()] + tag + text[activity_match.end():]

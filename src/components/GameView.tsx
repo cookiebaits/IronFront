@@ -129,7 +129,7 @@ export default function GameView(props: Props) {
   const topHudRef = useRef<HTMLDivElement>(null);
   const bottomHudRef = useRef<HTMLDivElement>(null);
   const cam = useRef({ x: 0, y: 0, tx: null as number | null, ty: null as number | null });
-  const view = useRef({ vw: 0, vh: 0, ts: 56, zoom: 1, dpr: 1 });
+  const view = useRef({ vw: 0, vh: 0, ts: 56, zoom: 0.75, dpr: 1 });
   const anims = useRef(new Map<number, Anim>());
   const parts = useRef<Particle[]>([]);
   const floats = useRef<Float[]>([]);
@@ -1228,6 +1228,8 @@ export default function GameView(props: Props) {
     terrCache.current.key = '';
     bump();
   };
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
 
   const handleDoubleTap = (x: number, y: number) => {
     if (!inBounds(gs, x, y) || !isLocalTurn() || !isVis(x, y)) return;
@@ -1290,11 +1292,23 @@ export default function GameView(props: Props) {
     onResize();
     window.addEventListener('resize', onResize);
 
-    // pointer
+    // pointer & pinch-to-zoom tracking
     let down: { x: number; y: number; cx: number; cy: number; id: number; panned: boolean } | null = null;
+    const activePointers = new Map<number, { x: number; y: number }>();
+    let initialPinchDist = 0;
+    let initialPinchZoom = 1;
+
     const onDown = (e: PointerEvent) => {
-      down = { x: e.clientX, y: e.clientY, cx: cam.current.x, cy: cam.current.y, id: e.pointerId, panned: false };
-      cam.current.tx = null;
+      activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (activePointers.size === 2) {
+        const pts = Array.from(activePointers.values());
+        initialPinchDist = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        initialPinchZoom = view.current.zoom;
+        if (down) down.panned = true; // prevent tap on gesture end
+      } else if (activePointers.size === 1) {
+        down = { x: e.clientX, y: e.clientY, cx: cam.current.x, cy: cam.current.y, id: e.pointerId, panned: false };
+        cam.current.tx = null;
+      }
     };
     const tileFromEvent = (e: PointerEvent) => {
       const r = cv.getBoundingClientRect();
@@ -1302,7 +1316,19 @@ export default function GameView(props: Props) {
       return { x: Math.floor((e.clientX - r.left + cam.current.x) / ts), y: Math.floor((e.clientY - r.top + cam.current.y) / ts) };
     };
     const onMove = (e: PointerEvent) => {
-      if (down && down.id === e.pointerId) {
+      if (activePointers.has(e.pointerId)) {
+        activePointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      }
+      if (activePointers.size === 2 && initialPinchDist > 0) {
+        const pts = Array.from(activePointers.values());
+        const distNow = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y);
+        const scale = distNow / initialPinchDist;
+        const targetZoom = Math.max(0.4, Math.min(2.0, initialPinchZoom * scale));
+        const deltaZoom = (targetZoom - view.current.zoom) / 0.2;
+        if (Math.abs(deltaZoom) > 0.05) {
+          zoomRef.current(deltaZoom);
+        }
+      } else if (down && down.id === e.pointerId && activePointers.size === 1) {
         const dx = e.clientX - down.x, dy = e.clientY - down.y;
         if (!down.panned && Math.hypot(dx, dy) > 10) down.panned = true;
         if (down.panned) { cam.current.x = down.cx - dx; cam.current.y = down.cy - dy; clampCam(); }
@@ -1315,6 +1341,10 @@ export default function GameView(props: Props) {
       }
     };
     const onUp = (e: PointerEvent) => {
+      activePointers.delete(e.pointerId);
+      if (activePointers.size < 2) {
+        initialPinchDist = 0;
+      }
       if (!down || down.id !== e.pointerId) return;
       const wasPan = down.panned;
       down = null;
@@ -1663,8 +1693,6 @@ export default function GameView(props: Props) {
 
   const handleTapRef = useRef(handleTap);
   handleTapRef.current = handleTap;
-  const zoomRef = useRef(zoom);
-  zoomRef.current = zoom;
 
   // ---------- watchdog: guarantees the game can never soft-lock ----------
   const overlayRef = useRef(false);
