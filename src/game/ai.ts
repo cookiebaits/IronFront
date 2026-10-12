@@ -109,11 +109,11 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
   const myVal = def.cost * (u.hp / 100);
   const riskW = lvl <= 0 ? 0 : lvl === 1 ? 0.35 : lvl === 2 ? 0.7 : 0.9;
 
-  // Low-fuel aircraft prioritize the nearest friendly refuel site over combat.
-  if (def.moveType === 'air' && u.fuel !== undefined && u.fuel <= unitMods(s, u).move + 3) {
+  // Low-fuel aircraft & naval units prioritize refueling / recharging.
+  if ((def.cat === 'air' || def.cat === 'naval') && u.fuel !== undefined && u.fuel <= Math.max(2, unitMods(s, u).move + 1)) {
     let fx = -1, fy = -1, nearest = Infinity;
     for (let y = 0; y < s.h; y++) for (let x = 0; x < s.w; x++) {
-      if (!isRefuelSite(s, team, x, y)) continue;
+      if (!isRefuelSite(s, team, x, y) && def.cat !== 'air') continue;
       const occ = unitAt(s, x, y);
       if (occ && occ.id !== u.id) continue;
       const d = dist(u.x, u.y, x, y);
@@ -128,6 +128,8 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
         const val = field[k] + threatValue(s, u, x, y, threats) * (lvl >= 2 ? 0.04 : 0.01);
         if (val < best) { best = val; bestK = k; }
       }
+      u.fuel = def.fuel;
+      if (def.cat === 'air') u.landed = true;
       return { unitId: u.id, path: pathTo(s, reach, bestK % s.w, Math.floor(bestK / s.w)), action: 'wait' };
     }
   }

@@ -231,7 +231,7 @@ export function passableFor(type: UnitType, t: TerrainType): boolean {
   return isFinite(MOVE_COST[t][UNITS[type].moveType]);
 }
 
-export interface ReachNode { cost: number; prev: number }
+export interface ReachNode { cost: number; prev: number; straight: boolean }
 
 /** Dijkstra over the grid. visibleTo: if set, only enemies visible to that team block movement */
 export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOverride?: number): Map<number, ReachNode> {
@@ -243,7 +243,7 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
 
   const res = new Map<number, ReachNode>();
   const start = u.y * s.w + u.x;
-  res.set(start, { cost: 0, prev: -1 });
+  res.set(start, { cost: 0, prev: -1, straight: true });
   const open: number[] = [start];
   const occ = new Map<number, Unit>();
   for (const o of s.units) occ.set(o.y * s.w + o.x, o);
@@ -251,7 +251,8 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
     let bi = 0;
     for (let i = 1; i < open.length; i++) if (res.get(open[i])!.cost < res.get(open[bi])!.cost) bi = i;
     const cur = open.splice(bi, 1)[0];
-    const cc = res.get(cur)!.cost;
+    const node = res.get(cur)!;
+    const cc = node.cost;
     const cx = cur % s.w, cy = Math.floor(cur / s.w);
     for (const [dx, dy] of DIRS) {
       const nx = cx + dx, ny = cy + dy;
@@ -263,7 +264,7 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
 
       // Rule P1: Road +1 move, Fields -1 move. Applies on straight line.
       // If moving 1 square to a different terrain, unaffected by starting bonus/penalty.
-      const isStraight = nx === u.x || ny === u.y;
+      const isStraight = node.straight && (nx === u.x || ny === u.y);
       const isOneSquareTerrainChange = dist(u.x, u.y, nx, ny) === 1 && startT !== s.tiles[ny][nx].t;
       let effectiveMaxMove = isOneSquareTerrainChange
         ? baseMoveNoBonus
@@ -278,7 +279,7 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
       if (u.fuel !== undefined && c >= u.fuel && !isRefuelSite(s, u.team, nx, ny)) continue;
       const ex = res.get(k);
       if (!ex || ex.cost > c) {
-        res.set(k, { cost: c, prev: cur });
+        res.set(k, { cost: c, prev: cur, straight: isStraight });
         if (!open.includes(k)) open.push(k);
       }
     }
