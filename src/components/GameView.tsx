@@ -530,7 +530,7 @@ export default function GameView(props: Props) {
         if (d.length) menu.push({ id: 'drop', label: 'Drop' });
       }
       const unitDef = UNITS[unit.type];
-      if ((unitDef.cat === 'air' || unitDef.cat === 'naval') && unit.fuel !== undefined && unit.fuel < (unitDef.fuel ?? Infinity)) {
+      if (unitDef.cat === 'air' || unitDef.cat === 'naval') {
         const isDrone = unit.type === 'drone' || unit.type === 'gundrone';
         menu.push({ id: 'refuel', label: isDrone ? 'Recharge' : 'Refuel' });
       }

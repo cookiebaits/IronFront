@@ -263,9 +263,13 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
 
       // Rule P1: Road +1 move, Fields -1 move. Applies on straight line.
       // If moving 1 square to a different terrain, unaffected by starting bonus/penalty.
-      const isStraight = (u.x === cx && cx === nx) || (u.y === cy && cy === ny);
+      const isStraight = nx === u.x || ny === u.y;
       const isOneSquareTerrainChange = dist(u.x, u.y, nx, ny) === 1 && startT !== s.tiles[ny][nx].t;
-      let effectiveMaxMove = isOneSquareTerrainChange ? baseMoveNoBonus : isStraight ? modsWithBonus.move : baseMoveNoBonus;
+      let effectiveMaxMove = isOneSquareTerrainChange
+        ? baseMoveNoBonus
+        : isStraight
+        ? modsWithBonus.move
+        : Math.min(baseMoveNoBonus, modsWithBonus.move);
       if (maxOverride !== undefined) effectiveMaxMove = Math.min(maxOverride, effectiveMaxMove);
       const max = Math.min(effectiveMaxMove, u.fuel ?? Infinity);
 
@@ -733,10 +737,16 @@ export function endTurn(s: GameState, rng = Math.random): TurnStartInfo {
       }
     }
   }
-  // Landed air units automatically return to air after turn start repairs/refuels are processed
+  // Fuel consumption & landed state update for turn start
   for (const u of s.units) {
-    if (u.team === t && u.landed) {
-      u.landed = false;
+    if (u.team === t) {
+      const d = UNITS[u.type];
+      if ((d.cat === 'air' || d.cat === 'naval') && u.fuel !== undefined && !u.landed) {
+        u.fuel = Math.max(0, u.fuel - 1);
+      }
+      if (u.landed) {
+        u.landed = false;
+      }
     }
   }
   // objectives

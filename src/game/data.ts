@@ -116,11 +116,11 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { HELI: 100, PLANE: 60 }, desc: 'Air superiority jet. Attacks aircraft only.' },
   bomber: { name: 'Bomber', cost: 22000, move: 7, moveType: 'air', armor: 'PLANE', cat: 'air', range: [1, 1], vision: 2, fuel: 18,
     dmg: { INF: 110, LIGHT: 100, TANK: 105, HEAVY: 95, SHIP: 75, SUB: 95 }, desc: 'Heavy bomber. Obliterates ground & sea.' },
-  cruiser: { name: 'Cruiser', cost: 18000, move: 6, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 3,
+  cruiser: { name: 'Cruiser', cost: 18000, move: 6, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 3, fuel: 25,
     dmg: { HELI: 115, PLANE: 65, SUB: 90, SHIP: 25 }, desc: 'Escort ship. Hunts subs and aircraft.' },
-  sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5,
+  sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5, fuel: 20,
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
-  battleship: { name: 'Battleship', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, indirect: true,
+  battleship: { name: 'Battleship', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6.' },
 };
 
