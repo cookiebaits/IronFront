@@ -60,7 +60,7 @@ interface Props {
 }
 
 type Mode = 'idle' | 'selected' | 'moving' | 'menu' | 'target' | 'drop' | 'busy' | 'build';
-type MenuId = 'fire' | 'capture' | 'load' | 'drop' | 'wait' | 'cancel';
+type MenuId = 'fire' | 'capture' | 'load' | 'drop' | 'refuel' | 'wait' | 'cancel';
 interface UI {
   mode: Mode;
   selId: number | null;
@@ -529,6 +529,11 @@ export default function GameView(props: Props) {
         unit.x = ox; unit.y = oy;
         if (d.length) menu.push({ id: 'drop', label: 'Drop' });
       }
+      const unitDef = UNITS[unit.type];
+      if (unitDef.cat === 'air' || unitDef.cat === 'naval') {
+        const isDrone = unit.type === 'drone' || unit.type === 'gundrone';
+        menu.push({ id: 'refuel', label: isDrone ? 'Recharge' : 'Refuel' });
+      }
       menu.push({ id: 'wait', label: 'Wait' });
     }
     if (!u.pending?.ambush && !u.pending?.committed) menu.push({ id: 'cancel', label: 'Cancel' });
@@ -631,6 +636,15 @@ export default function GameView(props: Props) {
       if (u.pending.ambush) { float(unit.x, unit.y, 'AMBUSH!', '#f87171', 1.2); shake.current = 10; }
       const tTankCity = vertCoord(4, 1);
       if (mission.tutorial && guideEvent() === 'wait-tank-city' && unit.type === 'tank' && unit.x === tTankCity.x && unit.y === tTankCity.y) tutEvent('wait-tank-city');
+    } else if (id === 'refuel') {
+      const unitDef = UNITS[unit.type];
+      unit.fuel = unitDef.fuel;
+      if (unitDef.cat === 'air') unit.landed = true;
+      unit.moved = true;
+      const isDrone = unit.type === 'drone' || unit.type === 'gundrone';
+      sfx.build();
+      sparkle(unit.x, unit.y, ['#38bdf8', '#7dd3fc', '#fff'], 24);
+      float(unit.x, unit.y, isDrone ? 'RECHARGED' : 'REFUELED', '#7dd3fc', 1.2);
     } else if (id === 'capture') {
       // Boot Camp properties are weakened so each lesson demonstrates capture in one action.
       if (mission.tutorial && (guideEvent() === 'first-capture' || guideEvent() === 'capture-radio')) {
@@ -1599,7 +1613,12 @@ export default function GameView(props: Props) {
           g.strokeStyle = `rgba(253,224,71,${pulse})`; g.lineWidth = 3;
           g.beginPath(); g.ellipse(cx, cy + ts * 0.28, ts * 0.4, ts * 0.14, 0, 0, Math.PI * 2); g.stroke();
         }
-        drawUnit(g, u.type, cx, cy, ts * 0.86, u.team, u.facing, now + u.id * 137, dim);
+        drawUnit(g, u.type, cx, cy, ts * 0.86, u.team, u.facing, now + u.id * 137, dim, true, u.landed ?? false);
+        if (u.landed) {
+          g.fillStyle = '#f59e0b'; g.fillRect(cx - ts * 0.42, cy - ts * 0.46, ts * 0.45, ts * 0.17);
+          g.fillStyle = '#fff'; g.font = `bold ${Math.round(ts * 0.11)}px Oxanium, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
+          g.fillText('LANDED', cx - ts * 0.2, cy - ts * 0.375);
+        }
         // badges
         const hp = dispHp(u.hp);
         if (hp < 10) {
@@ -2288,7 +2307,7 @@ export default function GameView(props: Props) {
               className={`h-10 rounded-md text-sm font-black tracking-wide text-left px-3 border transition-colors ${i === U.mIdx ? 'bg-amber-400 text-slate-900 border-amber-200' : m.id === 'cancel' ? 'bg-slate-800 text-slate-300 border-slate-700' : 'bg-slate-700 text-white border-slate-600'}`}
               onPointerEnter={() => { U.mIdx = i; bump(); }}
               onClick={() => chooseMenu(m.id)}>
-              {m.id === 'fire' ? '🎯 ' : m.id === 'capture' ? '🚩 ' : m.id === 'wait' ? '⏹ ' : m.id === 'load' ? '⬇ ' : m.id === 'drop' ? '⬆ ' : '↩ '}{m.label}
+              {m.id === 'fire' ? '🎯 ' : m.id === 'capture' ? '🚩 ' : m.id === 'wait' ? '⏹ ' : m.id === 'load' ? '⬇ ' : m.id === 'drop' ? '⬆ ' : m.id === 'refuel' ? '⛽ ' : '↩ '}{m.label}
             </button>
           ))}
         </div>

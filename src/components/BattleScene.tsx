@@ -13,7 +13,7 @@ interface Props {
 }
 
 const RAPID: UnitType[] = ['infantry', 'aa', 'recon', 'drone', 'gundrone'];
-const BIG: UnitType[] = ['battleship', 'cruiser', 'sub', 'bomber', 'heavy', 'fighter'];
+const BIG: UnitType[] = ['battleship', 'cruiser', 'sub', 'bomber', 'fighter'];
 const count = (t: UnitType, hp: number) => (hp <= 0 ? 0 : BIG.includes(t) ? Math.ceil(hp / 34) : Math.ceil(hp / 20));
 const SLOTS = [[0.58, 0.02], [0.34, 0.08], [0.8, 0.12], [0.48, 0.2], [0.22, 0.24]];
 
@@ -124,12 +124,14 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
       const slideL = Math.min(1, e / (400 * k));
       for (let i = alive.L - 1; i >= 0; i--) {
         const p = slotPos(0, i, r.aType);
-        drawUnit(g, r.aType, p.x - (1 - slideL) * PW + recoilL, p.y - us * 0.2, us, r.aTeam, 1, e + i * 90);
+        const scaleL = r.aType === 'heavy' ? us * 1.35 : us;
+        drawUnit(g, r.aType, p.x - (1 - slideL) * PW + recoilL, p.y - us * 0.2, scaleL, r.aTeam, 1, e + i * 90);
       }
       for (let i = alive.R - 1; i >= 0; i--) {
         const p = slotPos(1, i, r.dType);
         const flash = e > T.hit1 && e < T.hit1 + 120 * k;
-        drawUnit(g, r.dType, p.x + (1 - slideL) * PW + recoilR, p.y - us * 0.2, us, r.dTeam, -1, e + i * 90, flash);
+        const scaleR = r.dType === 'heavy' ? us * 1.35 : us;
+        drawUnit(g, r.dType, p.x + (1 - slideL) * PW + recoilR, p.y - us * 0.2, scaleR, r.dTeam, -1, e + i * 90, flash);
       }
       // projectiles
       const shots = (from: 0 | 1, n: number, type: UnitType, tType: UnitType, tAlive: number, tFire: number, tHit: number, indirect: boolean) => {

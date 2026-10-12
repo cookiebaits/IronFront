@@ -2,7 +2,7 @@ export type Team = 0 | 1;
 export type Owner = Team | -1;
 
 export type TerrainType =
-  | 'plain' | 'forest' | 'mountain' | 'road' | 'bridge' | 'river' | 'sea' | 'shoal' | 'reef'
+  | 'plain' | 'forest' | 'mountain' | 'road' | 'dirt_road' | 'bridge' | 'river' | 'sea' | 'shoal' | 'reef'
   | 'city' | 'base' | 'airport' | 'port' | 'hq' | 'tower';
 
 export type MoveType = 'foot' | 'mech' | 'treads' | 'tires' | 'air' | 'sea';
@@ -42,6 +42,7 @@ export interface Unit {
   vet: number;
   facing: 1 | -1;
   fuel?: number;
+  landed?: boolean;
   boss?: string;
   bossPhases?: number;
 }

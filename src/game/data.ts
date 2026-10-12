@@ -1,10 +1,11 @@
 import type { ArmorClass, Category, ModId, MoveType, Owner, TerrainType, UnitDef, UnitType, Weather } from './types';
 
 export const TERRAIN: Record<TerrainType, { name: string; def: number; prop: boolean; income: boolean }> = {
-  plain: { name: 'Open ground', def: 0, prop: false, income: false },
+  plain: { name: 'Fields', def: 0, prop: false, income: false },
   forest: { name: 'Forest', def: 2, prop: false, income: false },
   mountain: { name: 'Mountain', def: 4, prop: false, income: false },
   road: { name: 'Road', def: 0, prop: false, income: false },
+  dirt_road: { name: 'Dirt Road', def: 0, prop: false, income: false },
   bridge: { name: 'Bridge', def: 0, prop: false, income: false },
   river: { name: 'River', def: 0, prop: false, income: false },
   sea: { name: 'Sea', def: 0, prop: false, income: false },
@@ -23,6 +24,7 @@ export const CHAR_MAP: Record<string, { t: TerrainType; owner: Owner }> = {
   f: { t: 'forest', owner: -1 },
   m: { t: 'mountain', owner: -1 },
   '=': { t: 'road', owner: -1 },
+  d: { t: 'dirt_road', owner: -1 },
   '#': { t: 'bridge', owner: -1 },
   '~': { t: 'river', owner: -1 },
   w: { t: 'sea', owner: -1 },
@@ -53,7 +55,7 @@ export const MOVE_COST: Record<TerrainType, Record<MoveType, number>> = {
   plain: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: INF },
   forest: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: INF },
   mountain: { foot: 2, mech: 2, treads: INF, tires: INF, air: 1, sea: INF },
-  road: LAND1, bridge: LAND1, city: LAND1, base: LAND1, airport: LAND1, hq: LAND1, tower: LAND1,
+  road: LAND1, dirt_road: LAND1, bridge: LAND1, city: LAND1, base: LAND1, airport: LAND1, hq: LAND1, tower: LAND1,
   port: { foot: 1, mech: 1, treads: 1, tires: 1, air: 1, sea: 1 },
   river: { foot: 2, mech: 1, treads: INF, tires: INF, air: 1, sea: INF },
   sea: { foot: INF, mech: INF, treads: INF, tires: INF, air: 1, sea: 1 },
@@ -114,11 +116,11 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { HELI: 100, PLANE: 60 }, desc: 'Air superiority jet. Attacks aircraft only.' },
   bomber: { name: 'Bomber', cost: 22000, move: 7, moveType: 'air', armor: 'PLANE', cat: 'air', range: [1, 1], vision: 2, fuel: 18,
     dmg: { INF: 110, LIGHT: 100, TANK: 105, HEAVY: 95, SHIP: 75, SUB: 95 }, desc: 'Heavy bomber. Obliterates ground & sea.' },
-  cruiser: { name: 'Cruiser', cost: 18000, move: 6, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 3,
+  cruiser: { name: 'Cruiser', cost: 18000, move: 6, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 3, fuel: 25,
     dmg: { HELI: 115, PLANE: 65, SUB: 90, SHIP: 25 }, desc: 'Escort ship. Hunts subs and aircraft.' },
-  sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5,
+  sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5, fuel: 20,
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
-  battleship: { name: 'Battleship', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, indirect: true,
+  battleship: { name: 'Battleship', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6.' },
 };
 
@@ -309,7 +311,7 @@ export const COS: Record<string, CODef> = {
     bio: 'Renowned military doctor whose nanite fields keep troops in the fight endlessly.',
     d2d: 'Friendly units on properties heal +1 HP per turn automatically.', powerName: 'Field Triage', powerDesc: 'All friendly units recover 2 HP.',
     superName: 'Nanite Restoration', superDesc: 'All friendly units recover 4 HP and +30% defense.', powerCost: 45, superCost: 95 },
-  architect: { id: 'architect', name: 'The Architect', title: 'Strategist', faction: 'crimson', color: '#e11d48', emoji: '🔺',
+  architect: { id: 'architect', name: 'Architect', title: 'Strategist', faction: 'crimson', color: '#e11d48', emoji: '🔺',
     bio: 'A war-machine intelligence that orchestrated the entire conflict. Calculates everything.',
     d2d: 'All units +10% atk & def. Unaffected by sandstorms.', powerName: 'Recalibrate', powerDesc: 'All units heal 3 HP.',
     superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 120, immune: 'sand' },

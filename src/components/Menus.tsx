@@ -479,14 +479,28 @@ export function Skirmish({ save, onBack, onStart }: { save: SaveData; onBack: ()
           <div className="flex flex-wrap gap-1.5">{PLAYABLE_ORDER.filter((c) => save.unlockedCos.includes(c)).map((c) => (
             <button key={c} onClick={() => sel('co', c)} className={`rounded-lg p-0.5 border-2 ${cfg.co === c ? 'border-amber-400' : 'border-transparent opacity-60'}`}><Portrait id={c} size={48} /></button>
           ))}</div>
-          <div className="text-[11px] text-slate-300 mt-1">{COS[cfg.co].name}: {COS[cfg.co].d2d} <button className="text-sky-300 font-bold underline" onClick={() => setInfo(cfg.co)}>ⓘ Powers</button></div>
+          <div className="hud-panel p-2.5 flex items-center gap-3 mt-1.5">
+            <Portrait id={cfg.co} size={56} />
+            <div className="flex-1 min-w-0 text-xs">
+              <div className="font-bold text-white text-sm">{COS[cfg.co].name} <span className="text-slate-400 text-xs">({COS[cfg.co].title})</span></div>
+              <div className="text-slate-300 mt-0.5">{COS[cfg.co].d2d}</div>
+            </div>
+            <button className="text-sky-300 font-bold underline text-xs" onClick={() => setInfo(cfg.co)}>ⓘ Powers</button>
+          </div>
         </div>
         <div>
           <div className="text-xs text-slate-400 mb-1 font-bold">ENEMY CO</div>
           <div className="flex flex-wrap gap-1.5">{PLAYABLE_ORDER.map((c) => (
             <button key={c} onClick={() => sel('enemy', c)} className={`rounded-lg p-0.5 border-2 ${cfg.enemy === c ? 'border-rose-400' : 'border-transparent opacity-60'}`}><Portrait id={c} size={48} /></button>
           ))}</div>
-          <div className="text-[11px] text-slate-300 mt-1">{COS[cfg.enemy].name}: {COS[cfg.enemy].d2d} <button className="text-rose-300 font-bold underline" onClick={() => setInfo(cfg.enemy)}>ⓘ Powers</button></div>
+          <div className="hud-panel p-2.5 flex items-center gap-3 mt-1.5">
+            <Portrait id={cfg.enemy} size={56} />
+            <div className="flex-1 min-w-0 text-xs">
+              <div className="font-bold text-rose-300 text-sm">{COS[cfg.enemy].name} <span className="text-slate-400 text-xs">({COS[cfg.enemy].title})</span></div>
+              <div className="text-slate-300 mt-0.5">{COS[cfg.enemy].d2d}</div>
+            </div>
+            <button className="text-rose-300 font-bold underline text-xs" onClick={() => setInfo(cfg.enemy)}>ⓘ Powers</button>
+          </div>
         </div>
         <div>
           <div className="text-xs text-slate-400 mb-1 font-bold">WEATHER</div>
