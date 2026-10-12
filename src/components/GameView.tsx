@@ -106,12 +106,17 @@ export default function GameView(props: Props) {
     gsRef.current = createGame(mission, props.playerCo, props.enemyCo, { unitUps: props.online ? {} : save.unitUps ?? {}, coRank: rank, skills }, { ...props.opts, vertical: isVert });
   }
   const gs = gsRef.current;
-  // Forward-compatible resume migration for saves made before the separate skill gauge.
+  // Forward-compatible resume migration for saves made before the separate skill gauge and unit fuel.
   gs.skillMeter ??= [0, 0];
   gs.skillMeterMax ??= [Math.max(1, ...gs.skills[0].map((id) => SKILLS[id]?.cost ?? 0)), Math.max(1, ...gs.skills[1].map((id) => SKILLS[id]?.cost ?? 0))];
   gs.skillWeatherImmune ??= [false, false];
   // Skill costs no longer extend the Power/Super meter.
   gs.meterMax = [ultimateCost(gs.cos[0]), ultimateCost(gs.cos[1])];
+  for (const u of gs.units) {
+    if (u.fuel === undefined && UNITS[u.type]?.fuel !== undefined) {
+      u.fuel = UNITS[u.type].fuel;
+    }
+  }
   const localTeam: Team = props.online?.localTeam ?? 0;
   const isLocalTurn = () => gs.turn === localTeam && (!propsRef.current.online || propsRef.current.online.canAct);
 
