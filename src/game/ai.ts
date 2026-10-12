@@ -1,7 +1,7 @@
 import { MOVE_COST, TERRAIN, UNITS, buildsAt, coCost, weatherCost } from './data';
 import {
   DIRS, calcDamage, canActivate, canAttackAny, canAttackType, canStop, dist, dispHp, effWeather, inBounds, isIndirect,
-  isRefuelSite, pathTo, reachable, targetsFrom, unitAt, unitCount, unitMods,
+  isRefuelSite, pathTo, reachable, targetsFrom, unitAt, unitCount, unitMods, visibility,
 } from './engine';
 import type { GameState, Team, Unit, UnitType } from './types';
 
@@ -48,10 +48,12 @@ function distanceField(s: GameState, u: Unit, gx: number, gy: number): Float32Ar
 /** For each tile, list of enemy (player) units able to attack it next turn */
 export function threatMap(s: GameState, team: Team): Map<number, Unit[]> {
   const out = new Map<number, Unit[]>();
+  const aiVis = visibility(s, team);
   for (const e of s.units) {
     if (e.team === team || !canAttackAny(e.type)) continue;
+    if (aiVis && !aiVis.has(e.y * s.w + e.x)) continue; // AI only considers threats from visible enemy units
     const m = unitMods(s, e);
-    const origins = isIndirect(e.type) ? [e.y * s.w + e.x] : [...reachable(s, e, null).keys()];
+    const origins = isIndirect(e.type) ? [e.y * s.w + e.x] : [...reachable(s, e, aiVis).keys()];
     const seen = new Set<number>();
     for (const k of origins) {
       const ox = k % s.w, oy = Math.floor(k / s.w);
@@ -101,7 +103,8 @@ export function nextAIUnit(s: GameState, team: Team): Unit | null {
 export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>): AIPlan {
   const team = u.team;
   const lvl = s.aiLevel;
-  const reach = reachable(s, u, null);
+  const aiVis = visibility(s, team);
+  const reach = reachable(s, u, aiVis);
   const def = UNITS[u.type];
   const myVal = def.cost * (u.hp / 100);
   const riskW = lvl <= 0 ? 0 : lvl === 1 ? 0.35 : lvl === 2 ? 0.7 : 0.9;
@@ -129,8 +132,8 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
     }
   }
 
-  // pick strategic goal
-  const enemies = s.units.filter((e) => e.team !== team);
+  // pick strategic goal (AI only sees enemy units in its Fog of War vision)
+  const enemies = s.units.filter((e) => e.team !== team && (!aiVis || aiVis.has(e.y * s.w + e.x)));
   let goalX = -1, goalY = -1, goalScore = -Infinity;
   if (def.capture) {
     for (let y = 0; y < s.h; y++) for (let x = 0; x < s.w; x++) {
@@ -209,8 +212,8 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
       if (sc > bestScore) { bestScore = sc; best = { unitId: u.id, path: pathTo(s, reach, x, y), action: 'capture' }; }
     }
 
-    // attack
-    const targets = targetsFrom(s, u, x, y, moved);
+    // attack (targets must be visible to AI)
+    const targets = targetsFrom(s, u, x, y, moved, aiVis);
     for (const t of targets) {
       const dmg = Math.min(t.hp, calcDamage(s, fakeU, x, y, t, t.x, t.y, u.hp, 4));
       const kill = dmg >= t.hp;
@@ -235,7 +238,8 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
 export function planBuilds(s: GameState, team: Team): { x: number; y: number; type: UnitType }[] {
   const out: { x: number; y: number; type: UnitType }[] = [];
   const co = s.cos[team];
-  const foes = s.units.filter((u) => u.team !== team);
+  const aiVis = visibility(s, team);
+  const foes = s.units.filter((u) => u.team !== team && (!aiVis || aiVis.has(u.y * s.w + u.x)));
   let funds = s.funds[team];
   let count = unitCount(s, team);
   const capturers = s.units.filter((u) => u.team === team && UNITS[u.type].capture).length;
