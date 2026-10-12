@@ -107,6 +107,9 @@ export interface MissionDef {
   boss?: BossDef;
   par: number; // par days for score
   unlockCo?: string;
+  forcedCo?: string; // pre-selected forced CO for story focus
+  recommendedRank?: number; // recommended CO rank/level
+  recommendedUpgrades?: number; // recommended total upgrade tiers
   hint: string;
 }
 

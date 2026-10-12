@@ -11,6 +11,134 @@ import { GraphicsSettingsModal } from './GraphicsSettingsModal';
 import type { Category, Dialogue, ModId, SaveData, Settings, UnitType, Weather } from '../game/types';
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
 
+/* ---------------- Character Stories ---------------- */
+export function CharacterStories({ save, onBack, onStart }: { save: SaveData; onBack: () => void; onStart: (coId: string, enemyId: string, mapIdx: number) => void }) {
+  const [selCo, setSelCo] = useState<string>('rhea');
+  const [selOpponent, setSelOpponent] = useState<string>('grimm');
+  const [mapIdx, setMapIdx] = useState<number>(1);
+  const [infoCo, setInfoCo] = useState<string | null>(null);
+
+  const co = COS[selCo];
+  const opp = COS[selOpponent];
+  const isEvilCo = co?.faction === 'crimson';
+  const rank = save.coRank[selCo] ?? 0;
+
+  const validMaps = MISSIONS.map((m, i) => ({ m, i })).filter(({ i }) => i > 0);
+
+  return (
+    <Screen title="CHARACTER STORIES" onBack={onBack}>
+      <div className="max-w-4xl mx-auto grid gap-4">
+        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center">
+          <Portrait id={selCo} size={64} className="shrink-0" />
+          <div className="flex-1 min-w-0 text-xs">
+            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORIES & SPECIFIC LEVEL-UP</div>
+            <div className="text-slate-200 leading-relaxed">
+              Explore individual officer storylines, test tactical match-ups, and train specific characters!
+              <br />
+              • <b className="text-amber-300">Level Up Characters:</b> Battle here to earn Rank XP, Gold, and character-specific 🧩 CO Pieces.
+              <br />
+              • <b className="text-rose-400">Evil Faction Officers:</b> You can play as "Evil" Crimson Dominion officers in Character Stories and Online mode! (Evil officers cannot be deployed in standard Campaign).
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-amber-300 mb-1 font-black tracking-widest">1. CHOOSE YOUR CHARACTER</div>
+          <div className="flex flex-wrap gap-2">
+            {PLAYABLE_ORDER.map((id) => {
+              const c = COS[id];
+              const isSelected = selCo === id;
+              const isEvil = c.faction === 'crimson';
+              return (
+                <button
+                  key={id}
+                  onClick={() => { setSelCo(id); sfx.cursor(); }}
+                  className={`rounded-xl p-1.5 border-2 text-left transition flex items-center gap-2 ${isSelected ? 'border-amber-400 bg-amber-400/10 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.3)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-600'}`}
+                >
+                  <Portrait id={id} size={48} />
+                  <div className="min-w-0 pr-1">
+                    <div className="text-xs font-black text-white flex items-center gap-1">
+                      {c.name.split(' ')[0]}
+                      {isEvil && <span className="text-[9px] bg-rose-900/80 text-rose-300 px-1 rounded font-bold">EVIL</span>}
+                    </div>
+                    <div className="text-[10px] text-amber-300 font-bold">★ {RANK_NAMES[save.coRank[id] ?? 0]}</div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {co && (
+          <div className="hud-panel p-3 flex gap-3 flex-col sm:flex-row border-amber-400/50">
+            <Portrait id={selCo} size={96} className="self-center" />
+            <div className="flex-1 min-w-0 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="font-black text-lg text-white">{co.title} {co.name}</span>
+                {isEvilCo && <span className="bg-rose-900 border border-rose-500 text-rose-200 text-[10px] px-2 py-0.5 rounded font-black">CRIMSON DOMINION (EVIL)</span>}
+              </div>
+              <div className="text-amber-300 font-bold mt-0.5">★ {RANK_NAMES[rank]} · Character Level {rank + 1}/5</div>
+              <div className="text-slate-300 mt-1 italic">{co.bio}</div>
+              <div className="text-slate-200 mt-2"><b className="text-slate-400">Tactical Focus:</b> {co.d2d}</div>
+              <div className="text-fuchsia-300 font-bold mt-1">✦ {co.superName}: <span className="text-slate-300 font-normal">{co.superDesc}</span></div>
+              <div className="mt-2 flex gap-2">
+                <button className="text-sky-300 font-bold underline" onClick={() => setInfoCo(selCo)}>ⓘ Inspect Officer Abilities</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <div>
+          <div className="text-xs text-rose-400 mb-1 font-black tracking-widest">2. CHOOSE STORY OPPONENT</div>
+          <div className="flex flex-wrap gap-1.5">
+            {PLAYABLE_ORDER.map((id) => (
+              <button
+                key={id}
+                onClick={() => { setSelOpponent(id); sfx.cursor(); }}
+                className={`rounded-lg p-0.5 border-2 ${selOpponent === id ? 'border-rose-400 bg-rose-500/10' : 'border-transparent opacity-60'}`}
+              >
+                <Portrait id={id} size={48} />
+              </button>
+            ))}
+          </div>
+          {opp && (
+            <div className="text-xs text-slate-300 mt-1.5 bg-slate-900/80 border border-slate-800 p-2 rounded-lg flex items-center gap-2">
+              <Portrait id={selOpponent} size={36} />
+              <div>
+                <span className="font-bold text-rose-300">{opp.title} {opp.name}:</span> {opp.d2d}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div>
+          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">3. SELECT BATTLE BATTLEFIELD</div>
+          <div className="flex flex-wrap gap-1.5">
+            {validMaps.slice(0, Math.max(8, save.progress + 2)).map(({ m, i }) => (
+              <button
+                key={m.id}
+                onClick={() => { setMapIdx(i); sfx.cursor(); }}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${mapIdx === i ? 'bg-sky-400 text-slate-950 border-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'bg-slate-800 border-slate-700 text-slate-300'}`}
+              >
+                {m.name}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <button
+          className="menu-btn bg-amber-400 text-slate-900 text-lg w-full mt-2 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
+          onClick={() => { sfx.select(); onStart(selCo, selOpponent, mapIdx); }}
+        >
+          ⚔ LAUNCH CHARACTER STORY BATTLE WITH {co?.name.toUpperCase()} ▶
+        </button>
+      </div>
+
+      {infoCo && <COInfo coId={infoCo} onClose={() => setInfoCo(null)} rank={save.coRank[infoCo] ?? 0} />}
+    </Screen>
+  );
+}
+
 /* ---------------- Title ---------------- */
 export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
   const ref = useRef<HTMLCanvasElement>(null);
@@ -125,7 +253,7 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock,
             <button className="menu-btn title-primary bg-amber-400 text-slate-900 text-lg shadow-[0_0_24px_rgba(251,191,36,0.5)]" onClick={() => { sfx.select(); fresh ? onNav('campaign-start') : onNav('campaign'); }}>
               {fresh ? '▶ START CAMPAIGN' : '▶ CAMPAIGN'}
             </button>
-            <button className="menu-btn title-primary bg-rose-600" onClick={() => { sfx.select(); onQuick(); }}>⚡ QUICK BATTLE <span className="text-xs opacity-70">(Enter)</span></button>
+            <button className="menu-btn title-primary bg-rose-600" onClick={() => { sfx.select(); onQuick(); }}>📜 CHARACTER STORIES <span className="text-xs opacity-70">(Enter)</span></button>
             <button className="menu-btn title-primary bg-cyan-700 border-cyan-400" onClick={() => { sfx.select(); onNav('online'); }}>🌐 ONLINE / CO-OP</button>
             <div className="grid grid-cols-3 title-secondary-grid gap-2">
               <button className="menu-btn bg-slate-700/90 text-sm" onClick={() => onNav('skirmish')}>⚔ Skirmish</button>

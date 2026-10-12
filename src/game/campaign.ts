@@ -25,7 +25,7 @@ export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of 
 
 export const MISSIONS: MissionDef[] = [
   {
-    id: 'm0', name: 'Boot Camp', act: 0, tutorial: true, par: 5, unlockCo: 'dax',
+    id: 'm0', name: 'Boot Camp', act: 0, tutorial: true, par: 5, unlockCo: 'dax', forcedCo: 'rhea', recommendedRank: 0, recommendedUpgrades: 0,
     map: [
       'mmf...f.mm',
       'mH==c..=Em',
@@ -88,7 +88,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm3', name: 'Iron Valley', act: 1, par: 9, cos: ['rhea', 'dax'], enemyCo: 'frost',
+    id: 'm3', name: 'Iron Valley', act: 1, par: 9, cos: ['rhea', 'dax'], enemyCo: 'frost', forcedCo: 'dax', recommendedRank: 1, recommendedUpgrades: 2,
     map: sym(['mmmff..', 'mH=..f.', 'mB=c...', 'm.=..m.', '..===.=', 'fc.m...', 'm..f.c.', 'mm.t.f.', 'mmm.mm.']),
     // Balanced challenge: Frost keeps snow immunity and one extra Mech; the 16,000G Heavy Tank was removed.
     units: mir(14, [['tank', 3, 1], ['tank', 4, 4], ['apc', 2, 5], ['infantry', 4, 2], ['infantry', 5, 6], ['artillery', 1, 3], ['mech', 4, 6]], [['mech', 8, 5]]),
@@ -139,7 +139,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm5', name: 'Wings over Ash', act: 2, par: 9, cos: ['rhea', 'dax', 'sora'], enemyCo: 'nyx',
+    id: 'm5', name: 'Wings over Ash', act: 2, par: 9, cos: ['rhea', 'dax', 'sora'], enemyCo: 'nyx', forcedCo: 'sora', recommendedRank: 1, recommendedUpgrades: 3,
     map: sym(['mmf.ff.', 'mH=c..f', 'mB==...', 'fA.=f.c', '.c.=..=', 'f..====', 'm.f.f..', '.c..t.f', 'mmff..m']),
     units: mir(14, [['drone', 4, 2], ['gundrone', 3, 6], ['bcopter', 2, 3], ['fighter', 1, 2], ['infantry', 4, 1], ['infantry', 5, 6], ['tank', 4, 4], ['aa', 2, 5], ['recon', 5, 2]], [['drone', 8, 7], ['tank', 9, 3]]),
     funds: [4000, 4000], weather: 'clear', fog: true, unitCap: [11, 12], objective: { type: 'rout' }, aiLevel: 2,
@@ -174,7 +174,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm7', name: 'Coastline', act: 2, par: 10, cos: ['rhea', 'dax', 'sora', 'mira'], enemyCo: 'volkov',
+    id: 'm7', name: 'Coastline', act: 2, par: 10, cos: ['rhea', 'dax', 'sora', 'mira'], enemyCo: 'volkov', forcedCo: 'mira', recommendedRank: 2, recommendedUpgrades: 4,
     map: sym(['mmf.f.sw', 'mH=c..sw', 'fB===Pww', '..f=c.sw', 'fA.=..rw', '.c.=.sww', 'mf.=.Pww', 'm.t=f.sw', 'mm.====#']),
     units: mir(16, [['cruiser', 7, 1], ['battleship', 6, 4], ['sub', 7, 6], ['tank', 4, 2], ['infantry', 4, 1], ['artillery', 3, 5], ['bcopter', 2, 4], ['mech', 4, 7]], [['tank', 11, 4]]),
     funds: [5000, 5000], weather: 'clear', weatherPool: ['clear', 'clear', 'rain'], fog: false, unitCap: [12, 13], objective: { type: 'rout' }, aiLevel: 2,
@@ -210,7 +210,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm9', name: 'Long Guns', act: 3, par: 11, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov',
+    id: 'm9', name: 'Long Guns', act: 3, par: 11, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', forcedCo: 'brann', recommendedRank: 2, recommendedUpgrades: 5,
     map: sym(['mm.ff...', 'mH=c...m', 'mB==.m..', '...=..c.', 'fc.=====', '...f.t..', 'mA.=..c.', 'm.c=.m..', 'mmm=....']),
     units: mir(16, [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['tank', 5, 5], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]], [['artillery', 10, 7]]),
     funds: [5000, 6000], weather: 'sand', fog: false, unitCap: [13, 15], objective: { type: 'hq' }, aiLevel: 3,
@@ -479,7 +479,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm25', name: 'Titan Gate', act: 11, par: 15, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'kaelen', unlockCo: 'kaelen',
+    id: 'm25', name: 'Titan Gate', act: 11, par: 15, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'kaelen', unlockCo: 'kaelen', forcedCo: 'kaelen', recommendedRank: 3, recommendedUpgrades: 8,
     map: sym(['mmmf..A.', 'mH=c..f.', 'fB==t.c.', '..f=~~#~', '.A.====.', 'f..c~~#~', 'mm.f..c.', '.c..=...', 'mmm.f...']),
     units: mir(16, [['infantry', 3, 1], ['mech', 4, 2], ['tank', 4, 3], ['fighter', 2, 4], ['bcopter', 5, 4], ['artillery', 2, 5], ['aa', 3, 6]], [['fighter', 12, 3], ['bomber', 12, 5]]),
     funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [18, 22], objective: { type: 'rout' }, aiLevel: 3,
@@ -495,7 +495,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm26', name: 'Iron Stronghold', act: 11, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'aria', unlockCo: 'aria',
+    id: 'm26', name: 'Iron Stronghold', act: 11, par: 16, cos: PLAYABLE_ORDER_FRIENDLY, enemyCo: 'aria', unlockCo: 'aria', forcedCo: 'aria', recommendedRank: 3, recommendedUpgrades: 9,
     map: sym(['mmf.c.f.', 'mH==..t.', 'fB.=c...', '..f===#~', '.c..f.c.', 'fA.===#~', 'm..f.c..', '.c..=...', 'mmm.f...']),
     units: mir(16, [['infantry', 4, 1], ['mech', 3, 2], ['heavy', 4, 3], ['tank', 5, 4], ['artillery', 2, 5], ['recon', 5, 2], ['gundrone', 2, 6]], [['heavy', 12, 3], ['rockets', 12, 6]]),
     funds: [8500, 11000], weather: 'rain', fog: true, unitCap: [20, 24], objective: { type: 'hq' }, aiLevel: 3,
@@ -557,7 +557,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm30', name: 'Stratosphere Supremacy', act: 14, par: 14, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen',
+    id: 'm30', name: 'Stratosphere Supremacy', act: 14, par: 14, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen', forcedCo: 'sora', recommendedRank: 4, recommendedUpgrades: 12,
     map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
     units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]], [['bomber', 13, 5], ['drone', 14, 2]]),
     funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
@@ -572,7 +572,7 @@ export const MISSIONS: MissionDef[] = [
     ],
   },
   {
-    id: 'm31', name: 'Abyssal Clash', act: 14, par: 15, cos: ['mira', 'rhea', 'dax', 'zero'], enemyCo: 'mira',
+    id: 'm31', name: 'Abyssal Clash', act: 14, par: 15, cos: ['mira', 'rhea', 'dax', 'zero'], enemyCo: 'mira', forcedCo: 'mira', recommendedRank: 4, recommendedUpgrades: 12,
     map: sym(['wwwr.P.w', 'wP=w.r.w', 'rws....w', 'wws.w..w', 'rws..P.w', 'wws..Q.w', 'm..f..w.', '....P...', 'mmm.f...']),
     units: mir(16, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4]]),
     funds: [9000, 12000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: true, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
