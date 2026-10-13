@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ARMOR_NAMES, CAT_NAMES, COS, MODS, PLAYABLE_ORDER, TERRAIN, TERRAIN_BONUS, UNITS, UNIT_ORDER, WEATHER_INFO, ultimateCost } from '../game/data';
-import { ACTS, ACT_INTROS, MISSIONS, REWARDS, deploymentValue } from '../game/campaign';
+import { ACTS, ACT_INTROS, MISSIONS } from '../game/campaign';
 import { RANK_NAMES, SKILLS, rankSlots } from '../game/data';
 import { drawUnit } from '../game/draw';
 import { sfx } from '../game/audio';
@@ -303,54 +303,181 @@ function Screen({ title, onBack, children, right }: { title: string; onBack: () 
 }
 
 /* ---------------- Campaign ---------------- */
-export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { save: SaveData; onBack: () => void; onPick: (i: number) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
+export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { save: SaveData; onBack: () => void; onPick: (i: number, isFog?: boolean) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
+  const currentAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
+  const [selAct, setSelAct] = useState<number>(currentAct);
+
+  const missionsInAct = MISSIONS.map((m, i) => ({ m, i })).filter(({ m }) => m.act === selAct);
+  const maxUnlockedAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
+
   return (
     <Screen title="CAMPAIGN" onBack={onBack} right={onHQ ? <button className="hud-btn px-3 h-9 text-xs font-black text-amber-300 bg-amber-500/20 border-amber-400" onClick={() => { sfx.select(); onHQ(); }}>🛒 SHOP / HQ</button> : undefined}>
-      <div className="max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-2">
-        <div className="text-xs font-bold"><span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span> <span className="text-cyan-300 ml-2">💎 {save.gems ?? 0}</span> <span className="text-fuchsia-300 ml-2">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</span></div>
-        {resume && onContinue && (
-          <button className="ml-auto rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-left text-slate-950 font-black text-xs leading-tight shadow-[0_0_14px_rgba(16,185,129,0.5)]" onClick={() => { sfx.select(); onContinue(); }}>
-            ⏯ CONTINUE BATTLE<span className="block text-[10px] font-bold opacity-75">{resume.mission} · Day {resume.day}</span>
-          </button>
-        )}
-      </div>
-      <div className="max-w-3xl mx-auto">
-        {ACTS.map((act, ai) => (
-          <div key={act} className="mb-5">
-            <div className="text-sm font-black tracking-widest text-slate-400 border-b border-slate-800 pb-1">{act}</div>
-            <div className="text-[11px] text-slate-500 italic mb-2 mt-1">{ai <= Math.max(0, MISSIONS[Math.min(save.progress, MISSIONS.length - 1)].act) ? ACT_INTROS[ai] : 'Classified. Keep advancing the campaign.'}</div>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {MISSIONS.map((m, i) => ({ m, i })).filter(({ m }) => m.act === ai).map(({ m, i }) => {
-                const locked = i > save.progress && !save.missionAuditUnlocked;
-                const best = save.best[m.id];
-                return (
-                  <button key={m.id} disabled={locked} onClick={() => { sfx.select(); onPick(i); }}
-                    className={`text-left p-2.5 rounded-xl border-2 flex gap-3 items-center transition active:scale-[0.98] ${locked ? 'border-slate-800 bg-slate-900/60 opacity-50' : i === save.progress ? 'border-amber-400 bg-slate-800 shadow-[0_0_16px_rgba(251,191,36,0.25)]' : 'border-slate-700 bg-slate-800/80 hover:border-sky-400'}`}>
-                    {locked ? <div className="w-14 h-14 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🔒</div> : <Portrait id={m.enemyCo} size={56} />}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-slate-400 font-bold">{m.tutorial ? 'TUTORIAL' : `MISSION ${i}`}{save.missionAuditUnlocked && i > save.progress ? <span className="text-cyan-300 ml-1">· AUDIT</span> : null}</div>
-                      <div className="font-black text-white truncate">{m.name}</div>
-                      <div className="text-[11px] text-slate-400 truncate">{locked ? 'Complete previous mission' : m.hint}</div>
-                      <div className="text-[11px] mt-0.5 flex gap-2 text-slate-300">
-                        <span>{WEATHER_INFO[m.weather].icon}{m.weatherPool ? '🔄' : ''}</span>
-                        {m.fog && <span>🌫 Fog</span>}
-                        <span>{m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ' : `🛡 Survive ${m.objective.days}d`}</span>
-                        <span>Lv{m.aiLevel}</span>
-                      </div>
-                      {save.missionAuditUnlocked && <div className="text-[9px] text-cyan-300 mt-1 font-bold">AUDIT DEPLOYMENT · YOU {deploymentValue(m, 0).toLocaleString()}G · FOE {deploymentValue(m, 1).toLocaleString()}G{m.boss ? ` · ${m.boss.phases ?? 1} boss phases` : ''}</div>}
-                      {!locked && REWARDS[m.id] && SKILLS[REWARDS[m.id]] && (
-                        <div className={`text-[10px] mt-0.5 font-bold ${save.ownedSkills.includes(REWARDS[m.id]) ? 'text-slate-500' : 'text-emerald-300'}`}>
-                          🎁 {save.ownedSkills.includes(REWARDS[m.id]) ? 'Owned' : 'Reward'}: {SKILLS[REWARDS[m.id]].icon} {SKILLS[REWARDS[m.id]].name}
-                        </div>
-                      )}
-                    </div>
-                    {best && <div className={`rank-badge-sm rank-${best.rank}`}>{best.rank}</div>}
-                  </button>
-                );
-              })}
-            </div>
+      <div className="h-full flex flex-col justify-between max-w-5xl mx-auto gap-2">
+        {/* Top Header Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-2 shrink-0 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+          <div className="text-xs font-bold flex items-center gap-3">
+            <span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span>
+            <span className="text-cyan-300">💎 {save.gems ?? 0}</span>
+            <span className="text-fuchsia-300">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</span>
           </div>
-        ))}
+          {resume && onContinue && (
+            <button className="rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1 text-slate-950 font-black text-xs leading-tight shadow-[0_0_12px_rgba(16,185,129,0.5)] active:scale-95" onClick={() => { sfx.select(); onContinue(); }}>
+              ⏯ CONTINUE BATTLE ({resume.mission} · Day {resume.day})
+            </button>
+          )}
+        </div>
+
+        {/* Act Selector Bar */}
+        <div className="shrink-0 bg-slate-900/90 rounded-xl p-2 border border-amber-500/30 flex flex-col gap-2">
+          <div className="flex items-center justify-between gap-2">
+            <button
+              disabled={selAct <= 0}
+              onClick={() => { sfx.cursor(); setSelAct((a) => Math.max(0, a - 1)); }}
+              className="hud-btn h-8 px-3 text-xs font-black disabled:opacity-30"
+            >
+              ◀ PREV ACT
+            </button>
+            <div className="text-center min-w-0">
+              <div className="text-xs font-black tracking-widest text-amber-400 uppercase truncate">
+                {ACTS[selAct]}
+              </div>
+              <div className="text-[11px] text-slate-400 italic truncate max-w-lg mx-auto">
+                {selAct <= maxUnlockedAct || save.missionAuditUnlocked ? ACT_INTROS[selAct] : 'Classified. Keep advancing the campaign.'}
+              </div>
+            </div>
+            <button
+              disabled={selAct >= ACTS.length - 1}
+              onClick={() => { sfx.cursor(); setSelAct((a) => Math.min(ACTS.length - 1, a + 1)); }}
+              className="hud-btn h-8 px-3 text-xs font-black disabled:opacity-30"
+            >
+              NEXT ACT ▶
+            </button>
+          </div>
+
+          {/* Compact Act Tab Pills */}
+          <div className="flex gap-1 overflow-x-auto pb-0.5 scrollbar-none justify-center">
+            {ACTS.map((actName, ai) => {
+              const actLocked = ai > maxUnlockedAct && !save.missionAuditUnlocked;
+              const isSelected = ai === selAct;
+              return (
+                <button
+                  key={actName}
+                  disabled={actLocked}
+                  onClick={() => { sfx.cursor(); setSelAct(ai); }}
+                  className={`px-2 py-0.5 rounded-lg text-[10px] font-black whitespace-nowrap transition ${isSelected ? 'bg-amber-400 text-slate-950 shadow-[0_0_10px_rgba(251,191,36,0.4)]' : actLocked ? 'bg-slate-900/50 text-slate-600' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'}`}
+                >
+                  {ai === 0 ? 'Boot Camp' : `Act ${ai}`} {actLocked ? '🔒' : ''}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Missions Uniform Grid */}
+        <div className="flex-1 min-h-0 grid sm:grid-cols-2 gap-3 items-stretch">
+          {missionsInAct.map(({ m, i }) => {
+            const isTutorial = !!m.tutorial;
+            const locked = i > save.progress && !save.missionAuditUnlocked;
+            const normalCleared = !!(save.normalCleared?.[m.id] || (save.progress > i));
+            const fogCleared = !!save.fogCleared?.[m.id];
+            const tutorialDone = isTutorial && (save.tutorialComplete || normalCleared);
+            const best = save.best[m.id];
+
+            return (
+              <div
+                key={m.id}
+                className={`p-3 rounded-xl border-2 flex flex-col justify-between transition ${locked ? 'border-slate-800 bg-slate-900/50 opacity-50' : 'border-slate-700 bg-slate-900/90 hover:border-slate-500'}`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {locked ? (
+                        <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-xl shrink-0 border border-slate-700">🔒</div>
+                      ) : (
+                        <Portrait id={m.enemyCo} size={44} className="shrink-0 rounded-lg border border-slate-700" />
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <div className="text-[10px] font-black text-amber-400 tracking-wider truncate">
+                          {isTutorial ? 'TUTORIAL' : `MISSION ${i}`}
+                          {save.missionAuditUnlocked && i > save.progress ? <span className="text-cyan-300 ml-1">· AUDIT</span> : null}
+                        </div>
+                        <div className="font-black text-white text-base truncate">{m.name}</div>
+                      </div>
+                    </div>
+                    {best && <div className={`rank-badge-sm rank-${best.rank} shrink-0`}>{best.rank}</div>}
+                  </div>
+
+                  <div className="text-xs text-slate-300 truncate mb-2.5">
+                    {locked ? 'Complete previous mission to unlock.' : m.hint}
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 text-[10px] font-bold text-slate-300 mb-2">
+                    <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">{WEATHER_INFO[m.weather].icon} {WEATHER_INFO[m.weather].name}</span>
+                    <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
+                      {m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ Capture' : `🛡 Survive ${m.objective.days}d`}
+                    </span>
+                    <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">AI Lv{m.aiLevel}</span>
+                  </div>
+                </div>
+
+                <div className="mt-2">
+                  {locked ? (
+                    <button disabled className="w-full py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700">
+                      🔒 LOCKED
+                    </button>
+                  ) : isTutorial ? (
+                    tutorialDone ? (
+                      <div className="w-full py-2 rounded-lg bg-emerald-950/60 text-emerald-400 font-bold text-xs text-center border border-emerald-800/60">
+                        ✓ TUTORIAL COMPLETED (1/1 PLAY)
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => { sfx.select(); onPick(i, false); }}
+                        className="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.3)] transition active:scale-95"
+                      >
+                        ▶ START TUTORIAL
+                      </button>
+                    )
+                  ) : !normalCleared ? (
+                    <button
+                      onClick={() => { sfx.select(); onPick(i, false); }}
+                      className="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.3)] transition active:scale-95"
+                    >
+                      ▶ START MISSION
+                    </button>
+                  ) : !fogCleared ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { sfx.select(); onPick(i, false); }}
+                        className="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-600 transition"
+                      >
+                        ✓ REPLAY
+                      </button>
+                      <button
+                        onClick={() => { sfx.select(); onPick(i, true); }}
+                        className="flex-1 py-1.5 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black text-[11px] shadow-[0_0_10px_rgba(192,38,211,0.4)] transition active:scale-95 flex items-center justify-center gap-1"
+                      >
+                        <span>🌫</span> REPLAY (FOG)
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 items-center">
+                      <div className="flex-1 py-1.5 rounded-lg bg-emerald-950/80 text-emerald-300 font-bold text-[11px] text-center border border-emerald-700">
+                        ✓ COMPLETED (NORMAL & FOG)
+                      </div>
+                      <button
+                        onClick={() => { sfx.select(); onPick(i, true); }}
+                        className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-600 transition"
+                      >
+                        REPLAY
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     </Screen>
   );

@@ -44,7 +44,7 @@ interface Props {
   playerCo: string;
   enemyCo: string;
   save: SaveData;
-  opts?: { weather?: Weather; fog?: boolean; aiLevel?: number; dynamic?: boolean };
+  opts?: { weather?: Weather; fog?: boolean; aiLevel?: number; dynamic?: boolean; vertical?: boolean };
   isCampaign: boolean;
   hasNext: boolean;
   onExit: () => void;
@@ -1914,26 +1914,6 @@ export default function GameView(props: Props) {
   const hudWidth = Math.max(300, hudVw - 12);
   const bottomHudHeight = isVert ? 112 : (hudVh < 520 ? 58 : 72);
 
-  const terrainText = (() => {
-    const owner = curTile.owner === localTeam ? 'Yours' : curTile.owner === enemyTeam ? 'Enemy' : 'Neutral';
-    switch (curTile.t) {
-      case 'plain': return 'Open ground. No extra protection or movement penalty.';
-      case 'forest': return 'Forest cover. ★★ lowers damage. No movement penalty.';
-      case 'mountain': return 'Strong cover. Infantry and Mechs only; costs 2 movement.';
-      case 'road': return 'Paved road. Vehicles starting here gain +1 movement.';
-      case 'bridge': return 'Crossing tile with no extra protection.';
-      case 'river': return 'Infantry and Mechs can cross; vehicles cannot.';
-      case 'sea': return 'Open water for naval and air units.';
-      case 'shoal': return 'Coastal ground. Land and air units can enter.';
-      case 'reef': return 'Naval cover that improves ship defense.';
-      case 'city': return `${owner} City. +1,000G/day; repairs units for a fee.`;
-      case 'base': return `${owner} Base. Builds ground units, pays +1,000G/day, and repairs.`;
-      case 'airport': return `${owner} Airport. Builds and refuels aircraft; pays +1,000G/day.`;
-      case 'port': return `${owner} Port. Builds and repairs ships; pays +1,000G/day.`;
-      case 'hq': return `${owner} HQ. Capture the enemy HQ to win.`;
-      case 'tower': return `${owner} Radio Tower. +10% attack; +1 HP nearby; +1 move every 3rd turn.`;
-    }
-  })();
 
   const menuPos = (() => {
     if (!U.pending) return { left: 0, top: 0 };

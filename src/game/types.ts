@@ -139,6 +139,9 @@ export interface SaveData {
   tutorialComplete: boolean;
   /** Developer/player audit switch: all missions selectable without changing story progress. */
   missionAuditUnlocked: boolean;
+  /** Track cleared mission IDs in normal mode vs fog replay mode */
+  normalCleared?: Record<string, boolean>;
+  fogCleared?: Record<string, boolean>;
 }
 
 export type GraphicsQuality = 'auto' | 'ultra' | 'high' | 'medium' | 'low';

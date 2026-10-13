@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { DprOption, FpsTarget, GraphicsQuality, ParticleOption, Settings } from '../game/types';
 import { detectHardware, getGraphicsPreset } from '../utils/hardware';
 

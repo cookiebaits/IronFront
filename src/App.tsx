@@ -46,23 +46,29 @@ export default function App() {
 
   const persist = useCallback((s: SaveData) => { setSave(s); writeSave(s); }, []);
 
-  const pickMission = (i: number) => {
+  const pickMission = (i: number, isFogReplay = false) => {
     const m = MISSIONS[i];
     if (!m) { setScreen('campaign'); return; }
+    if (m.tutorial && save.tutorialComplete) return;
+
     setIdx(i);
     const forced = m.forcedCo;
+    const opts = isFogReplay ? { fog: true } : undefined;
     if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'kaelen' || forced === 'aria')) {
-      const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true };
+      const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
       else { setCfg(next); setScreen('briefing'); }
       return;
     }
     const avail = allowedFor(m).filter((c) => save.unlockedCos.includes(c));
     if (avail.length <= 1) {
-      const next = { mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true };
+      const next = { mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
       else { setCfg(next); setScreen('briefing'); }
-    } else setScreen('coselect');
+    } else {
+      setCfg({ mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true, opts });
+      setScreen('coselect');
+    }
   };
 
   const startGame = (c: GameCfg) => {
@@ -126,6 +132,17 @@ export default function App() {
     let s: SaveData = { ...save, merits: save.merits + score.merits, gems: (save.gems ?? 0) + earnedGems };
     let storyCo: string | undefined;
     if (cfg?.isCampaign && w) {
+      const isFog = !!cfg.opts?.fog;
+      const normalCleared = { ...(s.normalCleared ?? {}) };
+      const fogCleared = { ...(s.fogCleared ?? {}) };
+      if (isFog) {
+        fogCleared[cfg.mission.id] = true;
+      } else {
+        normalCleared[cfg.mission.id] = true;
+      }
+      s.normalCleared = normalCleared;
+      s.fogCleared = fogCleared;
+
       const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
       const firstClear = !auditJump && cfg.idx >= s.progress;
       if (firstClear) s.merits += MERIT_BONUS;
@@ -230,7 +247,7 @@ export default function App() {
       {screen === 'coselect' && MISSIONS[idx] && (
         <COSelect save={save} allowed={allowedFor(MISSIONS[idx])} enemyCo={MISSIONS[idx].enemyCo} title={MISSIONS[idx].name.toUpperCase()}
           onBack={() => setScreen('campaign')}
-          onPick={(co) => { setCfg({ mission: MISSIONS[idx], idx, playerCo: co, enemyCo: MISSIONS[idx].enemyCo, isCampaign: true }); setScreen('briefing'); }} />
+          onPick={(co) => { setCfg((prev) => prev ? { ...prev, playerCo: co } : { mission: MISSIONS[idx], idx, playerCo: co, enemyCo: MISSIONS[idx].enemyCo, isCampaign: true }); setScreen('briefing'); }} />
       )}
       {screen === 'briefing' && cfg && !cfg.mission.tutorial && (
         <DialogueScreen lines={cfg.mission.briefing} title={cfg.mission.name} onDone={() => startGame(cfg)} />

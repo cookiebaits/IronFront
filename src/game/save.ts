@@ -39,6 +39,8 @@ export function defaultSave(): SaveData {
     coPieces: {},
     tutorialComplete: false,
     missionAuditUnlocked: false,
+    normalCleared: {},
+    fogCleared: {},
   };
 }
 
@@ -49,7 +51,30 @@ export function loadSave(): SaveData {
     const d = JSON.parse(raw);
     const def = defaultSave();
     const mergedSettings: Settings = { ...def.settings, ...(d.settings ?? {}) };
-    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), missionAuditUnlocked: d.missionAuditUnlocked ?? false, ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: mergedSettings, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
+    // Backfill normalCleared for existing progress
+    const normalCleared: Record<string, boolean> = d.normalCleared ?? {};
+    if (d.progress > 0) {
+      import('./campaign').then(({ MISSIONS }) => {
+        MISSIONS.forEach((m, idx) => {
+          if (idx < d.progress) normalCleared[m.id] = true;
+        });
+      }).catch(() => {});
+    }
+    return {
+      ...def,
+      ...d,
+      coRank: d.coRank ?? {},
+      coPieces: d.coPieces ?? {},
+      tutorialComplete: d.tutorialComplete ?? (d.progress > 0),
+      missionAuditUnlocked: d.missionAuditUnlocked ?? false,
+      normalCleared,
+      fogCleared: d.fogCleared ?? {},
+      ownedSkills: d.ownedSkills ?? [],
+      loadout: d.loadout ?? {},
+      unitUps: d.unitUps ?? {},
+      settings: mergedSettings,
+      upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) },
+    };
   } catch {
     return defaultSave();
   }
