@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
 import GameView, { type ScoreInfo } from './components/GameView';
 import ErrorBoundary from './components/ErrorBoundary';
-import { COSelect, Campaign, DialogueScreen, Help, HighScores, SaveManager, Skirmish, Title, type SkirmishCfg } from './components/Menus';
+import { COSelect, Campaign, CharacterStories, DialogueScreen, Help, HighScores, SaveManager, Skirmish, Title, type SkirmishCfg } from './components/Menus';
 import CommandHQ from './components/Shop';
 import OnlineRoom from './components/OnlineRoom';
 import { MERIT_BONUS, MISSIONS, REWARDS } from './game/campaign';
-import { PLAYABLE_ORDER, rankSlots } from './game/data';
+import { COS, PLAYABLE_ORDER, rankSlots } from './game/data';
 
-/** Story missions accept any officer you've unlocked or hired (except the enemy CO you're fighting). */
-const allowedFor = (m: MissionDef) => (m.tutorial ? ['rhea'] : PLAYABLE_ORDER.filter((c) => c !== m.enemyCo));
+/** Story campaign missions only allow Good (Azure Republic) officers. Evil officers cannot be chosen for campaign. */
+const allowedFor = (m: MissionDef) => (m.tutorial ? ['rhea'] : PLAYABLE_ORDER.filter((c) => c !== m.enemyCo && COS[c]?.faction !== 'crimson'));
 import { addHighScore, clearResume, loadResume, loadSave, writeResume, writeSave, type ResumeSave } from './game/save';
 import { awardPieces } from './game/unlocks';
 import { setSfx } from './game/audio';
 import type { GameState, MissionDef, SaveData, Settings, Weather } from './game/types';
 
-type ScreenId = 'title' | 'campaign' | 'coselect' | 'briefing' | 'game' | 'outro' | 'prep' | 'workshop' | 'scores' | 'skirmish' | 'help' | 'online' | 'saves';
+type ScreenId = 'title' | 'campaign' | 'coselect' | 'briefing' | 'game' | 'outro' | 'prep' | 'workshop' | 'scores' | 'skirmish' | 'stories' | 'help' | 'online' | 'saves';
 
 interface GameCfg {
   mission: MissionDef;
@@ -50,6 +50,13 @@ export default function App() {
     const m = MISSIONS[i];
     if (!m) { setScreen('campaign'); return; }
     setIdx(i);
+    const forced = m.forcedCo;
+    if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'kaelen' || forced === 'aria')) {
+      const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true };
+      if (m.tutorial) startGame(next);
+      else { setCfg(next); setScreen('briefing'); }
+      return;
+    }
     const avail = allowedFor(m).filter((c) => save.unlockedCos.includes(c));
     if (avail.length <= 1) {
       const next = { mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true };
@@ -66,8 +73,19 @@ export default function App() {
   };
 
   const quick = () => {
-    const co = save.unlockedCos.includes('dax') ? 'dax' : 'rhea';
-    startGame({ mission: MISSIONS[1], idx: 1, playerCo: co, enemyCo: 'grimm', isCampaign: false, opts: { aiLevel: 1 } });
+    setScreen('stories');
+  };
+
+  const startStoryBattle = (playerCo: string, enemyCo: string, mapIdx: number) => {
+    const m = MISSIONS[mapIdx] ?? MISSIONS[1];
+    startGame({
+      mission: m,
+      idx: mapIdx,
+      playerCo,
+      enemyCo,
+      isCampaign: false,
+      opts: { aiLevel: 2 },
+    });
   };
 
   /** Auto-save a campaign battle at the start of each full turn. */
@@ -258,6 +276,7 @@ export default function App() {
       {screen === 'workshop' && <CommandHQ save={save} onBack={() => setScreen('title')} onSave={persist} />}
       {screen === 'scores' && <HighScores save={save} onBack={() => setScreen('title')} />}
       {screen === 'skirmish' && <Skirmish save={save} onBack={() => setScreen('title')} onStart={startSkirmish} />}
+      {screen === 'stories' && <CharacterStories save={save} onBack={() => setScreen('title')} onStart={startStoryBattle} />}
       {screen === 'help' && <Help onBack={() => setScreen('title')} onTutorial={() => pickMission(0)} />}
       {screen === 'online' && <OnlineRoom save={save} onBack={() => setScreen('title')} onSettings={onSettings} onCoopComplete={onCoopComplete} />}
       {screen === 'saves' && <SaveManager save={save} battle={resumeSave} onBack={() => setScreen('title')} onLoad={loadSlot} />}
