@@ -1,6 +1,7 @@
 import { getGraphicsPreset } from '../utils/hardware';
 import { emptyUpgrades } from './engine';
 import type { GameState, HighScore, SaveData, Settings, Weather } from './types';
+import { MISSIONS } from './campaign';
 
 const KEY = 'ironfront_tactics_v1';
 
@@ -54,11 +55,9 @@ export function loadSave(): SaveData {
     // Backfill normalCleared for existing progress
     const normalCleared: Record<string, boolean> = d.normalCleared ?? {};
     if (d.progress > 0) {
-      import('./campaign').then(({ MISSIONS }) => {
-        MISSIONS.forEach((m, idx) => {
-          if (idx < d.progress) normalCleared[m.id] = true;
-        });
-      }).catch(() => {});
+      MISSIONS.forEach((m, idx) => {
+        if (idx < d.progress) normalCleared[m.id] = true;
+      });
     }
     return {
       ...def,
