@@ -275,8 +275,6 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
       const max = Math.min(effectiveMaxMove, u.fuel ?? Infinity);
 
       if (c > max) continue;
-      // Keep a one-tile reserve unless the move lands on a friendly refueling property.
-      if (u.fuel !== undefined && c >= u.fuel && !isRefuelSite(s, u.team, nx, ny)) continue;
       const ex = res.get(k);
       if (!ex || ex.cost > c) {
         res.set(k, { cost: c, prev: cur, straight: isStraight });

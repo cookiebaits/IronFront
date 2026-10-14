@@ -2096,6 +2096,7 @@ export default function GameView(props: Props) {
                       <span className="text-rose-300">ATK {m.rmin === m.rmax ? `${m.rmax}` : `${m.rmin}–${m.rmax}`}</span>
                       <span className="text-amber-300">{m.atk}%</span>
                       <span className="text-emerald-300">{m.def}%</span>
+                      {d.fuel !== undefined && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel} SQ</span>}
                     </div>
                   </div>
                 </div>
