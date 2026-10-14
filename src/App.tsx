@@ -40,7 +40,6 @@ export default function App() {
   const [cfg, setCfg] = useState<GameCfg | null>(null);
   const [gameKey, setGameKey] = useState(0);
   const [won, setWon] = useState(false);
-  const [dismissRotate, setDismissRotate] = useState(true);
 
   useEffect(() => { setSfx(save.settings.sfx); }, [save.settings.sfx]);
 
@@ -227,14 +226,6 @@ export default function App() {
 
   return (
     <div className="fixed inset-0 bg-slate-950 text-white font-game overflow-hidden">
-      {!dismissRotate && (
-        <div className="portrait-warning fixed inset-0 z-[9999] flex-col items-center justify-center gap-4 bg-slate-950/95 p-6 text-center">
-          <div className="rotate-phone text-7xl">📱</div>
-          <div className="text-2xl font-black tracking-widest text-amber-300">ROTATE YOUR DEVICE</div>
-          <div className="max-w-xs text-sm text-slate-300">Iron Front is built for landscape. Turn your phone sideways for the full battlefield.</div>
-          <button className="menu-btn bg-slate-700 text-sm" onClick={() => setDismissRotate(true)}>Continue in portrait</button>
-        </div>
-      )}
       {screen === 'title' && (
         <Title save={save} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
           onAuditUnlock={() => persist({ ...save, missionAuditUnlocked: true })} onNav={(s) => {

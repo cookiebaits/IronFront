@@ -287,11 +287,6 @@ canvas {
 .ultimate-portrait { border-width: 3px !important; box-shadow: 0 0 28px var(--ultimate-edge), 0 0 64px var(--ultimate-glow); animation: ultimatePortrait 4.5s ease both; }
 .ultimate-ring { position: absolute; width: 180px; height: 180px; left: 22px; top: 50%; margin-top: -90px; border: 3px solid var(--ultimate-edge); border-radius: 50%; box-shadow: 0 0 24px var(--ultimate-edge), inset 0 0 18px var(--ultimate-glow); animation: ultimateRing 1.2s ease-out both; }
 .ultimate-seal { position: absolute; right: 12px; top: -25px; font-size: clamp(90px, 17vw, 180px); line-height: 1; color: var(--ultimate-edge); opacity: 0; text-shadow: 0 0 26px var(--ultimate-edge); animation: ultimateSeal 4.5s ease both; }
-/* Landscape-first: ask phones held upright to rotate. Hidden on wide / landscape screens. */
-.portrait-warning { display: none; }
-@media (orientation: portrait) and (max-width: 820px) { .portrait-warning { display: flex; } }
-@keyframes rotatePhone { 0%, 20% { transform: rotate(0deg); } 60%, 100% { transform: rotate(-90deg); } }
-.rotate-phone { animation: rotatePhone 2.4s ease-in-out infinite alternate; }
 .gauge-ultimate-ready { animation: ultimateGauge 0.95s ease-in-out infinite; }
 .enemy-ultimate-ready { animation: ultimateGauge 0.95s ease-in-out infinite; border-radius: 10px; }
 .gauge-sheen { overflow: hidden; }

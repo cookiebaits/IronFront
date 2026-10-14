@@ -22,9 +22,7 @@ if (typeof proto.roundRect !== "function") {
   };
 }
 
-// The game is designed for landscape. On touch devices, go fullscreen and lock orientation on the first tap
-// (browsers only allow orientation lock from a user gesture, usually while fullscreen).
-// The Android APK additionally forces landscape in its manifest, and a portrait overlay asks the player to rotate.
+// The game is optimized for portrait mode. On touch devices, lock orientation to portrait on the first user interaction.
 if (window.matchMedia?.("(pointer: coarse)").matches) {
   window.addEventListener(
     "pointerdown",
@@ -34,8 +32,8 @@ if (window.matchMedia?.("(pointer: coarse)").matches) {
       } catch { /* fullscreen not permitted; fine */ }
       try {
         const o = screen.orientation as ScreenOrientation & { lock?: (o: string) => Promise<void> };
-        await o?.lock?.("landscape");
-      } catch { /* not supported or not allowed; the rotate overlay covers this */ }
+        await o?.lock?.("portrait");
+      } catch { /* not supported or not allowed */ }
     },
     { once: true },
   );
