@@ -358,8 +358,8 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
                 </div>
               </div>
 
-              {/* Mission Cards Grid for this Act */}
-              <div className="grid sm:grid-cols-2 gap-3 items-stretch">
+              {/* Mission Cards List for this Act */}
+              <div className="flex flex-col gap-3">
                 {missions.map(({ m, i }) => {
                   const isTutorial = !!m.tutorial;
                   const locked = i > save.progress && !save.missionAuditUnlocked;
