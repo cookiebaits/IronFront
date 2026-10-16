@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations', 'Act XV — Allied Vanguard', 'Act XVI — Dual Front', 'Act XVII — Sovereign Alliance'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -587,6 +587,90 @@ export const MISSIONS: MissionDef[] = [
       { who: 'narrator', text: 'CONGRATULATIONS! You have mastered every air, land, and sea campaign mission!' },
     ],
   },
+  {
+    id: 'm32', name: 'Allied Vanguard', act: 15, par: 14, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', enemyCo2: 'frost', allyCo: 'dax', recommendedRank: 4, recommendedUpgrades: 12,
+    map: sym(['mmf..f..', 'mH=c...m', 'fB==~.#.', '..f=~.c.', '.A.====.', 'f..c~f..', 'mm.f~.m.', '...=#c..', 'mm..f...']),
+    units: mir(16, [
+      ['tank', 4, 1], ['heavy', 5, 2], ['artillery', 2, 4], ['rockets', 1, 6], ['infantry', 4, 3], ['mech', 3, 5], ['aa', 2, 7],
+    ], [['heavy', 12, 3], ['artillery', 13, 6], ['rockets', 11, 7], ['tank', 11, 2]]),
+    funds: [9000, 12000], weather: 'clear', weatherPool: ['clear', 'snow', 'rain'], fog: false, unitCap: [22, 26], objective: { type: 'hq' },
+    adaptiveTrigger: { day: 3 }, adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'frost', text: 'A joint Republic assault? Your HQ attempt is meaningless — my frozen reserves have surrounded the perimeter!' },
+      { who: 'dax', text: 'Let them come! Commander, change of plans: capture won\'t secure this valley. Complete elimination of all enemy forces!' },
+      { who: 'volkov', text: 'Iron and ice stand as one! Defend every soldier!' },
+    ],
+    aiLevel: 3,
+    hint: 'Dual CO Battlefield! Major Dax joins as an Allied AI CO against General Volkov and Baron Frost. The objective shifts on Day 3!',
+    briefing: [
+      { who: 'narrator', text: 'Vanguard Ridge. General Volkov and Baron Frost have forged an elite defensive pact.' },
+      { who: 'dax', text: 'You\'re not fighting alone today, Commander! My armored division will advance alongside your vanguard.' },
+      { who: 'volkov', text: 'Two Republic officers... a combined assault. We shall crush both your columns!' },
+      { who: 'frost', text: 'The snow will freeze your combined treads where they stand.' },
+      { who: 'rhea', text: 'Coordinate with Dax\'s armor. Capture their HQ or adapt if the situation changes.' },
+    ],
+    outro: [
+      { who: 'dax', text: 'That\'s how the Republic fights! Excellent joint coordination, Commander!' },
+      { who: 'volkov', text: 'Your combined tactics breached our line... an honorable defeat.' },
+    ],
+  },
+  {
+    id: 'm33', name: 'Dual Front Citadel', act: 16, par: 16, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'zero', allyCo: 'sora', recommendedRank: 4, recommendedUpgrades: 14,
+    map: sym(['mm.ff...', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.====.', 'f..f..t.', 'm.c...f.', '..c.=...', 'mm..f...']),
+    units: mir(16, [
+      ['fighter', 3, 1], ['aa', 5, 2], ['missiles', 2, 4], ['gundrone', 4, 3], ['bcopter', 5, 5], ['infantry', 4, 6], ['tank', 2, 7],
+    ], [['bomber', 12, 3], ['missiles', 12, 6], ['heavy', 11, 4]]),
+    boss: { x: 12, y: 3, team: 1, type: 'bomber', name: 'DUAL CITADEL CORE', hp: 100, phases: 4 },
+    funds: [10000, 14000], weather: 'clear', weatherPool: ['clear', 'sand', 'rain'], fog: false, unitCap: [22, 28], objective: { type: 'hq' },
+    adaptiveTrigger: { bossPhaseBreak: true }, adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'architect', text: 'CITADEL SHIELD PHASE CRACKED. EXECUTING TOTAL ERADICATION COUNTER-MEASURES.' },
+      { who: 'zero', text: 'All battery grids overcharge! No retreat for any remaining unit!' },
+      { who: 'sora', text: 'Their command structure is breaking down into blind aggression! Change target: wipe out every hostile unit on the board!' },
+    ],
+    aiLevel: 3,
+    hint: 'Dual CO Citadel! Sora\'s air wing flies alongside you against the Architect and Siege Director Zero. Breaking the boss shield shifts objective!',
+    briefing: [
+      { who: 'narrator', text: 'Dual Front Citadel. Siege Director Zero provides long-range barrage cover for the Architect\'s airborne core.' },
+      { who: 'sora', text: 'I\'ll cover your air space from the north flank, Commander! Let\'s break Zero\'s siege batteries together!' },
+      { who: 'zero', text: 'Calculated trajectory: zero probability of Republic survival under joint bombardment.' },
+      { who: 'architect', text: 'DUAL THREAT DETECTED. ALL DEFENSE MATRIXES ENGAGED.' },
+    ],
+    outro: [
+      { who: 'sora', text: 'Target down! Skies are clear, and the Citadel is ours!' },
+      { who: 'zero', text: 'Targeting overriden by joint air supremacy...' },
+    ],
+  },
+  {
+    id: 'm34', name: 'Sovereign Alliance', act: 17, par: 18, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'seraphina', allyCo: 'mira', recommendedRank: 5, recommendedUpgrades: 15,
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=t.', 'wwsfA.=.', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [
+      ['battleship', 0, 5], ['cruiser', 1, 7], ['heavy', 5, 2], ['tank', 5, 5], ['rockets', 3, 6], ['mech', 4, 3], ['fighter', 2, 3], ['bomber', 4, 7], ['aa', 5, 8],
+    ], [['heavy', 11, 4], ['bomber', 12, 3], ['battleship', 15, 7], ['rockets', 13, 6]]),
+    boss: { x: 11, y: 4, team: 1, type: 'heavy', name: 'SOVEREIGN CORE', hp: 100, phases: 5 },
+    funds: [12000, 16000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [24, 30], objective: { type: 'hq' },
+    adaptiveTrigger: { hqCaptured: true }, adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'seraphina', text: 'You captured the primary HQ, but my nanite matrix has transferred the Sovereign Core to the entire fleet!' },
+      { who: 'mira', text: 'Commander, capturing HQ won\'t end this battle! We must achieve total annihilation of their combined forces!' },
+      { who: 'architect', text: 'ABSOLUTE ERADICATION MODE ACTIVE.' },
+    ],
+    aiLevel: 3,
+    hint: 'Ultimate Dual CO Grand Battle! Admiral Mira commands the naval flank alongside your army against the Sovereign Core and General Seraphina!',
+    briefing: [
+      { who: 'narrator', text: 'Sovereign Horizon. The ultimate confrontation where naval armada and ground forces unite against the Architect\'s final war matrix.' },
+      { who: 'mira', text: 'My fleet will anchor your western flank, Commander. Together, we bring true peace to the frontier.' },
+      { who: 'seraphina', text: 'My nanites heal every scar. Your combined assault will achieve nothing.' },
+      { who: 'architect', text: 'FINAL SOVEREIGN PROTOCOL ACTIVE. DUAL COMMAND DETECTED.' },
+      { who: 'rhea', text: 'For the Republic, for the Dominion, and for all our people... ADVANCE!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'SOVEREIGN CORE TERMINATED... GLOBAL SYNCHRONIZATION PERMANENTLY CEASED...' },
+      { who: 'rhea', text: 'We did it... together. Admiral, Major, Lieutenant, Colonel... thank you.' },
+      { who: 'mira', text: 'The seas and skies are at peace at last.' },
+      { who: 'narrator', text: 'VICTORY! The Sovereign Alliance has defeated the final war machine. Total peace reigns across the entire frontier.' },
+    ],
+  },
 ];
 
 /** First-clear skill rewards — the story hands you new tactical skills as you progress. */
@@ -597,7 +681,7 @@ export const REWARDS: Record<string, string> = {
   m16: 'warbonds', m17: 'strike', m18: 'repair', m19: 'meteor',
   m20: 'airstrike', m21: 'stealth', m22: 'overdrive', m23: 'nanite', m24: 'orbital',
   m25: 'airstrike', m26: 'emp', m27: 'orbital', m28: 'nanite', m29: 'meteor',
-  m30: 'whiteout', m31: 'tempest',
+  m30: 'whiteout', m31: 'tempest', m32: 'orbital', m33: 'overdrive', m34: 'meteor',
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
@@ -633,6 +717,9 @@ export const ACT_INTROS = [
   'Omega Horizon: overcome Siege Director Zero\'s batteries and Medic General Seraphina\'s nanite grid.',
   'Final Victory: face the Titan Core in the ultimate test of all military branches.',
   'Sky & Sea Operations: specialized air-only dogfights and deep-water naval fleet clashes.',
+  'Allied Vanguard: Major Dax joins your battalion on the battlefield against General Volkov and Baron Frost.',
+  'Dual Front: Lieutenant Sora flies air support alongside your ground forces against the Architect and Siege Director Zero.',
+  'Sovereign Alliance: Admiral Mira commands the naval armada alongside your combined forces in the ultimate confrontation.',
 ];
 
 /** Pre-deployed army value used by the hidden title-screen mission audit mode. */

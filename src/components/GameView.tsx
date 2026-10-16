@@ -15,7 +15,7 @@ import BattleScene from './BattleScene';
 import Portrait from './Portrait';
 import COInfo from './COInfo';
 import { GraphicsSettingsModal } from './GraphicsSettingsModal';
-import type { AttackResult, GameState, MissionDef, PowerEffect, SaveData, Settings, Team, Unit, UnitType, Weather } from '../game/types';
+import type { AttackResult, Dialogue, GameState, MissionDef, PowerEffect, SaveData, Settings, Team, Unit, UnitType, Weather } from '../game/types';
 
 export type ScoreInfo = ReturnType<typeof computeScore>;
 
@@ -146,6 +146,7 @@ export default function GameView(props: Props) {
   const [battle, setBattle] = useState<{ r: AttackResult; done: () => void } | null>(null);
   const [powerFx, setPowerFx] = useState<{ co: string; name: string; level: number; team: Team; desc?: string } | null>(null);
   const [banner, setBanner] = useState<{ text: string; sub: string; team: Team } | null>(null);
+  const [adaptivePrompt, setAdaptivePrompt] = useState<{ lines: Dialogue[]; idx: number } | null>(null);
   const [paused, setPaused] = useState(false);
   const [confirmEnd, setConfirmEnd] = useState(false);
   const [over, setOver] = useState<{ won: boolean; score: ScoreInfo; place: number; reward?: string | null; drops?: PieceDrop[] } | null>(null);
@@ -639,6 +640,9 @@ export default function GameView(props: Props) {
       }
       const res = capture(gs, unit);
       unit.moved = true;
+      if (res.adaptiveDialogue && res.adaptiveDialogue.length) {
+        setAdaptivePrompt({ lines: res.adaptiveDialogue, idx: 0 });
+      }
       if (res.done) { sfx.capture(); sparkle(unit.x, unit.y, ['#60a5fa', '#fde047', '#fff'], 36); float(unit.x, unit.y, 'CAPTURED!', '#93c5fd', 1.2); shake.current = 6; }
       else { sfx.select(); float(unit.x, unit.y, `${gs.tiles[unit.y][unit.x].capture} left`, '#fde047'); }
       if (mission.tutorial && guideEvent() === 'first-capture') tutEvent('first-capture');
@@ -1949,6 +1953,7 @@ export default function GameView(props: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-1">
               <button className="text-xs font-black text-sky-300 truncate underline decoration-dotted underline-offset-2" onClick={() => { sfx.menu(); setCoInfo(localTeam); }}>{myCo.name}</button>
+              {gs.allyCo && COS[gs.allyCo] && <span className="text-[9px] font-black text-emerald-300">🤝 ALLY: {COS[gs.allyCo].name.split(' ')[0]}</span>}
               <span className={`text-[9px] font-black truncate ${gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
                 {gs.power[localTeam] === 2 ? myCo.superName : gs.meter[localTeam] >= ultimateCost(myCo.id) ? 'ULTIMATE READY' : ''}
               </span>
@@ -1966,6 +1971,37 @@ export default function GameView(props: Props) {
           </div>
         </div>
       </div>
+
+      {/* Adaptive Objective Shift Dialogue Overlay */}
+      {adaptivePrompt && (
+        <div className="absolute inset-0 z-[75] flex items-end justify-center pb-16 bg-slate-950/80 backdrop-blur-[3px] p-3 pointer-events-auto anim-fade" role="dialog" aria-modal="true">
+          <div className="hud-panel border-fuchsia-400 bg-slate-950/95 p-4 w-[min(520px,94vw)] shadow-[0_16px_60px_rgba(0,0,0,0.9),0_0_30px_rgba(217,70,239,0.4)] anim-zoom">
+            <div className="flex items-start gap-3">
+              <Portrait id={adaptivePrompt.lines[adaptivePrompt.idx]?.who ?? 'rhea'} size={64} className="shrink-0 shadow-lg" />
+              <div className="min-w-0 flex-1">
+                <div className="text-[9px] font-black tracking-[0.25em] text-fuchsia-300">⚡ BATTLEFIELD SITUATION SHIFT</div>
+                <div className="text-base font-black text-white tracking-wide leading-tight mt-0.5">
+                  {COS[adaptivePrompt.lines[adaptivePrompt.idx]?.who]?.name ?? 'Commander'}
+                </div>
+                <div className="mt-2 rounded-xl bg-slate-900 border border-slate-700 px-3 py-2 text-sm text-slate-100 leading-relaxed">
+                  {adaptivePrompt.lines[adaptivePrompt.idx]?.text}
+                </div>
+              </div>
+            </div>
+            <button autoFocus className="menu-btn h-11 w-full mt-4 bg-fuchsia-500 text-white font-black" onClick={() => {
+              sfx.select();
+              if (adaptivePrompt.idx + 1 < adaptivePrompt.lines.length) {
+                setAdaptivePrompt({ ...adaptivePrompt, idx: adaptivePrompt.idx + 1 });
+              } else {
+                setAdaptivePrompt(null);
+                showBanner('OBJECTIVE UPDATED', gs.mission.objective.type === 'rout' ? '⚔ Complete Unit Elimination' : '🏛 Capture Enemy HQ', 0, 1800);
+              }
+            }}>
+              {adaptivePrompt.idx + 1 < adaptivePrompt.lines.length ? 'CONTINUE ▸' : 'ADAPT OBJECTIVE ▸'}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* In-battle briefing: dialogue positioned at the bottom of the screen above bottom HUD */}
       {tutNote && (
@@ -2063,6 +2099,7 @@ export default function GameView(props: Props) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-1">
               <div className="text-xs font-black text-rose-300 truncate">{foeCo.name}</div>
+              {gs.enemyCo2 && COS[gs.enemyCo2] && <span className="text-[9px] font-black text-rose-400">⚔ DUAL: {COS[gs.enemyCo2].name.split(' ')[0]}</span>}
               <div className={`text-[9px] font-black truncate ${gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'text-fuchsia-200' : 'text-slate-400'}`}>
                 {gs.power[enemyTeam] ? foeCo.superName + ' active!' : gs.meter[enemyTeam] >= ultimateCost(foeCo.id) ? 'ULTIMATE READY' : props.online ? props.online.opponentName : `Lv ${gs.aiLevel} AI`}
               </div>

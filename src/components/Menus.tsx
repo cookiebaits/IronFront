@@ -405,7 +405,10 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue, onTog
                             {locked ? (
                               <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-xl shrink-0 border border-slate-700">🔒</div>
                             ) : (
-                              <Portrait id={m.enemyCo} size={44} className="shrink-0 rounded-lg border border-slate-700" />
+                              <div className="flex items-center -space-x-2 shrink-0">
+                                <Portrait id={m.enemyCo} size={44} className="rounded-lg border border-slate-700 shadow-md" />
+                                {m.enemyCo2 && COS[m.enemyCo2] && <Portrait id={m.enemyCo2} size={44} className="rounded-lg border border-rose-500 shadow-md z-10" />}
+                              </div>
                             )}
                             <div className="min-w-0 flex-1">
                               <div className="text-[10px] font-black text-amber-400 tracking-wider truncate">
@@ -427,6 +430,8 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue, onTog
                           <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
                             {m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ Capture' : `🛡 Survive ${m.objective.days}d`}
                           </span>
+                          {m.allyCo && COS[m.allyCo] && <span className="bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700">🤝 Ally: {COS[m.allyCo].name.split(' ')[0]}</span>}
+                          {m.adaptiveTrigger && <span className="bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-700">⚡ Adaptive Objective</span>}
                           <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">AI Lv{isAdvanced ? Math.min(3, m.aiLevel + 1) : m.aiLevel}</span>
                           {isAdvanced && <span className="bg-fuchsia-950/80 text-fuchsia-300 px-2 py-0.5 rounded border border-fuchsia-700">🌫 Mandatory Fog</span>}
                         </div>

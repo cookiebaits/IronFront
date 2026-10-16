@@ -45,6 +45,7 @@ export interface Unit {
   landed?: boolean;
   boss?: string;
   bossPhases?: number;
+  isAlly?: boolean;
 }
 
 export interface UnitDef {
@@ -85,6 +86,13 @@ export type Objective =
   | { type: 'hq' }
   | { type: 'survive'; days: number };
 
+export interface AdaptiveTrigger {
+  day?: number;
+  bossPhaseBreak?: boolean;
+  enemyCountBelow?: number;
+  hqCaptured?: boolean;
+}
+
 export interface MissionDef {
   id: string;
   name: string;
@@ -93,12 +101,17 @@ export interface MissionDef {
   units: [UnitType, number, number, Team][];
   cos: string[]; // allowed player cos
   enemyCo: string;
+  allyCo?: string; // optional Allied AI CO playing on team 0 or ally team
+  enemyCo2?: string; // second enemy CO for dual CO battles
   funds: [number, number];
   weather: Weather;
   weatherPool?: Weather[];
   fog: boolean;
   unitCap: [number, number];
   objective: Objective;
+  adaptiveTrigger?: AdaptiveTrigger;
+  adaptiveObjective?: Objective;
+  adaptiveDialogue?: Dialogue[];
   dayLimit?: number;
   aiLevel: number;
   briefing: Dialogue[];
@@ -188,6 +201,9 @@ export interface GameState {
   turn: Team;
   funds: [number, number];
   cos: [string, string];
+  allyCo?: string;
+  enemyCo2?: string;
+  adaptiveTriggered?: boolean;
   meter: [number, number];
   /** Tactical-skill charge: separate from and slower than Power / Super charge. */
   skillMeter: [number, number];

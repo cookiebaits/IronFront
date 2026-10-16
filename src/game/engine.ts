@@ -1,6 +1,6 @@
 import { CHAR_MAP, COS, MOVE_COST, SKILLS, TERRAIN, UNITS, buildsAt, coCost, ultimateCost, upgradeEffects, weatherCost } from './data';
 import type {
-  AttackResult, GameState, MissionDef, PlayerLoadout, PowerEffect, Team, TerrainType, Tile, Unit, UnitType, Upgrades, Weather,
+  AttackResult, Dialogue, GameState, MissionDef, PlayerLoadout, PowerEffect, Team, TerrainType, Tile, Unit, UnitType, Upgrades, Weather,
 } from './types';
 
 export const emptyUpgrades = (): Upgrades => ({
@@ -37,6 +37,9 @@ export function createGame(
     w, h, tiles, units: [], day: 1, turn: 0,
     funds: [m.funds[0], m.funds[1]],
     cos: [playerCo, enemyCo],
+    allyCo: m.allyCo,
+    enemyCo2: m.enemyCo2,
+    adaptiveTriggered: false,
     meter: [0, 0], skillMeter: [0, 0], power: [0, 0], debuff: [0, 0],
     weather, baseWeather: weather,
     weatherPool: opts?.dynamic === false ? null : opts?.dynamic ? ['clear', 'clear', 'rain', 'snow', 'sand'] : m.weatherPool ?? null,
@@ -389,6 +392,7 @@ export function resolveAttack(s: GameState, a: Unit, d: Unit, rng = Math.random)
       d.hp = 100;
       res.bossPhaseBreak = true;
       chargeMeter(s, a.team, 8);
+      evaluateAdaptiveTrigger(s, 'bossPhaseBreak');
     } else {
       res.dKilled = true;
       a.vet = Math.min(3, a.vet + 1);
@@ -484,7 +488,26 @@ export function dropCargo(s: GameState, t: Unit, x: number, y: number) {
   s.units.push(c);
 }
 
-export function capture(s: GameState, u: Unit): { done: boolean; hq: boolean } {
+export function evaluateAdaptiveTrigger(s: GameState, event?: 'bossPhaseBreak' | 'hqCaptured'): Dialogue[] | null {
+  if (!s.mission.adaptiveTrigger || s.adaptiveTriggered) return null;
+  const tr = s.mission.adaptiveTrigger;
+  let hit = false;
+  if (event === 'bossPhaseBreak' && tr.bossPhaseBreak) hit = true;
+  if (event === 'hqCaptured' && tr.hqCaptured) hit = true;
+  if (tr.day !== undefined && s.day >= tr.day) hit = true;
+  if (tr.enemyCountBelow !== undefined && unitCount(s, 1) <= tr.enemyCountBelow) hit = true;
+
+  if (hit) {
+    s.adaptiveTriggered = true;
+    if (s.mission.adaptiveObjective) {
+      s.mission.objective = s.mission.adaptiveObjective;
+    }
+    return s.mission.adaptiveDialogue ?? null;
+  }
+  return null;
+}
+
+export function capture(s: GameState, u: Unit): { done: boolean; hq: boolean; adaptiveDialogue?: Dialogue[] | null } {
   const tile = s.tiles[u.y][u.x];
   tile.capture -= dispHp(u.hp);
   u.capturing = true;
@@ -496,8 +519,12 @@ export function capture(s: GameState, u: Unit): { done: boolean; hq: boolean } {
     u.capturing = false;
     s.stats.captures[u.team]++;
     chargeMeter(s, u.team, 10);
-    if (wasHq) {
-      s.winner = u.team;
+    if (wasHq && tile.owner === u.team) {
+      if (s.mission.adaptiveTrigger?.hqCaptured && !s.adaptiveTriggered) {
+        const dlg = evaluateAdaptiveTrigger(s, 'hqCaptured');
+        return { done: false, hq: true, adaptiveDialogue: dlg };
+      }
+      if (u.team === 0) s.winner = 0; else s.winner = 1;
       return { done: true, hq: true };
     }
     return { done: true, hq: false };
@@ -748,7 +775,8 @@ export function endTurn(s: GameState, rng = Math.random): TurnStartInfo {
       }
     }
   }
-  // objectives
+  // objectives & adaptive triggers
+  evaluateAdaptiveTrigger(s);
   checkRout(s);
   const obj = s.mission.objective;
   if (t === 0 && s.winner === null) {
