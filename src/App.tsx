@@ -2,9 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import GameView, { type ScoreInfo } from './components/GameView';
 import ErrorBoundary from './components/ErrorBoundary';
 import { COSelect, Campaign, CharacterStories, DialogueScreen, Help, HighScores, SaveManager, Skirmish, Title, type SkirmishCfg } from './components/Menus';
+import type { CharacterStoryChapter } from './game/characterStories';
 import CommandHQ from './components/Shop';
 import OnlineRoom from './components/OnlineRoom';
-import { MERIT_BONUS, MISSIONS, REWARDS } from './game/campaign';
+import { MERIT_BONUS, MISSIONS, REWARDS, getCampaignOpts } from './game/campaign';
 import { COS, PLAYABLE_ORDER, rankSlots } from './game/data';
 
 /** Story campaign missions only allow Good (Azure Republic) officers. Evil officers cannot be chosen for campaign. */
@@ -40,29 +41,35 @@ export default function App() {
   const [cfg, setCfg] = useState<GameCfg | null>(null);
   const [gameKey, setGameKey] = useState(0);
   const [won, setWon] = useState(false);
-  const [dismissRotate, setDismissRotate] = useState(true);
 
   useEffect(() => { setSfx(save.settings.sfx); }, [save.settings.sfx]);
 
   const persist = useCallback((s: SaveData) => { setSave(s); writeSave(s); }, []);
 
-  const pickMission = (i: number) => {
+  const pickMission = (i: number, isFogReplay = false) => {
     const m = MISSIONS[i];
     if (!m) { setScreen('campaign'); return; }
+    if (m.tutorial && save.tutorialComplete) return;
+
     setIdx(i);
     const forced = m.forcedCo;
+    const isAdv = !!(save.advancedUnlocked && save.advancedMode);
+    const opts = getCampaignOpts(m, isAdv, isFogReplay);
     if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'kaelen' || forced === 'aria')) {
-      const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true };
+      const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
       else { setCfg(next); setScreen('briefing'); }
       return;
     }
     const avail = allowedFor(m).filter((c) => save.unlockedCos.includes(c));
     if (avail.length <= 1) {
-      const next = { mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true };
+      const next = { mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
       else { setCfg(next); setScreen('briefing'); }
-    } else setScreen('coselect');
+    } else {
+      setCfg({ mission: m, idx: i, playerCo: avail[0] ?? 'rhea', enemyCo: m.enemyCo, isCampaign: true, opts });
+      setScreen('coselect');
+    }
   };
 
   const startGame = (c: GameCfg) => {
@@ -76,16 +83,16 @@ export default function App() {
     setScreen('stories');
   };
 
-  const startStoryBattle = (playerCo: string, enemyCo: string, mapIdx: number) => {
-    const m = MISSIONS[mapIdx] ?? MISSIONS[1];
-    startGame({
-      mission: m,
-      idx: mapIdx,
-      playerCo,
-      enemyCo,
+  const startStoryBattle = (chapter: CharacterStoryChapter) => {
+    setCfg({
+      mission: chapter.mission,
+      idx: chapter.chapterIndex,
+      playerCo: chapter.coId,
+      enemyCo: chapter.mission.enemyCo,
       isCampaign: false,
-      opts: { aiLevel: 2 },
+      opts: { aiLevel: chapter.mission.aiLevel },
     });
+    setScreen('briefing');
   };
 
   /** Auto-save a campaign battle at the start of each full turn. */
@@ -126,6 +133,17 @@ export default function App() {
     let s: SaveData = { ...save, merits: save.merits + score.merits, gems: (save.gems ?? 0) + earnedGems };
     let storyCo: string | undefined;
     if (cfg?.isCampaign && w) {
+      const isFog = !!cfg.opts?.fog;
+      const normalCleared = { ...(s.normalCleared ?? {}) };
+      const fogCleared = { ...(s.fogCleared ?? {}) };
+      if (isFog) {
+        fogCleared[cfg.mission.id] = true;
+      } else {
+        normalCleared[cfg.mission.id] = true;
+      }
+      s.normalCleared = normalCleared;
+      s.fogCleared = fogCleared;
+
       const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
       const firstClear = !auditJump && cfg.idx >= s.progress;
       if (firstClear) s.merits += MERIT_BONUS;
@@ -137,7 +155,10 @@ export default function App() {
         const cur = s.loadout[co] ?? [];
         if (cur.length < rankSlots(s.coRank[co] ?? 0)) s.loadout = { ...s.loadout, [co]: [...cur, rid] };
       }
-      if (!auditJump) s.progress = Math.max(s.progress, cfg.idx + 1);
+      if (!auditJump) {
+        s.progress = Math.max(s.progress, cfg.idx + 1);
+        if (s.progress >= MISSIONS.length - 1) s.advancedUnlocked = true;
+      }
       const prev = s.best[cfg.mission.id];
       if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
       // Story clears no longer hand out officers: they award CO Pieces (unlock them in Command HQ with Gold).
@@ -210,14 +231,6 @@ export default function App() {
 
   return (
     <div className="fixed inset-0 bg-slate-950 text-white font-game overflow-hidden">
-      {!dismissRotate && (
-        <div className="portrait-warning fixed inset-0 z-[9999] flex-col items-center justify-center gap-4 bg-slate-950/95 p-6 text-center">
-          <div className="rotate-phone text-7xl">📱</div>
-          <div className="text-2xl font-black tracking-widest text-amber-300">ROTATE YOUR DEVICE</div>
-          <div className="max-w-xs text-sm text-slate-300">Iron Front is built for landscape. Turn your phone sideways for the full battlefield.</div>
-          <button className="menu-btn bg-slate-700 text-sm" onClick={() => setDismissRotate(true)}>Continue in portrait</button>
-        </div>
-      )}
       {screen === 'title' && (
         <Title save={save} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
           onAuditUnlock={() => persist({ ...save, missionAuditUnlocked: true })} onNav={(s) => {
@@ -226,11 +239,12 @@ export default function App() {
         }} onSettings={onSettings} />
       )}
       {screen === 'campaign' && <Campaign save={save} onBack={() => setScreen('title')} onPick={pickMission} onHQ={() => setScreen('workshop')}
-        resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume} />}
+        resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
+        onToggleAdvanced={(adv) => persist({ ...save, advancedMode: adv })} />}
       {screen === 'coselect' && MISSIONS[idx] && (
         <COSelect save={save} allowed={allowedFor(MISSIONS[idx])} enemyCo={MISSIONS[idx].enemyCo} title={MISSIONS[idx].name.toUpperCase()}
           onBack={() => setScreen('campaign')}
-          onPick={(co) => { setCfg({ mission: MISSIONS[idx], idx, playerCo: co, enemyCo: MISSIONS[idx].enemyCo, isCampaign: true }); setScreen('briefing'); }} />
+          onPick={(co) => { setCfg((prev) => prev ? { ...prev, playerCo: co } : { mission: MISSIONS[idx], idx, playerCo: co, enemyCo: MISSIONS[idx].enemyCo, isCampaign: true }); setScreen('briefing'); }} />
       )}
       {screen === 'briefing' && cfg && !cfg.mission.tutorial && (
         <DialogueScreen lines={cfg.mission.briefing} title={cfg.mission.name} onDone={() => startGame(cfg)} />

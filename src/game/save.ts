@@ -1,6 +1,7 @@
 import { getGraphicsPreset } from '../utils/hardware';
 import { emptyUpgrades } from './engine';
 import type { GameState, HighScore, SaveData, Settings, Weather } from './types';
+import { MISSIONS } from './campaign';
 
 const KEY = 'ironfront_tactics_v1';
 
@@ -39,6 +40,10 @@ export function defaultSave(): SaveData {
     coPieces: {},
     tutorialComplete: false,
     missionAuditUnlocked: false,
+    normalCleared: {},
+    fogCleared: {},
+    advancedUnlocked: false,
+    advancedMode: false,
   };
 }
 
@@ -49,7 +54,31 @@ export function loadSave(): SaveData {
     const d = JSON.parse(raw);
     const def = defaultSave();
     const mergedSettings: Settings = { ...def.settings, ...(d.settings ?? {}) };
-    return { ...def, ...d, coRank: d.coRank ?? {}, coPieces: d.coPieces ?? {}, tutorialComplete: d.tutorialComplete ?? (d.progress > 0), missionAuditUnlocked: d.missionAuditUnlocked ?? false, ownedSkills: d.ownedSkills ?? [], loadout: d.loadout ?? {}, unitUps: d.unitUps ?? {}, settings: mergedSettings, upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) } };
+    // Backfill normalCleared for existing progress
+    const normalCleared: Record<string, boolean> = d.normalCleared ?? {};
+    if (d.progress > 0) {
+      MISSIONS.forEach((m, idx) => {
+        if (idx < d.progress) normalCleared[m.id] = true;
+      });
+    }
+    const advancedUnlocked = d.advancedUnlocked ?? (d.progress >= MISSIONS.length - 1 || Object.keys(normalCleared).length >= MISSIONS.length - 1);
+    return {
+      ...def,
+      ...d,
+      coRank: d.coRank ?? {},
+      coPieces: d.coPieces ?? {},
+      tutorialComplete: d.tutorialComplete ?? (d.progress > 0),
+      missionAuditUnlocked: d.missionAuditUnlocked ?? false,
+      normalCleared,
+      fogCleared: d.fogCleared ?? {},
+      advancedUnlocked,
+      advancedMode: d.advancedMode ?? false,
+      ownedSkills: d.ownedSkills ?? [],
+      loadout: d.loadout ?? {},
+      unitUps: d.unitUps ?? {},
+      settings: mergedSettings,
+      upgrades: { ...def.upgrades, ...(d.upgrades ?? {}) },
+    };
   } catch {
     return defaultSave();
   }

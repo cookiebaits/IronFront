@@ -85,8 +85,8 @@ function threatValue(s: GameState, u: Unit, x: number, y: number, threats: Map<n
   return Math.min(u.hp, total);
 }
 
-export function nextAIUnit(s: GameState, team: Team): Unit | null {
-  const units = s.units.filter((u) => u.team === team && !u.moved);
+export function nextAIUnit(s: GameState, team: Team, allyOnly = false): Unit | null {
+  const units = s.units.filter((u) => u.team === team && (allyOnly ? u.isAlly === true : !u.isAlly) && !u.moved);
   if (!units.length) return null;
   units.sort((a, b) => score(b) - score(a));
   return units[0];

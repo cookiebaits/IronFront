@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Apply Iron Front's landscape + immersive Android settings and tank app icon after `cap add/sync android`."""
+"""Apply Iron Front's portrait + immersive Android settings and tank app icon after `cap add/sync android`."""
 from pathlib import Path
 import re
 import subprocess
@@ -15,9 +15,9 @@ text = manifest.read_text()
 activity_match = re.search(r"<activity\b[^>]*android:name=\"\.MainActivity\"[^>]*>", text, re.S)
 if not activity_match:
     raise SystemExit("Could not find MainActivity in AndroidManifest.xml")
-orientation_mode = "sensorLandscape"
-if len(sys.argv) > 1 and sys.argv[1].lower() in ("portrait", "sensorportrait"):
-    orientation_mode = "sensorPortrait"
+orientation_mode = "sensorPortrait"
+if len(sys.argv) > 1 and sys.argv[1].lower() in ("landscape", "sensorlandscape"):
+    orientation_mode = "sensorLandscape"
 
 tag = activity_match.group(0)
 if "android:screenOrientation=" in tag:
@@ -130,4 +130,4 @@ try:
 except Exception as exc:
     print(f"Warning: Tank launcher icon generation failed: {exc}", file=sys.stderr)
 
-print("Android patched: sensorLandscape + fullscreen immersive system bars + tank app icon")
+print("Android patched: sensorPortrait + fullscreen immersive system bars + tank app icon")

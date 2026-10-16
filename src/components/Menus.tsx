@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { ARMOR_NAMES, CAT_NAMES, COS, MODS, PLAYABLE_ORDER, TERRAIN, TERRAIN_BONUS, UNITS, UNIT_ORDER, WEATHER_INFO, ultimateCost } from '../game/data';
-import { ACTS, ACT_INTROS, MISSIONS, REWARDS, deploymentValue } from '../game/campaign';
+import { ACTS, ACT_INTROS, MISSIONS } from '../game/campaign';
 import { RANK_NAMES, SKILLS, rankSlots } from '../game/data';
 import { drawUnit } from '../game/draw';
 import { sfx } from '../game/audio';
@@ -12,38 +12,39 @@ import type { Category, Dialogue, ModId, SaveData, Settings, UnitType, Weather }
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
 
 /* ---------------- Character Stories ---------------- */
-export function CharacterStories({ save, onBack, onStart }: { save: SaveData; onBack: () => void; onStart: (coId: string, enemyId: string, mapIdx: number) => void }) {
-  const [selCo, setSelCo] = useState<string>('rhea');
-  const [selOpponent, setSelOpponent] = useState<string>('grimm');
-  const [mapIdx, setMapIdx] = useState<number>(1);
+import { getCharacterStoryChapters, type CharacterStoryChapter } from '../game/characterStories';
+
+export function CharacterStories({ save, onBack, onStart }: { save: SaveData; onBack: () => void; onStart: (chapter: CharacterStoryChapter) => void }) {
+  const [selCo, setSelCo] = useState<string>('sora');
+  const [selChapterIdx, setSelChapterIdx] = useState<number>(0);
   const [infoCo, setInfoCo] = useState<string | null>(null);
 
   const co = COS[selCo];
-  const opp = COS[selOpponent];
   const isEvilCo = co?.faction === 'crimson';
   const rank = save.coRank[selCo] ?? 0;
 
-  const validMaps = MISSIONS.map((m, i) => ({ m, i })).filter(({ i }) => i > 0);
+  const chapters = getCharacterStoryChapters(selCo);
+  const selectedChapter = chapters[selChapterIdx] ?? chapters[0];
 
   return (
     <Screen title="CHARACTER STORIES" onBack={onBack}>
       <div className="max-w-4xl mx-auto grid gap-4">
-        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center">
-          <Portrait id={selCo} size={64} className="shrink-0" />
+        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center rounded-xl">
+          <Portrait id={selCo} size={64} className="shrink-0 rounded-lg border border-amber-400" />
           <div className="flex-1 min-w-0 text-xs">
-            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORIES & SPECIFIC LEVEL-UP</div>
+            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORYLINES & PROFICIENCY BATTLES</div>
             <div className="text-slate-200 leading-relaxed">
-              Explore individual officer storylines, test tactical match-ups, and train specific characters!
+              Every officer features 10 dedicated story chapters tailored specifically to their vehicle strengths!
               <br />
-              • <b className="text-amber-300">Level Up Characters:</b> Battle here to earn Rank XP, Gold, and character-specific 🧩 CO Pieces.
+              • <b className="text-amber-300">Matching Forces:</b> Sora commands Air Wings; Dax commands Tank Battalions; Mira leads Naval Armadas; Brann operates Siege Batteries!
               <br />
-              • <b className="text-rose-400">Evil Faction Officers:</b> You can play as "Evil" Crimson Dominion officers in Character Stories and Online mode! (Evil officers cannot be deployed in standard Campaign).
+              • <b className="text-emerald-300">Level Up Characters:</b> Win story chapters to earn Rank XP, Gold, and officer-specific 🧩 CO Pieces.
             </div>
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-amber-300 mb-1 font-black tracking-widest">1. CHOOSE YOUR CHARACTER</div>
+          <div className="text-xs text-amber-300 mb-1 font-black tracking-widest">1. SELECT OFFICER STORY ARC</div>
           <div className="flex flex-wrap gap-2">
             {PLAYABLE_ORDER.map((id) => {
               const c = COS[id];
@@ -52,7 +53,7 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
               return (
                 <button
                   key={id}
-                  onClick={() => { setSelCo(id); sfx.cursor(); }}
+                  onClick={() => { setSelCo(id); setSelChapterIdx(0); sfx.cursor(); }}
                   className={`rounded-xl p-1.5 border-2 text-left transition flex items-center gap-2 ${isSelected ? 'border-amber-400 bg-amber-400/10 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.3)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-600'}`}
                 >
                   <Portrait id={id} size={48} />
@@ -70,8 +71,8 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
         </div>
 
         {co && (
-          <div className="hud-panel p-3 flex gap-3 flex-col sm:flex-row border-amber-400/50">
-            <Portrait id={selCo} size={96} className="self-center" />
+          <div className="hud-panel p-3 flex gap-3 flex-col sm:flex-row border-amber-400/50 rounded-xl">
+            <Portrait id={selCo} size={96} className="self-center rounded-lg border border-amber-400" />
             <div className="flex-1 min-w-0 text-xs">
               <div className="flex items-center gap-2">
                 <span className="font-black text-lg text-white">{co.title} {co.name}</span>
@@ -89,48 +90,50 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
         )}
 
         <div>
-          <div className="text-xs text-rose-400 mb-1 font-black tracking-widest">2. CHOOSE STORY OPPONENT</div>
-          <div className="flex flex-wrap gap-1.5">
-            {PLAYABLE_ORDER.map((id) => (
+          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">2. SELECT STORY CHAPTER (1 - 10)</div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {chapters.map((ch, idx) => (
               <button
-                key={id}
-                onClick={() => { setSelOpponent(id); sfx.cursor(); }}
-                className={`rounded-lg p-0.5 border-2 ${selOpponent === id ? 'border-rose-400 bg-rose-500/10' : 'border-transparent opacity-60'}`}
+                key={ch.id}
+                onClick={() => { setSelChapterIdx(idx); sfx.cursor(); }}
+                className={`p-2 rounded-xl border-2 text-left transition flex flex-col justify-between ${selChapterIdx === idx ? 'border-sky-400 bg-sky-500/10 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}`}
               >
-                <Portrait id={id} size={48} />
+                <div>
+                  <div className="text-[10px] font-black text-amber-400 tracking-wider">CHAPTER {ch.chapterIndex}</div>
+                  <div className="text-xs font-black text-white truncate">{ch.title}</div>
+                </div>
+                <div className="text-[9px] text-slate-400 mt-2">vs {COS[ch.mission.enemyCo]?.name.split(' ')[0]}</div>
               </button>
             ))}
           </div>
-          {opp && (
-            <div className="text-xs text-slate-300 mt-1.5 bg-slate-900/80 border border-slate-800 p-2 rounded-lg flex items-center gap-2">
-              <Portrait id={selOpponent} size={36} />
-              <div>
-                <span className="font-bold text-rose-300">{opp.title} {opp.name}:</span> {opp.d2d}
-              </div>
-            </div>
-          )}
         </div>
 
-        <div>
-          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">3. SELECT BATTLE BATTLEFIELD</div>
-          <div className="flex flex-wrap gap-1.5">
-            {validMaps.slice(0, Math.max(8, save.progress + 2)).map(({ m, i }) => (
-              <button
-                key={m.id}
-                onClick={() => { setMapIdx(i); sfx.cursor(); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${mapIdx === i ? 'bg-sky-400 text-slate-950 border-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'bg-slate-800 border-slate-700 text-slate-300'}`}
-              >
-                {m.name}
-              </button>
-            ))}
+        {selectedChapter && (
+          <div className="hud-panel p-3 border-sky-400/80 bg-slate-900/90 rounded-xl flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Portrait id={selectedChapter.mission.enemyCo} size={40} className="rounded border border-rose-500" />
+                <div>
+                  <div className="text-[10px] font-black text-sky-300 tracking-wider">CHAPTER {selectedChapter.chapterIndex} SUMMARY</div>
+                  <div className="text-sm font-black text-white">{selectedChapter.title}</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-amber-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Opponent: {COS[selectedChapter.mission.enemyCo]?.name}</span>
+            </div>
+            <div className="text-xs text-slate-200 leading-relaxed bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+              {selectedChapter.summary}
+            </div>
+            <div className="text-[11px] text-slate-400 italic">
+              Hint: {selectedChapter.mission.hint}
+            </div>
           </div>
-        </div>
+        )}
 
         <button
-          className="menu-btn bg-amber-400 text-slate-900 text-lg w-full mt-2 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
-          onClick={() => { sfx.select(); onStart(selCo, selOpponent, mapIdx); }}
+          className="menu-btn bg-amber-400 hover:bg-amber-300 text-slate-900 text-lg w-full mt-2 shadow-[0_0_20px_rgba(251,191,36,0.5)] active:scale-95 transition"
+          onClick={() => { sfx.select(); onStart(selectedChapter); }}
         >
-          ⚔ LAUNCH CHARACTER STORY BATTLE WITH {co?.name.toUpperCase()} ▶
+          ⚔ LAUNCH CHAPTER {selectedChapter.chapterIndex}: {selectedChapter.title.toUpperCase()} ▶
         </button>
       </div>
 
@@ -303,54 +306,201 @@ function Screen({ title, onBack, children, right }: { title: string; onBack: () 
 }
 
 /* ---------------- Campaign ---------------- */
-export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { save: SaveData; onBack: () => void; onPick: (i: number) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
+export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue, onToggleAdvanced }: { save: SaveData; onBack: () => void; onPick: (i: number, isFog?: boolean) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onToggleAdvanced?: (adv: boolean) => void }) {
+  const isAdvanced = !!(save.advancedUnlocked && save.advancedMode);
+  const currentAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
+  const maxUnlockedAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
+
+  const actsMap = ACTS.map((actTitle, actIdx) => {
+    const missions = MISSIONS.map((m, i) => ({ m, i })).filter(({ m }) => m.act === actIdx);
+    return {
+      actIdx,
+      actTitle,
+      intro: ACT_INTROS[actIdx],
+      missions,
+      locked: actIdx > maxUnlockedAct && !save.missionAuditUnlocked,
+    };
+  });
+
   return (
     <Screen title="CAMPAIGN" onBack={onBack} right={onHQ ? <button className="hud-btn px-3 h-9 text-xs font-black text-amber-300 bg-amber-500/20 border-amber-400" onClick={() => { sfx.select(); onHQ(); }}>🛒 SHOP / HQ</button> : undefined}>
-      <div className="max-w-3xl mx-auto mb-3 flex flex-wrap items-center gap-2">
-        <div className="text-xs font-bold"><span className="text-amber-300">🪙 {save.merits.toLocaleString()}</span> <span className="text-cyan-300 ml-2">💎 {save.gems ?? 0}</span> <span className="text-fuchsia-300 ml-2">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)}</span></div>
-        {resume && onContinue && (
-          <button className="ml-auto rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-left text-slate-950 font-black text-xs leading-tight shadow-[0_0_14px_rgba(16,185,129,0.5)]" onClick={() => { sfx.select(); onContinue(); }}>
-            ⏯ CONTINUE BATTLE<span className="block text-[10px] font-bold opacity-75">{resume.mission} · Day {resume.day}</span>
-          </button>
-        )}
-      </div>
-      <div className="max-w-3xl mx-auto">
-        {ACTS.map((act, ai) => (
-          <div key={act} className="mb-5">
-            <div className="text-sm font-black tracking-widest text-slate-400 border-b border-slate-800 pb-1">{act}</div>
-            <div className="text-[11px] text-slate-500 italic mb-2 mt-1">{ai <= Math.max(0, MISSIONS[Math.min(save.progress, MISSIONS.length - 1)].act) ? ACT_INTROS[ai] : 'Classified. Keep advancing the campaign.'}</div>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {MISSIONS.map((m, i) => ({ m, i })).filter(({ m }) => m.act === ai).map(({ m, i }) => {
-                const locked = i > save.progress && !save.missionAuditUnlocked;
-                const best = save.best[m.id];
-                return (
-                  <button key={m.id} disabled={locked} onClick={() => { sfx.select(); onPick(i); }}
-                    className={`text-left p-2.5 rounded-xl border-2 flex gap-3 items-center transition active:scale-[0.98] ${locked ? 'border-slate-800 bg-slate-900/60 opacity-50' : i === save.progress ? 'border-amber-400 bg-slate-800 shadow-[0_0_16px_rgba(251,191,36,0.25)]' : 'border-slate-700 bg-slate-800/80 hover:border-sky-400'}`}>
-                    {locked ? <div className="w-14 h-14 rounded-lg bg-slate-800 flex items-center justify-center text-2xl">🔒</div> : <Portrait id={m.enemyCo} size={56} />}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] text-slate-400 font-bold">{m.tutorial ? 'TUTORIAL' : `MISSION ${i}`}{save.missionAuditUnlocked && i > save.progress ? <span className="text-cyan-300 ml-1">· AUDIT</span> : null}</div>
-                      <div className="font-black text-white truncate">{m.name}</div>
-                      <div className="text-[11px] text-slate-400 truncate">{locked ? 'Complete previous mission' : m.hint}</div>
-                      <div className="text-[11px] mt-0.5 flex gap-2 text-slate-300">
-                        <span>{WEATHER_INFO[m.weather].icon}{m.weatherPool ? '🔄' : ''}</span>
-                        {m.fog && <span>🌫 Fog</span>}
-                        <span>{m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ' : `🛡 Survive ${m.objective.days}d`}</span>
-                        <span>Lv{m.aiLevel}</span>
-                      </div>
-                      {save.missionAuditUnlocked && <div className="text-[9px] text-cyan-300 mt-1 font-bold">AUDIT DEPLOYMENT · YOU {deploymentValue(m, 0).toLocaleString()}G · FOE {deploymentValue(m, 1).toLocaleString()}G{m.boss ? ` · ${m.boss.phases ?? 1} boss phases` : ''}</div>}
-                      {!locked && REWARDS[m.id] && SKILLS[REWARDS[m.id]] && (
-                        <div className={`text-[10px] mt-0.5 font-bold ${save.ownedSkills.includes(REWARDS[m.id]) ? 'text-slate-500' : 'text-emerald-300'}`}>
-                          🎁 {save.ownedSkills.includes(REWARDS[m.id]) ? 'Owned' : 'Reward'}: {SKILLS[REWARDS[m.id]].icon} {SKILLS[REWARDS[m.id]].name}
-                        </div>
-                      )}
-                    </div>
-                    {best && <div className={`rank-badge-sm rank-${best.rank}`}>{best.rank}</div>}
-                  </button>
-                );
-              })}
+      <div className="max-w-4xl mx-auto flex flex-col gap-4 pb-4">
+        {/* Top Header Box aligned with list below */}
+        <div className={`hud-panel p-3 bg-slate-900/90 flex flex-col gap-3 rounded-xl border-2 ${isAdvanced ? 'border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.25)]' : 'border-amber-500/40'}`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="text-xs font-black text-amber-400 tracking-wider flex items-center gap-2">
+                <span>CAMPAIGN PROGRESS: ACT {currentAct === 0 ? '0 (BOOT CAMP)' : currentAct} / {ACTS.length - 1}</span>
+                {isAdvanced && <span className="bg-fuchsia-600 text-white text-[10px] px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(217,70,239,0.6)]">🔥 ADVANCED MODE</span>}
+              </div>
+              <div className="text-xs font-bold flex items-center gap-4">
+                <span className="text-amber-300">🪙 {save.merits.toLocaleString()} Gold</span>
+                <span className="text-cyan-300">💎 {save.gems ?? 0} Diamonds</span>
+                <span className="text-fuchsia-300">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
+              </div>
             </div>
+            {resume && onContinue && (
+              <button className="rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-slate-950 font-black text-xs leading-tight shadow-[0_0_12px_rgba(16,185,129,0.5)] active:scale-95" onClick={() => { sfx.select(); onContinue(); }}>
+                ⏯ CONTINUE BATTLE ({resume.mission} · Day {resume.day})
+              </button>
+            )}
           </div>
-        ))}
+
+          {save.advancedUnlocked && (
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+              <div className="text-xs font-bold text-slate-200">
+                🏆 <b className="text-fuchsia-300">ADVANCED MODE UNLOCKED:</b> Complete campaign missions with mandatory Fog of War and boosted AI challenge!
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  className={`px-3 py-1 rounded-lg text-xs font-black border transition ${!isAdvanced ? 'bg-amber-400 text-slate-950 border-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.4)]' : 'bg-slate-800 text-slate-400 border-slate-700'}`}
+                  onClick={() => { sfx.cursor(); onToggleAdvanced?.(false); }}
+                >
+                  NORMAL CAMPAIGN
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-lg text-xs font-black border transition ${isAdvanced ? 'bg-fuchsia-500 text-white border-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.6)]' : 'bg-slate-800 text-slate-400 border-slate-700'}`}
+                  onClick={() => { sfx.cursor(); onToggleAdvanced?.(true); }}
+                >
+                  🔥 ADVANCED MODE
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Full Campaign Mission List */}
+        {actsMap.map(({ actIdx, actTitle, intro, missions, locked: actLocked }) => {
+          if (missions.length === 0) return null;
+          return (
+            <div key={actIdx} className="flex flex-col gap-2">
+              {/* Act Header Box */}
+              <div className="hud-panel p-2.5 bg-slate-900/95 border-amber-500/30 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                <div>
+                  <div className="text-xs font-black text-amber-400 uppercase tracking-widest flex items-center gap-2">
+                    <span>{actIdx === 0 ? 'BOOT CAMP TUTORIAL' : actTitle}</span>
+                    {actLocked && <span className="text-slate-500 text-[10px] bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">🔒 LOCKED</span>}
+                  </div>
+                  <div className="text-xs text-slate-300 italic mt-0.5">
+                    {!actLocked || save.missionAuditUnlocked ? intro : 'Classified. Complete previous campaign acts to unlock.'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mission Cards List for this Act */}
+              <div className="flex flex-col gap-3">
+                {missions.map(({ m, i }) => {
+                  const isTutorial = !!m.tutorial;
+                  const locked = i > save.progress && !save.missionAuditUnlocked;
+                  const normalCleared = !!(save.normalCleared?.[m.id] || (save.progress > i));
+                  const fogCleared = !!save.fogCleared?.[m.id];
+                  const tutorialDone = isTutorial && (save.tutorialComplete || normalCleared);
+                  const best = save.best[m.id];
+
+                  return (
+                    <div
+                      key={m.id}
+                      className={`p-3 rounded-xl border-2 flex flex-col justify-between transition ${locked ? 'border-slate-800 bg-slate-900/50 opacity-50' : 'border-slate-700 bg-slate-900/90 hover:border-slate-500'}`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {locked ? (
+                              <div className="w-11 h-11 rounded-lg bg-slate-800 flex items-center justify-center text-xl shrink-0 border border-slate-700">🔒</div>
+                            ) : (
+                              <div className="flex items-center -space-x-2 shrink-0">
+                                <Portrait id={m.enemyCo} size={44} className="rounded-lg border border-slate-700 shadow-md" />
+                                {m.enemyCo2 && COS[m.enemyCo2] && <Portrait id={m.enemyCo2} size={44} className="rounded-lg border border-rose-500 shadow-md z-10" />}
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="text-[10px] font-black text-amber-400 tracking-wider truncate">
+                                {isTutorial ? 'TUTORIAL' : `MISSION ${i}`}
+                                {save.missionAuditUnlocked && i > save.progress ? <span className="text-cyan-300 ml-1">· AUDIT</span> : null}
+                              </div>
+                              <div className="font-black text-white text-base truncate">{m.name}</div>
+                            </div>
+                          </div>
+                          {best && <div className={`rank-badge-sm rank-${best.rank} shrink-0`}>{best.rank}</div>}
+                        </div>
+
+                        <div className="text-xs text-slate-300 truncate mb-2.5">
+                          {locked ? 'Complete previous mission to unlock.' : m.hint}
+                        </div>
+
+                        <div className="flex flex-wrap gap-1.5 text-[10px] font-bold text-slate-300 mb-2">
+                          <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">{WEATHER_INFO[m.weather].icon} {WEATHER_INFO[m.weather].name}</span>
+                          <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
+                            {m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ Capture' : `🛡 Survive ${m.objective.days}d`}
+                          </span>
+                          {m.allyCo && COS[m.allyCo] && <span className="bg-emerald-950/80 text-emerald-300 px-2 py-0.5 rounded border border-emerald-700">🤝 Ally: {COS[m.allyCo].name.split(' ')[0]}</span>}
+                          {m.adaptiveTrigger && <span className="bg-amber-950/80 text-amber-300 px-2 py-0.5 rounded border border-amber-700">⚡ Adaptive Objective</span>}
+                          <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">AI Lv{isAdvanced ? Math.min(3, m.aiLevel + 1) : m.aiLevel}</span>
+                          {isAdvanced && <span className="bg-fuchsia-950/80 text-fuchsia-300 px-2 py-0.5 rounded border border-fuchsia-700">🌫 Mandatory Fog</span>}
+                        </div>
+                      </div>
+
+                      <div className="mt-2">
+                        {locked ? (
+                          <button disabled className="w-full py-2 rounded-lg bg-slate-800 text-slate-500 font-bold text-xs border border-slate-700">
+                            🔒 LOCKED
+                          </button>
+                        ) : isTutorial ? (
+                          tutorialDone ? (
+                            <div className="w-full py-2 rounded-lg bg-emerald-950/60 text-emerald-400 font-bold text-xs text-center border border-emerald-800/60">
+                              ✓ TUTORIAL COMPLETED (1/1 PLAY)
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => { sfx.select(); onPick(i, false); }}
+                              className="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.3)] transition active:scale-95"
+                            >
+                              ▶ START TUTORIAL
+                            </button>
+                          )
+                        ) : !normalCleared ? (
+                          <button
+                            onClick={() => { sfx.select(); onPick(i, false); }}
+                            className="w-full py-2 rounded-lg bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs shadow-[0_0_12px_rgba(251,191,36,0.3)] transition active:scale-95"
+                          >
+                            ▶ START MISSION
+                          </button>
+                        ) : !fogCleared ? (
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { sfx.select(); onPick(i, false); }}
+                              className="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-600 transition"
+                            >
+                              ✓ REPLAY
+                            </button>
+                            <button
+                              onClick={() => { sfx.select(); onPick(i, true); }}
+                              className="flex-1 py-1.5 rounded-lg bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-black text-[11px] shadow-[0_0_10px_rgba(192,38,211,0.4)] transition active:scale-95 flex items-center justify-center gap-1"
+                            >
+                              <span>🌫</span> REPLAY (FOG)
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2 items-center">
+                            <div className="flex-1 py-1.5 rounded-lg bg-emerald-950/80 text-emerald-300 font-bold text-[11px] text-center border border-emerald-700">
+                              ✓ COMPLETED (NORMAL & FOG)
+                            </div>
+                            <button
+                              onClick={() => { sfx.select(); onPick(i, true); }}
+                              className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-[11px] border border-slate-600 transition"
+                            >
+                              REPLAY
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
     </Screen>
   );
