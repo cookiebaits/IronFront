@@ -142,7 +142,7 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
   switch (co) {
     case 'rhea':
       if (pl === 1) { move += 1; atk += 10; }
-      if (pl === 2) { move += 1; atk += 25; }
+      if (pl === 2) { move += 1; atk += 25; def += 15; }
       break;
     case 'dax':
       if (treads) atk += 20;
