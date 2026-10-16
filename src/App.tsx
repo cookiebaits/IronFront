@@ -4,7 +4,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { COSelect, Campaign, CharacterStories, DialogueScreen, Help, HighScores, SaveManager, Skirmish, Title, type SkirmishCfg } from './components/Menus';
 import CommandHQ from './components/Shop';
 import OnlineRoom from './components/OnlineRoom';
-import { MERIT_BONUS, MISSIONS, REWARDS } from './game/campaign';
+import { MERIT_BONUS, MISSIONS, REWARDS, getCampaignOpts } from './game/campaign';
 import { COS, PLAYABLE_ORDER, rankSlots } from './game/data';
 
 /** Story campaign missions only allow Good (Azure Republic) officers. Evil officers cannot be chosen for campaign. */
@@ -52,7 +52,8 @@ export default function App() {
 
     setIdx(i);
     const forced = m.forcedCo;
-    const opts = isFogReplay ? { fog: true } : undefined;
+    const isAdv = !!(save.advancedUnlocked && save.advancedMode);
+    const opts = getCampaignOpts(m, isAdv, isFogReplay);
     if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'kaelen' || forced === 'aria')) {
       const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
@@ -153,7 +154,10 @@ export default function App() {
         const cur = s.loadout[co] ?? [];
         if (cur.length < rankSlots(s.coRank[co] ?? 0)) s.loadout = { ...s.loadout, [co]: [...cur, rid] };
       }
-      if (!auditJump) s.progress = Math.max(s.progress, cfg.idx + 1);
+      if (!auditJump) {
+        s.progress = Math.max(s.progress, cfg.idx + 1);
+        if (s.progress >= MISSIONS.length - 1) s.advancedUnlocked = true;
+      }
       const prev = s.best[cfg.mission.id];
       if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
       // Story clears no longer hand out officers: they award CO Pieces (unlock them in Command HQ with Gold).
@@ -234,7 +238,8 @@ export default function App() {
         }} onSettings={onSettings} />
       )}
       {screen === 'campaign' && <Campaign save={save} onBack={() => setScreen('title')} onPick={pickMission} onHQ={() => setScreen('workshop')}
-        resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume} />}
+        resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
+        onToggleAdvanced={(adv) => persist({ ...save, advancedMode: adv })} />}
       {screen === 'coselect' && MISSIONS[idx] && (
         <COSelect save={save} allowed={allowedFor(MISSIONS[idx])} enemyCo={MISSIONS[idx].enemyCo} title={MISSIONS[idx].name.toUpperCase()}
           onBack={() => setScreen('campaign')}

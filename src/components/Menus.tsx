@@ -303,7 +303,8 @@ function Screen({ title, onBack, children, right }: { title: string; onBack: () 
 }
 
 /* ---------------- Campaign ---------------- */
-export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { save: SaveData; onBack: () => void; onPick: (i: number, isFog?: boolean) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void }) {
+export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue, onToggleAdvanced }: { save: SaveData; onBack: () => void; onPick: (i: number, isFog?: boolean) => void; onHQ?: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onToggleAdvanced?: (adv: boolean) => void }) {
+  const isAdvanced = !!(save.advancedUnlocked && save.advancedMode);
   const currentAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
   const maxUnlockedAct = MISSIONS[Math.min(save.progress, MISSIONS.length - 1)]?.act ?? 0;
 
@@ -322,21 +323,46 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
     <Screen title="CAMPAIGN" onBack={onBack} right={onHQ ? <button className="hud-btn px-3 h-9 text-xs font-black text-amber-300 bg-amber-500/20 border-amber-400" onClick={() => { sfx.select(); onHQ(); }}>🛒 SHOP / HQ</button> : undefined}>
       <div className="max-w-4xl mx-auto flex flex-col gap-4 pb-4">
         {/* Top Header Box aligned with list below */}
-        <div className="hud-panel p-3 border-amber-500/40 bg-slate-900/90 flex flex-wrap items-center justify-between gap-3 rounded-xl">
-          <div className="flex flex-col gap-1">
-            <div className="text-xs font-black text-amber-400 tracking-wider">
-              CAMPAIGN PROGRESS: ACT {currentAct === 0 ? '0 (BOOT CAMP)' : currentAct} / {ACTS.length - 1}
+        <div className={`hud-panel p-3 bg-slate-900/90 flex flex-col gap-3 rounded-xl border-2 ${isAdvanced ? 'border-fuchsia-500 shadow-[0_0_20px_rgba(217,70,239,0.25)]' : 'border-amber-500/40'}`}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <div className="text-xs font-black text-amber-400 tracking-wider flex items-center gap-2">
+                <span>CAMPAIGN PROGRESS: ACT {currentAct === 0 ? '0 (BOOT CAMP)' : currentAct} / {ACTS.length - 1}</span>
+                {isAdvanced && <span className="bg-fuchsia-600 text-white text-[10px] px-2 py-0.5 rounded font-black tracking-widest shadow-[0_0_8px_rgba(217,70,239,0.6)]">🔥 ADVANCED MODE</span>}
+              </div>
+              <div className="text-xs font-bold flex items-center gap-4">
+                <span className="text-amber-300">🪙 {save.merits.toLocaleString()} Gold</span>
+                <span className="text-cyan-300">💎 {save.gems ?? 0} Diamonds</span>
+                <span className="text-fuchsia-300">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
+              </div>
             </div>
-            <div className="text-xs font-bold flex items-center gap-4">
-              <span className="text-amber-300">🪙 {save.merits.toLocaleString()} Gold</span>
-              <span className="text-cyan-300">💎 {save.gems ?? 0} Diamonds</span>
-              <span className="text-fuchsia-300">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
-            </div>
+            {resume && onContinue && (
+              <button className="rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-slate-950 font-black text-xs leading-tight shadow-[0_0_12px_rgba(16,185,129,0.5)] active:scale-95" onClick={() => { sfx.select(); onContinue(); }}>
+                ⏯ CONTINUE BATTLE ({resume.mission} · Day {resume.day})
+              </button>
+            )}
           </div>
-          {resume && onContinue && (
-            <button className="rounded-lg border-2 border-emerald-300 bg-emerald-500 px-3 py-1.5 text-slate-950 font-black text-xs leading-tight shadow-[0_0_12px_rgba(16,185,129,0.5)] active:scale-95" onClick={() => { sfx.select(); onContinue(); }}>
-              ⏯ CONTINUE BATTLE ({resume.mission} · Day {resume.day})
-            </button>
+
+          {save.advancedUnlocked && (
+            <div className="pt-2 border-t border-slate-800 flex items-center justify-between gap-2 flex-wrap">
+              <div className="text-xs font-bold text-slate-200">
+                🏆 <b className="text-fuchsia-300">ADVANCED MODE UNLOCKED:</b> Complete campaign missions with mandatory Fog of War and boosted AI challenge!
+              </div>
+              <div className="flex gap-1.5">
+                <button
+                  className={`px-3 py-1 rounded-lg text-xs font-black border transition ${!isAdvanced ? 'bg-amber-400 text-slate-950 border-amber-200 shadow-[0_0_10px_rgba(251,191,36,0.4)]' : 'bg-slate-800 text-slate-400 border-slate-700'}`}
+                  onClick={() => { sfx.cursor(); onToggleAdvanced?.(false); }}
+                >
+                  NORMAL CAMPAIGN
+                </button>
+                <button
+                  className={`px-3 py-1 rounded-lg text-xs font-black border transition ${isAdvanced ? 'bg-fuchsia-500 text-white border-fuchsia-300 shadow-[0_0_12px_rgba(217,70,239,0.6)]' : 'bg-slate-800 text-slate-400 border-slate-700'}`}
+                  onClick={() => { sfx.cursor(); onToggleAdvanced?.(true); }}
+                >
+                  🔥 ADVANCED MODE
+                </button>
+              </div>
+            </div>
           )}
         </div>
 
@@ -401,7 +427,8 @@ export function Campaign({ save, onBack, onPick, onHQ, resume, onContinue }: { s
                           <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">
                             {m.objective.type === 'rout' ? '⚔ Eliminate' : m.objective.type === 'hq' ? '🏛 HQ Capture' : `🛡 Survive ${m.objective.days}d`}
                           </span>
-                          <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">AI Lv{m.aiLevel}</span>
+                          <span className="bg-slate-800/90 px-2 py-0.5 rounded border border-slate-700">AI Lv{isAdvanced ? Math.min(3, m.aiLevel + 1) : m.aiLevel}</span>
+                          {isAdvanced && <span className="bg-fuchsia-950/80 text-fuchsia-300 px-2 py-0.5 rounded border border-fuchsia-700">🌫 Mandatory Fog</span>}
                         </div>
                       </div>
 

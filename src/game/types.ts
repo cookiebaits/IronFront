@@ -142,6 +142,8 @@ export interface SaveData {
   /** Track cleared mission IDs in normal mode vs fog replay mode */
   normalCleared?: Record<string, boolean>;
   fogCleared?: Record<string, boolean>;
+  advancedUnlocked?: boolean;
+  advancedMode?: boolean;
 }
 
 export type GraphicsQuality = 'auto' | 'ultra' | 'high' | 'medium' | 'low';

@@ -601,6 +601,22 @@ export const REWARDS: Record<string, string> = {
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
+/** Computes campaign battle parameters for normal campaign vs unlocked Advanced Mode */
+export function getCampaignOpts(m: MissionDef, isAdvanced: boolean, isFogReplay = false) {
+  if (m.tutorial) return { fog: false, aiLevel: m.aiLevel };
+  if (isAdvanced) {
+    return {
+      fog: true,
+      aiLevel: Math.min(3, m.aiLevel + 1),
+      dynamic: m.weatherPool ? true : undefined,
+    };
+  }
+  return {
+    fog: isFogReplay,
+    aiLevel: m.aiLevel,
+  };
+}
+
 export const ACT_INTROS = [
   'Basic training under Captain Rhea Vance. Learn to move, fight and capture.',
   'The Crimson Dominion invades. Hold the border, cross the Varn River and survive the Frozen Pass.',

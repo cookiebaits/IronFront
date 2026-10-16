@@ -42,6 +42,8 @@ export function defaultSave(): SaveData {
     missionAuditUnlocked: false,
     normalCleared: {},
     fogCleared: {},
+    advancedUnlocked: false,
+    advancedMode: false,
   };
 }
 
@@ -59,6 +61,7 @@ export function loadSave(): SaveData {
         if (idx < d.progress) normalCleared[m.id] = true;
       });
     }
+    const advancedUnlocked = d.advancedUnlocked ?? (d.progress >= MISSIONS.length - 1 || Object.keys(normalCleared).length >= MISSIONS.length - 1);
     return {
       ...def,
       ...d,
@@ -68,6 +71,8 @@ export function loadSave(): SaveData {
       missionAuditUnlocked: d.missionAuditUnlocked ?? false,
       normalCleared,
       fogCleared: d.fogCleared ?? {},
+      advancedUnlocked,
+      advancedMode: d.advancedMode ?? false,
       ownedSkills: d.ownedSkills ?? [],
       loadout: d.loadout ?? {},
       unitUps: d.unitUps ?? {},
