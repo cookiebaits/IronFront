@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import GameView, { type ScoreInfo } from './components/GameView';
 import ErrorBoundary from './components/ErrorBoundary';
 import { COSelect, Campaign, CharacterStories, DialogueScreen, Help, HighScores, SaveManager, Skirmish, Title, type SkirmishCfg } from './components/Menus';
+import type { CharacterStoryChapter } from './game/characterStories';
 import CommandHQ from './components/Shop';
 import OnlineRoom from './components/OnlineRoom';
 import { MERIT_BONUS, MISSIONS, REWARDS, getCampaignOpts } from './game/campaign';
@@ -82,16 +83,16 @@ export default function App() {
     setScreen('stories');
   };
 
-  const startStoryBattle = (playerCo: string, enemyCo: string, mapIdx: number) => {
-    const m = MISSIONS[mapIdx] ?? MISSIONS[1];
-    startGame({
-      mission: m,
-      idx: mapIdx,
-      playerCo,
-      enemyCo,
+  const startStoryBattle = (chapter: CharacterStoryChapter) => {
+    setCfg({
+      mission: chapter.mission,
+      idx: chapter.chapterIndex,
+      playerCo: chapter.coId,
+      enemyCo: chapter.mission.enemyCo,
       isCampaign: false,
-      opts: { aiLevel: 2 },
+      opts: { aiLevel: chapter.mission.aiLevel },
     });
+    setScreen('briefing');
   };
 
   /** Auto-save a campaign battle at the start of each full turn. */

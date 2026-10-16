@@ -12,38 +12,39 @@ import type { Category, Dialogue, ModId, SaveData, Settings, UnitType, Weather }
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
 
 /* ---------------- Character Stories ---------------- */
-export function CharacterStories({ save, onBack, onStart }: { save: SaveData; onBack: () => void; onStart: (coId: string, enemyId: string, mapIdx: number) => void }) {
-  const [selCo, setSelCo] = useState<string>('rhea');
-  const [selOpponent, setSelOpponent] = useState<string>('grimm');
-  const [mapIdx, setMapIdx] = useState<number>(1);
+import { getCharacterStoryChapters, type CharacterStoryChapter } from '../game/characterStories';
+
+export function CharacterStories({ save, onBack, onStart }: { save: SaveData; onBack: () => void; onStart: (chapter: CharacterStoryChapter) => void }) {
+  const [selCo, setSelCo] = useState<string>('sora');
+  const [selChapterIdx, setSelChapterIdx] = useState<number>(0);
   const [infoCo, setInfoCo] = useState<string | null>(null);
 
   const co = COS[selCo];
-  const opp = COS[selOpponent];
   const isEvilCo = co?.faction === 'crimson';
   const rank = save.coRank[selCo] ?? 0;
 
-  const validMaps = MISSIONS.map((m, i) => ({ m, i })).filter(({ i }) => i > 0);
+  const chapters = getCharacterStoryChapters(selCo);
+  const selectedChapter = chapters[selChapterIdx] ?? chapters[0];
 
   return (
     <Screen title="CHARACTER STORIES" onBack={onBack}>
       <div className="max-w-4xl mx-auto grid gap-4">
-        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center">
-          <Portrait id={selCo} size={64} className="shrink-0" />
+        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center rounded-xl">
+          <Portrait id={selCo} size={64} className="shrink-0 rounded-lg border border-amber-400" />
           <div className="flex-1 min-w-0 text-xs">
-            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORIES & SPECIFIC LEVEL-UP</div>
+            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORYLINES & PROFICIENCY BATTLES</div>
             <div className="text-slate-200 leading-relaxed">
-              Explore individual officer storylines, test tactical match-ups, and train specific characters!
+              Every officer features 10 dedicated story chapters tailored specifically to their vehicle strengths!
               <br />
-              • <b className="text-amber-300">Level Up Characters:</b> Battle here to earn Rank XP, Gold, and character-specific 🧩 CO Pieces.
+              • <b className="text-amber-300">Matching Forces:</b> Sora commands Air Wings; Dax commands Tank Battalions; Mira leads Naval Armadas; Brann operates Siege Batteries!
               <br />
-              • <b className="text-rose-400">Evil Faction Officers:</b> You can play as "Evil" Crimson Dominion officers in Character Stories and Online mode! (Evil officers cannot be deployed in standard Campaign).
+              • <b className="text-emerald-300">Level Up Characters:</b> Win story chapters to earn Rank XP, Gold, and officer-specific 🧩 CO Pieces.
             </div>
           </div>
         </div>
 
         <div>
-          <div className="text-xs text-amber-300 mb-1 font-black tracking-widest">1. CHOOSE YOUR CHARACTER</div>
+          <div className="text-xs text-amber-300 mb-1 font-black tracking-widest">1. SELECT OFFICER STORY ARC</div>
           <div className="flex flex-wrap gap-2">
             {PLAYABLE_ORDER.map((id) => {
               const c = COS[id];
@@ -52,7 +53,7 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
               return (
                 <button
                   key={id}
-                  onClick={() => { setSelCo(id); sfx.cursor(); }}
+                  onClick={() => { setSelCo(id); setSelChapterIdx(0); sfx.cursor(); }}
                   className={`rounded-xl p-1.5 border-2 text-left transition flex items-center gap-2 ${isSelected ? 'border-amber-400 bg-amber-400/10 scale-105 shadow-[0_0_14px_rgba(251,191,36,0.3)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-600'}`}
                 >
                   <Portrait id={id} size={48} />
@@ -70,8 +71,8 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
         </div>
 
         {co && (
-          <div className="hud-panel p-3 flex gap-3 flex-col sm:flex-row border-amber-400/50">
-            <Portrait id={selCo} size={96} className="self-center" />
+          <div className="hud-panel p-3 flex gap-3 flex-col sm:flex-row border-amber-400/50 rounded-xl">
+            <Portrait id={selCo} size={96} className="self-center rounded-lg border border-amber-400" />
             <div className="flex-1 min-w-0 text-xs">
               <div className="flex items-center gap-2">
                 <span className="font-black text-lg text-white">{co.title} {co.name}</span>
@@ -89,48 +90,50 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
         )}
 
         <div>
-          <div className="text-xs text-rose-400 mb-1 font-black tracking-widest">2. CHOOSE STORY OPPONENT</div>
-          <div className="flex flex-wrap gap-1.5">
-            {PLAYABLE_ORDER.map((id) => (
+          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">2. SELECT STORY CHAPTER (1 - 10)</div>
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+            {chapters.map((ch, idx) => (
               <button
-                key={id}
-                onClick={() => { setSelOpponent(id); sfx.cursor(); }}
-                className={`rounded-lg p-0.5 border-2 ${selOpponent === id ? 'border-rose-400 bg-rose-500/10' : 'border-transparent opacity-60'}`}
+                key={ch.id}
+                onClick={() => { setSelChapterIdx(idx); sfx.cursor(); }}
+                className={`p-2 rounded-xl border-2 text-left transition flex flex-col justify-between ${selChapterIdx === idx ? 'border-sky-400 bg-sky-500/10 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}`}
               >
-                <Portrait id={id} size={48} />
+                <div>
+                  <div className="text-[10px] font-black text-amber-400 tracking-wider">CHAPTER {ch.chapterIndex}</div>
+                  <div className="text-xs font-black text-white truncate">{ch.title}</div>
+                </div>
+                <div className="text-[9px] text-slate-400 mt-2">vs {COS[ch.mission.enemyCo]?.name.split(' ')[0]}</div>
               </button>
             ))}
           </div>
-          {opp && (
-            <div className="text-xs text-slate-300 mt-1.5 bg-slate-900/80 border border-slate-800 p-2 rounded-lg flex items-center gap-2">
-              <Portrait id={selOpponent} size={36} />
-              <div>
-                <span className="font-bold text-rose-300">{opp.title} {opp.name}:</span> {opp.d2d}
-              </div>
-            </div>
-          )}
         </div>
 
-        <div>
-          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">3. SELECT BATTLE BATTLEFIELD</div>
-          <div className="flex flex-wrap gap-1.5">
-            {validMaps.slice(0, Math.max(8, save.progress + 2)).map(({ m, i }) => (
-              <button
-                key={m.id}
-                onClick={() => { setMapIdx(i); sfx.cursor(); }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold border ${mapIdx === i ? 'bg-sky-400 text-slate-950 border-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'bg-slate-800 border-slate-700 text-slate-300'}`}
-              >
-                {m.name}
-              </button>
-            ))}
+        {selectedChapter && (
+          <div className="hud-panel p-3 border-sky-400/80 bg-slate-900/90 rounded-xl flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <Portrait id={selectedChapter.mission.enemyCo} size={40} className="rounded border border-rose-500" />
+                <div>
+                  <div className="text-[10px] font-black text-sky-300 tracking-wider">CHAPTER {selectedChapter.chapterIndex} SUMMARY</div>
+                  <div className="text-sm font-black text-white">{selectedChapter.title}</div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-amber-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Opponent: {COS[selectedChapter.mission.enemyCo]?.name}</span>
+            </div>
+            <div className="text-xs text-slate-200 leading-relaxed bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+              {selectedChapter.summary}
+            </div>
+            <div className="text-[11px] text-slate-400 italic">
+              Hint: {selectedChapter.mission.hint}
+            </div>
           </div>
-        </div>
+        )}
 
         <button
-          className="menu-btn bg-amber-400 text-slate-900 text-lg w-full mt-2 shadow-[0_0_20px_rgba(251,191,36,0.5)]"
-          onClick={() => { sfx.select(); onStart(selCo, selOpponent, mapIdx); }}
+          className="menu-btn bg-amber-400 hover:bg-amber-300 text-slate-900 text-lg w-full mt-2 shadow-[0_0_20px_rgba(251,191,36,0.5)] active:scale-95 transition"
+          onClick={() => { sfx.select(); onStart(selectedChapter); }}
         >
-          ⚔ LAUNCH CHARACTER STORY BATTLE WITH {co?.name.toUpperCase()} ▶
+          ⚔ LAUNCH CHAPTER {selectedChapter.chapterIndex}: {selectedChapter.title.toUpperCase()} ▶
         </button>
       </div>
 
