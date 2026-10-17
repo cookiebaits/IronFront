@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Generate high quality tank app icons for Web and Android (Capacitor mipmap assets)."""
+"""Generate high quality tank app icons for Web, iOS, and Android (Capacitor assets)."""
 
 import math
+import shutil
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
@@ -207,7 +208,14 @@ def main():
     img_fav.save(PUBLIC / "favicon.png", "PNG")
     print("Saved public/favicon.png")
 
-    # If Android res exists, write mipmap icons
+    # If iOS AppIcon folder exists, write 1024x1024 icon
+    ios_asset_dir = ROOT / "ios" / "App" / "App" / "Assets.xcassets" / "AppIcon.appiconset"
+    if ios_asset_dir.exists():
+        img1024 = create_tank_icon_image(1024)
+        img1024.save(ios_asset_dir / "AppIcon-512@2x.png", "PNG")
+        print("Saved iOS AppIcon (1024x1024)")
+
+    # If Android res exists, write mipmap icons and remove conflicting adaptive icon XMLs
     android_res = ROOT / "android" / "app" / "src" / "main" / "res"
     if android_res.exists():
         mipmap_sizes = {
@@ -225,6 +233,27 @@ def main():
             icon_img.save(target_dir / "ic_launcher_round.png", "PNG")
             icon_img.save(target_dir / "ic_launcher_foreground.png", "PNG")
             print(f"Saved Android {folder} launcher icons ({sz}x{sz})")
+
+        # Update drawable/ic_launcher_background.xml to dark theme background
+        bg_xml = android_res / "drawable" / "ic_launcher_background.xml"
+        if bg_xml.parent.exists():
+            bg_xml.write_text('''<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#0b1220"
+        android:pathData="M0,0h108v108h-108z"/>
+</vector>
+''')
+
+        # Clean up default mipmap-anydpi-v26 adaptive icon overrides so Android uses the tank PNG icons!
+        v26_dir = android_res / "mipmap-anydpi-v26"
+        if v26_dir.exists():
+            shutil.rmtree(v26_dir, ignore_errors=True)
+            print("Cleaned up default mipmap-anydpi-v26 adaptive icon overrides")
 
 if __name__ == "__main__":
     main()
