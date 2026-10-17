@@ -88,9 +88,9 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { INF: 55, LIGHT: 14, TANK: 5, HEAVY: 1, HELI: 8 }, desc: 'Cheap foot soldiers. Capture properties. Strong from forests & mountains.' },
   mech: { name: 'Mech', cost: 2500, move: 2, moveType: 'mech', armor: 'INF', cat: 'infantry', range: [1, 1], vision: 2, capture: true,
     dmg: { INF: 65, LIGHT: 75, TANK: 55, HEAVY: 15, HELI: 9 }, desc: 'Bazooka troops. Cross rivers & mountains easily. Anti-armor.' },
-  recon: { name: 'Recon', cost: 4000, move: 8, moveType: 'tires', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 5,
-    dmg: { INF: 70, LIGHT: 35, TANK: 6, HEAVY: 1, HELI: 10 }, desc: 'Fast scout with long vision. Shreds infantry.' },
-  apc: { name: 'APC', cost: 5000, move: 6, moveType: 'treads', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 1, carry: ['infantry', 'mech'], supply: true,
+  recon: { name: 'Recon', cost: 3800, move: 8, moveType: 'tires', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 5,
+    dmg: { INF: 75, LIGHT: 38, TANK: 6, HEAVY: 1, HELI: 12 }, desc: 'Fast scout with long vision. Shreds infantry.' },
+  apc: { name: 'APC', cost: 5000, move: 6, moveType: 'treads', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 2, carry: ['infantry', 'mech'], supply: true,
     dmg: {}, desc: 'Carries 1 foot unit. Repairs adjacent allies +1 HP each turn.' },
   tank: { name: 'Tank', cost: 7000, move: 6, moveType: 'treads', armor: 'TANK', cat: 'vehicle', range: [1, 1], vision: 3,
     dmg: { INF: 75, LIGHT: 70, TANK: 55, HEAVY: 15, HELI: 10, SHIP: 5 }, desc: 'Versatile main battle tank.' },
@@ -100,15 +100,15 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { INF: 90, LIGHT: 80, TANK: 70, HEAVY: 45, SHIP: 55, SUB: 55 }, desc: 'Indirect fire 2–3. Cannot move and fire.' },
   rockets: { name: 'Rockets', cost: 15000, move: 2, moveType: 'tires', armor: 'LIGHT', cat: 'artillery', range: [1, 6], vision: 2, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 80, HEAVY: 60, HELI: 70, PLANE: 50, SHIP: 65, SUB: 65 }, desc: 'Barrage range 1–6, hits ground, air & sea. Cannot move and fire.' },
-  aa: { name: 'Anti-Air', cost: 8000, move: 6, moveType: 'treads', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 2,
-    dmg: { INF: 105, LIGHT: 50, TANK: 25, HEAVY: 10, HELI: 120, PLANE: 65 }, desc: 'Flak cannons. Deadly to aircraft and infantry.' },
+  aa: { name: 'Anti-Air', cost: 7500, move: 6, moveType: 'treads', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 2,
+    dmg: { INF: 110, LIGHT: 55, TANK: 25, HEAVY: 10, HELI: 125, PLANE: 70 }, desc: 'Flak cannons. Deadly to aircraft and infantry.' },
   missiles: { name: 'Missiles', cost: 12000, move: 4, moveType: 'tires', armor: 'LIGHT', cat: 'artillery', range: [3, 5], vision: 5, indirect: true,
     dmg: { HELI: 120, PLANE: 100 }, desc: 'Long-range SAM. Air targets only.' },
   drone: { name: 'Drone', cost: 4000, move: 7, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 4, fuel: 18,
     dmg: { INF: 45, LIGHT: 30, TANK: 12, HEAVY: 5, HELI: 35, SHIP: 8 }, desc: 'Cheap flying harasser with long vision.' },
-  gundrone: { name: 'Gun Drone', cost: 6000, move: 7, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 3, fuel: 18,
+  gundrone: { name: 'Gun Drone', cost: 5500, move: 7, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 3, fuel: 18,
     dmg: { INF: 85, LIGHT: 50, TANK: 12, HEAVY: 5, HELI: 60, PLANE: 20, SHIP: 6 }, desc: 'Twin machine-gun drone. Shreds infantry, light vehicles & copters.' },
-  tcopter: { name: 'T-Copter', cost: 5000, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 2, fuel: 20, carry: ['infantry', 'mech'],
+  tcopter: { name: 'T-Copter', cost: 4800, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 2, fuel: 25, carry: ['infantry', 'mech'],
     dmg: {}, desc: 'Transport helicopter. Carries 1 foot unit over any terrain.' },
   bcopter: { name: 'Gunship', cost: 9000, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 3, fuel: 18,
     dmg: { INF: 75, LIGHT: 60, TANK: 55, HEAVY: 25, HELI: 65, SHIP: 25, SUB: 25 }, desc: 'Attack helicopter. Ignores terrain.' },
@@ -120,7 +120,7 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { HELI: 115, PLANE: 65, SUB: 90, SHIP: 25 }, desc: 'Escort ship. Hunts subs and aircraft.' },
   sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5, fuel: 20,
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
-  battleship: { name: 'Battleship', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
+  battleship: { name: 'Battleship', cost: 26000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6.' },
 };
 
@@ -262,7 +262,7 @@ export const COS: Record<string, CODef> = {
   rhea: { id: 'rhea', name: 'Rhea Vance', title: 'Captain', faction: 'azure', color: '#3b82f6', emoji: '🎖️',
     bio: 'A steady field captain and the Republic\'s best instructor. Balanced, reliable, never panics.',
     d2d: 'No strengths or weaknesses.', powerName: 'Rally Cry', powerDesc: 'All units +1 move, +10% attack.',
-    superName: 'Vanguard', superDesc: 'All units heal 2 HP, +25% attack, +1 move.', powerCost: 40, superCost: 90 },
+    superName: 'Vanguard', superDesc: 'All units heal 2 HP, +25% attack, +15% defense, +1 move.', powerCost: 40, superCost: 90 },
   dax: { id: 'dax', name: 'Dax Kord', title: 'Major', faction: 'azure', color: '#f59e0b', emoji: '🛞',
     bio: 'Hot-headed armor commander. Believes every problem can be solved with more tanks.',
     d2d: 'Tread units +20% attack. Infantry −10% attack.', powerName: 'Steel Rush', powerDesc: 'Tread units +2 move, +10% attack.',
@@ -294,14 +294,14 @@ export const COS: Record<string, CODef> = {
   frost: { id: 'frost', name: 'Frost', title: 'Baron', faction: 'crimson', color: '#93c5fd', emoji: '🧊',
     bio: 'Aristocrat of the northern wastes. Fights best when the world freezes.',
     d2d: 'Unaffected by snow.', powerName: 'Blizzard', powerDesc: 'Snow for 1 day.',
-    superName: 'Winter Storm', superDesc: 'Snow for 2 days. Enemies take 2 HP.', powerCost: 50, superCost: 100, immune: 'snow' },
+    superName: 'Winter Storm', superDesc: 'Snow for 2 days. Enemies take 2 HP.', powerCost: 50, superCost: 95, immune: 'snow' },
   nyx: { id: 'nyx', name: 'Nyx', title: 'Commander', faction: 'crimson', color: '#a855f7', emoji: '🌙',
     bio: 'Shadow tactician. Strikes from darkness and vanishes before dawn.',
     d2d: '+1 vision. +10% attack in fog.', powerName: 'Night Raid', powerDesc: 'All units +1 move, +20% attack.',
     superName: 'Shadow Strike', superDesc: 'All units +2 move, +30% attack. Enemies −1 move next turn.', powerCost: 45, superCost: 95 },
   volkov: { id: 'volkov', name: 'Volkov', title: 'General', faction: 'crimson', color: '#dc2626', emoji: '🐻',
     bio: 'The Iron General. Commands the Dominion\'s elite with crushing force.',
-    d2d: 'All units +10% atk & def. Units cost +20%.', powerName: 'Iron Fist', powerDesc: '+20% attack.',
+    d2d: 'All units +10% atk & def. Units cost +15%.', powerName: 'Iron Fist', powerDesc: '+20% attack.',
     superName: 'Red Storm', superDesc: '+40% attack, +20% defense, heal 2 HP.', powerCost: 60, superCost: 120 },
   zero: { id: 'zero', name: 'Zero', title: 'Siege Director', faction: 'crimson', color: '#be123c', emoji: '🎯',
     bio: 'Cold-blooded siege strategist. Specializes in long-range destruction.',
@@ -314,7 +314,7 @@ export const COS: Record<string, CODef> = {
   architect: { id: 'architect', name: 'Architect', title: 'Strategist', faction: 'crimson', color: '#e11d48', emoji: '🔺',
     bio: 'A war-machine intelligence that orchestrated the entire conflict. Calculates everything.',
     d2d: 'All units +10% atk & def. Unaffected by sandstorms.', powerName: 'Recalibrate', powerDesc: 'All units heal 3 HP.',
-    superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 120, immune: 'sand' },
+    superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 110, immune: 'sand' },
 };
 
 export const PLAYABLE_ORDER = ['rhea', 'dax', 'sora', 'mira', 'brann', 'kaelen', 'aria', 'grimm', 'frost', 'nyx', 'volkov', 'zero', 'seraphina', 'architect'];
@@ -324,6 +324,6 @@ export function coCost(coId: string, type: UnitType): number {
   let c = d.cost;
   if (coId === 'sora' && d.cat === 'air') c *= 0.9;
   if (coId === 'grimm' && d.cat === 'infantry') c *= 0.8;
-  if (coId === 'volkov') c *= 1.2;
+  if (coId === 'volkov') c *= 1.15;
   return Math.round(c / 100) * 100;
 }
