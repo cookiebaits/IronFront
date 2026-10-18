@@ -3,15 +3,25 @@
 
 import math
 import shutil
+import sys
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 PUBLIC = ROOT / "public"
 PUBLIC.mkdir(exist_ok=True)
 
-def create_tank_icon_image(size: int) -> Image.Image:
+try:
+    from PIL import Image, ImageDraw, ImageFont
+    HAS_PIL = True
+except ImportError:
+    HAS_PIL = False
+    print("Warning: Pillow (PIL) is not installed. PNG icon generation will be skipped.", file=sys.stderr)
+
+def create_tank_icon_image(size: int):
     """Renders a stylized tank icon image of given size (e.g. 512x512)."""
+    if not HAS_PIL:
+        return None
+
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     scale = size / 512.0
@@ -191,50 +201,59 @@ def main():
     (PUBLIC / "icon.svg").write_text(svg_content)
     print("Saved public/icon.svg")
 
-    # Generate PNG icons
-    img512 = create_tank_icon_image(512)
-    img512.save(PUBLIC / "icon-512.png", "PNG")
-    print("Saved public/icon-512.png")
+    if HAS_PIL:
+        # Generate PNG icons
+        img512 = create_tank_icon_image(512)
+        if img512:
+            img512.save(PUBLIC / "icon-512.png", "PNG")
+            print("Saved public/icon-512.png")
 
-    img192 = create_tank_icon_image(192)
-    img192.save(PUBLIC / "icon-192.png", "PNG")
-    print("Saved public/icon-192.png")
+        img192 = create_tank_icon_image(192)
+        if img192:
+            img192.save(PUBLIC / "icon-192.png", "PNG")
+            print("Saved public/icon-192.png")
 
-    img_apple = create_tank_icon_image(180)
-    img_apple.save(PUBLIC / "apple-touch-icon.png", "PNG")
-    print("Saved public/apple-touch-icon.png")
+        img_apple = create_tank_icon_image(180)
+        if img_apple:
+            img_apple.save(PUBLIC / "apple-touch-icon.png", "PNG")
+            print("Saved public/apple-touch-icon.png")
 
-    img_fav = create_tank_icon_image(64)
-    img_fav.save(PUBLIC / "favicon.png", "PNG")
-    print("Saved public/favicon.png")
+        img_fav = create_tank_icon_image(64)
+        if img_fav:
+            img_fav.save(PUBLIC / "favicon.png", "PNG")
+            print("Saved public/favicon.png")
 
-    # If iOS AppIcon folder exists, write 1024x1024 icon
-    ios_asset_dir = ROOT / "ios" / "App" / "App" / "Assets.xcassets" / "AppIcon.appiconset"
-    if ios_asset_dir.exists():
-        img1024 = create_tank_icon_image(1024)
-        img1024.save(ios_asset_dir / "AppIcon-512@2x.png", "PNG")
-        print("Saved iOS AppIcon (1024x1024)")
+        # If iOS AppIcon folder exists, write 1024x1024 icon
+        ios_asset_dir = ROOT / "ios" / "App" / "App" / "Assets.xcassets" / "AppIcon.appiconset"
+        if ios_asset_dir.exists():
+            img1024 = create_tank_icon_image(1024)
+            if img1024:
+                img1024.save(ios_asset_dir / "AppIcon-512@2x.png", "PNG")
+                print("Saved iOS AppIcon (1024x1024)")
 
-    # If Android res exists, write mipmap icons and remove conflicting adaptive icon XMLs
+        # If Android res exists, write mipmap icons
+        android_res = ROOT / "android" / "app" / "src" / "main" / "res"
+        if android_res.exists():
+            mipmap_sizes = {
+                "mipmap-mdpi": 48,
+                "mipmap-hdpi": 72,
+                "mipmap-xhdpi": 96,
+                "mipmap-xxhdpi": 144,
+                "mipmap-xxxhdpi": 192,
+            }
+            for folder, sz in mipmap_sizes.items():
+                target_dir = android_res / folder
+                target_dir.mkdir(parents=True, exist_ok=True)
+                icon_img = create_tank_icon_image(sz)
+                if icon_img:
+                    icon_img.save(target_dir / "ic_launcher.png", "PNG")
+                    icon_img.save(target_dir / "ic_launcher_round.png", "PNG")
+                    icon_img.save(target_dir / "ic_launcher_foreground.png", "PNG")
+                    print(f"Saved Android {folder} launcher icons ({sz}x{sz})")
+
+    # Clean up Android default adaptive icon XML overrides regardless of PIL
     android_res = ROOT / "android" / "app" / "src" / "main" / "res"
     if android_res.exists():
-        mipmap_sizes = {
-            "mipmap-mdpi": 48,
-            "mipmap-hdpi": 72,
-            "mipmap-xhdpi": 96,
-            "mipmap-xxhdpi": 144,
-            "mipmap-xxxhdpi": 192,
-        }
-        for folder, sz in mipmap_sizes.items():
-            target_dir = android_res / folder
-            target_dir.mkdir(parents=True, exist_ok=True)
-            icon_img = create_tank_icon_image(sz)
-            icon_img.save(target_dir / "ic_launcher.png", "PNG")
-            icon_img.save(target_dir / "ic_launcher_round.png", "PNG")
-            icon_img.save(target_dir / "ic_launcher_foreground.png", "PNG")
-            print(f"Saved Android {folder} launcher icons ({sz}x{sz})")
-
-        # Update drawable/ic_launcher_background.xml to dark theme background
         bg_xml = android_res / "drawable" / "ic_launcher_background.xml"
         if bg_xml.parent.exists():
             bg_xml.write_text('''<?xml version="1.0" encoding="utf-8"?>
@@ -249,7 +268,6 @@ def main():
 </vector>
 ''')
 
-        # Clean up default mipmap-anydpi-v26 adaptive icon overrides so Android uses the tank PNG icons!
         v26_dir = android_res / "mipmap-anydpi-v26"
         if v26_dir.exists():
             shutil.rmtree(v26_dir, ignore_errors=True)
