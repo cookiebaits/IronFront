@@ -275,7 +275,9 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
         ? modsWithBonus.move
         : Math.min(baseMoveNoBonus, modsWithBonus.move);
       if (maxOverride !== undefined) effectiveMaxMove = Math.min(maxOverride, effectiveMaxMove);
-      const max = Math.min(effectiveMaxMove, u.fuel ?? Infinity);
+      // Air units can fly to engage/attack enemy targets even if low/out of fuel (fuel is spent per tile moved)
+      const isAirUnit = UNITS[u.type].cat === 'air';
+      const max = isAirUnit ? effectiveMaxMove : Math.min(effectiveMaxMove, u.fuel ?? Infinity);
 
       if (c > max) continue;
       const ex = res.get(k);

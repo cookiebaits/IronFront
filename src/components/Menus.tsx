@@ -911,7 +911,7 @@ export function Help({ onBack, onTutorial }: { onBack: () => void; onTutorial: (
         </section>
         <section className="hud-panel p-3">
           <h3 className="font-black text-amber-300 mb-1">AIR REFUEL</h3>
-          <p>Every air unit has a finite fuel tank. Fuel is spent for each tile flown, and weather can increase the cost. Land on a captured city, base, HQ or airport at the start of your turn to refill. Double-tap an aircraft to inspect its remaining fuel.</p>
+          <p>Every air unit has a finite fuel tank. Fuel is spent for each tile flown, and weather can increase the cost. Aircraft can always fly to engage and attack enemies on that same turn. Forced refueling is only required when out of gas with no enemies to attack. Land on a captured city, base, HQ or airport to refill. Double-tap an aircraft to inspect its remaining fuel.</p>
         </section>
         <section className="hud-panel p-3">
           <h3 className="font-black text-amber-300 mb-2">UNITS</h3>
