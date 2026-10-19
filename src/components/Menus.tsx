@@ -10,6 +10,8 @@ import { UnitIcon } from './GameView';
 import { GraphicsSettingsModal } from './GraphicsSettingsModal';
 import type { Category, Dialogue, ModId, SaveData, Settings, UnitType, Weather } from '../game/types';
 import { deleteSlot, loadSlots, writeSlot, type ResumeSave, type SaveSlot } from '../game/save';
+import { claimAfkGold, formatDuration, getAfkStatus } from '../game/afk';
+import AfkHarvesterModal from './AfkHarvesterModal';
 
 /* ---------------- Character Stories ---------------- */
 import { getCharacterStoryChapters, type CharacterStoryChapter } from '../game/characterStories';
@@ -237,10 +239,19 @@ export function TitleBg({ onVehicleTap }: { onVehicleTap?: () => void } = {}) {
 }
 
 export interface ResumeInfo { mission: string; day: number }
-export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock, onSettings }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onAuditUnlock?: () => void; onSettings?: (st: Settings) => void }) {
+export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock, onSettings, onSave }: { save: SaveData; onNav: (s: string) => void; onQuick: () => void; resume?: ResumeInfo | null; onContinue?: () => void; onAuditUnlock?: () => void; onSettings?: (st: Settings) => void; onSave?: (s: SaveData) => void }) {
   const [auditTaps, setAuditTaps] = useState(0);
   const [auditUnlocked, setAuditUnlocked] = useState(false);
   const [showGraphicsSettings, setShowGraphicsSettings] = useState(false);
+  const [showAfkModal, setShowAfkModal] = useState(false);
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const afkStatus = getAfkStatus(save, now);
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onQuick(); } };
     addEventListener('keydown', k);
@@ -272,6 +283,53 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock,
             <div className="title-tagline text-xs text-slate-300/75 mt-3 hidden landscape:block">Command. Capture. Outthink.</div>
           </div>
           <div className="title-actions grid gap-2 anim-slide-up">
+            {/* AFK Gold Harvester Card */}
+            <div className={`p-2.5 rounded-xl border-2 flex flex-col gap-2 transition ${afkStatus.capReached ? 'border-rose-500 bg-rose-950/40 shadow-[0_0_16px_rgba(244,63,94,0.3)]' : 'border-amber-400/80 bg-slate-900/90'}`}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-black text-lg flex items-center justify-center shrink-0 shadow">
+                    ⛏️
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] font-black text-amber-300 tracking-wider truncate">AFK HARVESTER · {afkStatus.levelDef.name}</div>
+                    <div className="text-sm font-black text-white truncate">🪙 +{afkStatus.pendingGold.toLocaleString()} Gold <span className="text-[10px] font-bold text-slate-400">({afkStatus.ratePerHour}/hr)</span></div>
+                  </div>
+                </div>
+                <div className="flex gap-1.5 shrink-0">
+                  <button
+                    disabled={afkStatus.pendingGold <= 0 || !onSave}
+                    onClick={() => {
+                      if (!onSave) return;
+                      const res = claimAfkGold(save, now);
+                      if (res.claimed > 0) { sfx.build(); onSave(res.save); }
+                    }}
+                    className={`px-3 py-1.5 rounded-lg font-black text-xs transition active:scale-95 ${afkStatus.pendingGold > 0 ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 shadow-[0_0_12px_rgba(251,191,36,0.4)]' : 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'}`}
+                  >
+                    CLAIM 🪙
+                  </button>
+                  <button
+                    onClick={() => { sfx.cursor(); setShowAfkModal(true); }}
+                    className="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs"
+                    title="Open Harvester Details & Upgrades"
+                  >
+                    ⚙️
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-[10px] font-bold">
+                <div className="flex-1 h-2 bg-slate-950 rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${afkStatus.capReached ? 'bg-rose-500 animate-pulse' : 'bg-amber-400'}`}
+                    style={{ width: `${afkStatus.progressPercent}%` }}
+                  />
+                </div>
+                <span className={afkStatus.capReached ? 'text-rose-300 font-black' : 'text-slate-400'}>
+                  {afkStatus.capReached ? '24h MAX (PAUSED)' : `${formatDuration(afkStatus.cappedSeconds)} / 24h`}
+                </span>
+              </div>
+            </div>
+
             {resume && onContinue && (
               <button className="menu-btn title-primary h-auto py-2 bg-emerald-500 text-slate-950 text-lg shadow-[0_0_24px_rgba(16,185,129,0.55)] leading-tight" onClick={() => { sfx.select(); onContinue(); }}>
                 ⏯ CONTINUE BATTLE
@@ -303,6 +361,14 @@ export function Title({ save, onNav, onQuick, resume, onContinue, onAuditUnlock,
           settings={save.settings}
           onSave={onSettings}
           onClose={() => setShowGraphicsSettings(false)}
+        />
+      )}
+
+      {showAfkModal && onSave && (
+        <AfkHarvesterModal
+          save={save}
+          onSave={onSave}
+          onClose={() => setShowAfkModal(false)}
         />
       )}
     </div>
@@ -651,7 +717,7 @@ export function DialogueScreen({ lines, title, onDone }: { lines: Dialogue[]; ti
 }
 
 /* ---------------- Workshop ---------------- */
-const TIER_COST = [300, 600, 1000];
+const TIER_COST = [1000, 2500, 4500];
 export function Workshop({ save, onBack, onSave }: { save: SaveData; onBack: () => void; onSave: (s: SaveData) => void }) {
   const [tab, setTab] = useState<'up' | 'mods'>('up');
   const buyTier = (kind: 'atk' | 'def', cat: Category) => {

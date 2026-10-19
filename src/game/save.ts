@@ -26,6 +26,7 @@ export function defaultSave(): SaveData {
     progress: 0,
     merits: 0,
     gems: 0,
+    afkHarvest: { lastClaimTime: Date.now(), level: 1 },
     upgrades: emptyUpgrades(),
     mods: {},
     ownedMods: [],
@@ -63,9 +64,13 @@ export function loadSave(): SaveData {
       });
     }
     const advancedUnlocked = d.advancedUnlocked ?? (d.progress >= MISSIONS.length - 1 || Object.keys(normalCleared).length >= MISSIONS.length - 1);
+    const afkHarvest = d.afkHarvest && typeof d.afkHarvest.lastClaimTime === 'number'
+      ? { lastClaimTime: d.afkHarvest.lastClaimTime, level: d.afkHarvest.level ?? 1 }
+      : { lastClaimTime: Date.now(), level: 1 };
     return {
       ...def,
       ...d,
+      afkHarvest,
       coRank: d.coRank ?? {},
       coPieces: d.coPieces ?? {},
       tutorialComplete: d.tutorialComplete ?? (d.progress > 0),

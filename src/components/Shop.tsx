@@ -3,6 +3,7 @@ import {
   COS, CO_PIECES, CO_PRICE, PLAYABLE_ORDER, RANK_MAX, RANK_NAMES, RANK_PRICE, SKILLS, SKILL_ORDER, TRACKS, TRACK_MAX, TRACK_ORDER, TRACK_PRICE,
   UNITS, UNIT_ORDER, rankDesc, rankSlots, ultimateCost, upgradeEffects,
 } from '../game/data';
+import { claimAfkGold, formatDuration, getAfkStatus, HARVESTER_LEVELS, MAX_HARVEST_HOURS, upgradeAfkHarvester } from '../game/afk';
 import { REWARDS, MISSIONS } from '../game/campaign';
 import { piecesHave } from '../game/unlocks';
 import { sfx } from '../game/audio';
@@ -11,7 +12,7 @@ import COInfo from './COInfo';
 import { UnitIcon } from './GameView';
 import type { SaveData, TrackId, UnitType } from '../game/types';
 
-type Tab = 'cos' | 'skills' | 'units';
+type Tab = 'cos' | 'skills' | 'units' | 'harvester';
 
 const KIND_COLOR: Record<string, string> = {
   Boost: 'text-amber-300 border-amber-400/50',
@@ -28,7 +29,15 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   const [slotPick, setSlotPick] = useState<number | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
+  const [now, setNow] = useState(Date.now());
   const lastBuyAt = useRef<number>(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const afkStatus = getAfkStatus(save, now);
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => { if (e.key === 'Escape' && !info && slotPick === null) onBack(); };
@@ -52,7 +61,7 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
     sfx.build(); toast(msg);
     onSave({ ...next, gems: gems - price });
   };
-  const buyPiecesGold = (coId: string, count = 1, costPer = 250) => {
+  const buyPiecesGold = (coId: string, count = 1, costPer = 600) => {
     const total = count * costPer;
     if (save.merits < total) { sfx.cancel(); toast(`Need ${total} gold`); return; }
     const curPieces = save.coPieces?.[coId] ?? 0;
@@ -145,7 +154,7 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
           </div>
         </div>
         <div className="flex gap-1.5 p-2 bg-slate-900/60 shrink-0">
-          {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units']] as [Tab, string][]).map(([t, l]) => (
+          {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units'], ['harvester', '⛏️ Harvester']] as [Tab, string][]).map(([t, l]) => (
             <button key={t} onClick={() => { sfx.cursor(); setTab(t); }} className={`flex-1 menu-btn h-10 text-sm ${tab === t ? 'bg-amber-400 text-slate-900' : 'bg-slate-800'}`}>{l}</button>
           ))}
         </div>
@@ -164,6 +173,8 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                 • <b className="text-cyan-300">🎴 Skills:</b> Learn tactical skills or earn them free from campaign clears, then equip them in officer slots.
                 <br />
                 • <b className="text-emerald-300">🔧 Units:</b> Upgrade firepower, armor, mobility, range & cost for any unit. Refunds are 100% free anytime!
+                <br />
+                • <b className="text-amber-400">⛏️ Harvester:</b> Collect accrued AFK Gold and upgrade your automated mining rigs!
               </div>
             </div>
           </div>
@@ -218,9 +229,9 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                       </div>
                       <div className="text-xs text-slate-300 mt-1">Buy missing CO pieces using Gold or Gems to accelerate your officer unlock:</div>
                       <div className="grid grid-cols-2 gap-2 mt-2">
-                        <button disabled={havePieces >= needPieces || save.merits < 250} onClick={() => buyPiecesGold(selCo, 1, 250)}
-                          className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && save.merits >= 250 ? 'bg-amber-500 text-slate-950 border-amber-300' : 'bg-slate-800 text-slate-500'}`}>
-                          +1 Piece · 🪙 250
+                        <button disabled={havePieces >= needPieces || save.merits < 600} onClick={() => buyPiecesGold(selCo, 1, 600)}
+                          className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && save.merits >= 600 ? 'bg-amber-500 text-slate-950 border-amber-300' : 'bg-slate-800 text-slate-500'}`}>
+                          +1 Piece · 🪙 600
                         </button>
                         <button disabled={havePieces >= needPieces || gems < 10} onClick={() => buyPiecesGems(selCo, 1, 10)}
                           className={`hud-btn h-10 text-xs font-black flex items-center justify-center gap-1 ${havePieces < needPieces && gems >= 10 ? 'bg-cyan-500 text-slate-950 border-cyan-200' : 'bg-slate-800 text-slate-500'}`}>
@@ -337,6 +348,115 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                 })}
               </div>
             </>
+          )}
+
+          {tab === 'harvester' && (
+            <div className="flex flex-col gap-4">
+              <div className="hud-panel p-4 border-amber-400 bg-slate-900/90 rounded-xl flex flex-col gap-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-2xl shadow-lg text-slate-950 font-black shrink-0">
+                      ⛏️
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-black tracking-widest text-amber-400 uppercase">AUTOMATED RESOURCE HARVESTER</div>
+                      <div className="text-xl font-black text-white">{afkStatus.levelDef.name}</div>
+                      <div className="text-xs text-slate-300 font-bold">Generates {afkStatus.ratePerHour.toLocaleString()} Gold / hour</div>
+                    </div>
+                  </div>
+                  <button
+                    disabled={afkStatus.pendingGold <= 0}
+                    onClick={() => {
+                      const res = claimAfkGold(save, now);
+                      if (res.claimed > 0) {
+                        sfx.build();
+                        toast(`Claimed +${res.claimed.toLocaleString()} 🪙 Gold!`);
+                        onSave(res.save);
+                      }
+                    }}
+                    className={`menu-btn h-12 px-5 text-sm font-black transition active:scale-95 ${afkStatus.pendingGold > 0 ? 'bg-amber-400 text-slate-950 border-amber-200 shadow-[0_0_16px_rgba(251,191,36,0.5)]' : 'bg-slate-800 text-slate-500 border-slate-700 cursor-not-allowed'}`}
+                  >
+                    CLAIM 🪙 +{afkStatus.pendingGold.toLocaleString()} GOLD
+                  </button>
+                </div>
+
+                <div className="flex flex-col gap-1.5 pt-2 border-t border-slate-800">
+                  <div className="flex justify-between items-center text-[11px] font-bold">
+                    <span className="text-slate-300">Harvest Time: <b className="text-white">{formatDuration(afkStatus.cappedSeconds)}</b> / {MAX_HARVEST_HOURS}h Max</span>
+                    <span className={afkStatus.capReached ? 'text-rose-400 font-black animate-pulse' : 'text-amber-300'}>
+                      {afkStatus.progressPercent.toFixed(1)}% Capacity
+                    </span>
+                  </div>
+                  <div className="h-3 w-full bg-slate-950 rounded-full overflow-hidden border border-slate-800 p-0.5">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${afkStatus.capReached ? 'bg-rose-500 animate-pulse' : 'bg-amber-400'}`}
+                      style={{ width: `${afkStatus.progressPercent}%` }}
+                    />
+                  </div>
+                  {afkStatus.capReached && (
+                    <div className="text-[11px] font-black text-rose-300 bg-rose-950/80 border border-rose-600 p-2 rounded-lg text-center">
+                      ⚠️ STORAGE CAPACITY REACHED (24 HOURS)! Gold generation paused until claimed.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Upgrade Harvester */}
+              <div className="hud-panel p-3 border-slate-700 bg-slate-900/80 rounded-xl">
+                <div className="text-xs font-black text-amber-300 tracking-wider mb-2">UPGRADE HARVESTER CAPACITY</div>
+                {afkStatus.nextLevelDef ? (
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/80 p-3 rounded-lg border border-slate-800">
+                    <div className="flex-1 min-w-0 text-xs">
+                      <div className="font-black text-white text-sm">{afkStatus.nextLevelDef.name}</div>
+                      <div className="text-emerald-300 font-bold mt-0.5">
+                        ▲ Production: {afkStatus.nextLevelDef.ratePerHour.toLocaleString()} Gold/hr (Max {Math.floor(24 * afkStatus.nextLevelDef.ratePerHour).toLocaleString()} Gold / 24h)
+                      </div>
+                      <div className="text-[11px] text-slate-400 mt-0.5">{afkStatus.nextLevelDef.desc}</div>
+                    </div>
+                    <button
+                      disabled={save.merits < afkStatus.nextLevelDef.upgradeCost}
+                      onClick={() => {
+                        const res = upgradeAfkHarvester(save, now);
+                        if (res.success) {
+                          sfx.build();
+                          toast(res.msg);
+                          onSave(res.save);
+                        } else {
+                          sfx.cancel();
+                          toast(res.msg);
+                        }
+                      }}
+                      className={`menu-btn h-12 px-4 text-xs font-black shrink-0 transition active:scale-95 ${save.merits >= afkStatus.nextLevelDef.upgradeCost ? 'bg-amber-400 text-slate-950 border-amber-200 shadow-[0_0_12px_rgba(251,191,36,0.4)]' : 'bg-slate-800 text-slate-500 border-slate-700'}`}
+                    >
+                      UPGRADE · 🪙 {afkStatus.nextLevelDef.upgradeCost.toLocaleString()}
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center py-3 text-xs font-black text-emerald-300 bg-emerald-950/40 border border-emerald-800 rounded-lg">
+                    ✨ MAXIMUM HARVESTER LEVEL REACHED
+                  </div>
+                )}
+              </div>
+
+              {/* All Harvester Levels Overview */}
+              <div className="hud-panel p-3 border-slate-800 bg-slate-900/60 rounded-xl text-xs">
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">HARVESTER TIER OVERVIEW</div>
+                <div className="grid grid-cols-1 sm:grid-cols-5 gap-1.5 text-[10px]">
+                  {HARVESTER_LEVELS.map((lvl) => {
+                    const isCurrent = lvl.level === afkStatus.level;
+                    return (
+                      <div key={lvl.level} className={`p-2 rounded border flex flex-col justify-between ${isCurrent ? 'bg-amber-500/20 border-amber-400 text-amber-200 font-black' : 'bg-slate-950/60 border-slate-800 text-slate-400'}`}>
+                        <div>
+                          <div className="font-bold truncate">{lvl.name}</div>
+                          <div className={isCurrent ? 'text-amber-300' : 'text-slate-300'}>{lvl.ratePerHour} G/hr</div>
+                        </div>
+                        <div className="text-[9px] text-slate-500 mt-1">24h: {(lvl.ratePerHour * 24).toLocaleString()}G</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           )}
 
           {tab === 'units' && (

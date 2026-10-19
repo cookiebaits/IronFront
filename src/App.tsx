@@ -245,7 +245,7 @@ export default function App() {
   return (
     <div className="fixed inset-0 bg-slate-950 text-white font-game overflow-hidden">
       {screen === 'title' && (
-        <Title save={save} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
+        <Title save={save} onSave={persist} onQuick={quick} resume={resumeSave ? { mission: MISSIONS.find((m) => m.id === resumeSave.missionId)?.name ?? 'Campaign', day: resumeSave.day } : null} onContinue={continueResume}
           onAuditUnlock={() => persist({ ...save, missionAuditUnlocked: true })} onNav={(s) => {
           if (s === 'campaign-start') pickMission(0);
           else setScreen(s as ScreenId);

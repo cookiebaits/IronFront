@@ -142,7 +142,7 @@ export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; d
   veterancy: { name: 'Veterancy', icon: '⭐', up: '+5% attack & +15% veteran exp / lvl', down: '+6% deploy cost / lvl' },
   logistics: { name: 'Logistics', icon: '📦', up: '+20% fuel/ammo & +5% income bonus', down: '−3% defense / lvl' },
 };
-export const TRACK_PRICE = [200, 350, 550, 800, 1100];
+export const TRACK_PRICE = [600, 1200, 2200, 3800, 6000];
 export const TRACK_MAX = 5;
 
 export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
@@ -164,40 +164,40 @@ export interface SkillDef {
   desc: string; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
 }
 export const SKILLS: Record<string, SkillDef> = {
-  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 20, price: 150, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
-  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 30, price: 250, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
-  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 35, price: 250, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
-  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 40, price: 300, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
-  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 40, price: 300, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
-  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 40, price: 300, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
-  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 45, price: 350, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
-  blitz: { id: 'blitz', name: 'Blitz', icon: '💨', cost: 50, price: 400, kind: 'Boost', move: 2, desc: 'All units +2 move.' },
-  repair: { id: 'repair', name: 'Field Repair', icon: '🔧', cost: 50, price: 400, kind: 'Support', heal: 30, desc: 'All units recover 3 HP.' },
-  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 55, price: 450, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
-  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 55, price: 450, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
-  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 65, price: 550, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
-  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 70, price: 600, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
-  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 85, price: 750, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
-  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 800, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
-  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 950, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
-  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 1200, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
-  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 500, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
-  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 450, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
-  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 600, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
-  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 750, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
-  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 500, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
-  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 300, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
-  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 1000, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
+  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 20, price: 350, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
+  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 30, price: 600, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
+  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 35, price: 600, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
+  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 40, price: 750, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
+  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 40, price: 750, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
+  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 40, price: 750, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
+  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 45, price: 900, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
+  blitz: { id: 'blitz', name: 'Blitz', icon: '💨', cost: 50, price: 1000, kind: 'Boost', move: 2, desc: 'All units +2 move.' },
+  repair: { id: 'repair', name: 'Field Repair', icon: '🔧', cost: 50, price: 1000, kind: 'Support', heal: 30, desc: 'All units recover 3 HP.' },
+  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 55, price: 1200, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
+  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 55, price: 1200, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
+  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 65, price: 1400, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
+  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 70, price: 1500, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
+  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 85, price: 1800, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
+  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 2000, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
+  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 2400, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
+  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 3000, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
+  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 1200, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
+  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 1100, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
+  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 1500, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
+  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 1800, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
+  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 1200, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
+  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 750, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
+  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 2500, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
 };
 export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.cost - b.cost).map((s) => s.id);
 
 /* ---------------- CO ranks & hiring ---------------- */
-export const RANK_PRICE = [500, 900, 1400, 2000];
+export const RANK_PRICE = [1500, 3000, 5000, 8000];
 export const RANK_MAX = 4;
 export const RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Ace', 'Legend'];
 export const rankSlots = (rank: number) => 1 + Math.floor(rank / 2);
 export const rankDesc = (rank: number) => `+${rank * 3}% atk & def · +${rank * 6}% charge speed · ${rankSlots(rank)} skill slot${rankSlots(rank) > 1 ? 's' : ''}`;
-export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 1500, sora: 2000, mira: 2200, brann: 2200, grimm: 3000, frost: 3200, nyx: 3500, volkov: 4000, architect: 5000 };
+export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 4000, sora: 5500, mira: 6000, brann: 6000, grimm: 8500, frost: 9500, nyx: 11000, volkov: 14000, architect: 20000 };
 /** CO Pieces required (in addition to Gold) to unlock each officer. Rhea is free. */
 export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, grimm: 20, frost: 20, nyx: 24, volkov: 28, architect: 40 };
 
