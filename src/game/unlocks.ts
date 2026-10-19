@@ -19,7 +19,7 @@ export const canUnlockCo = (s: SaveData, co: string, price: number) =>
  *  - First-time story clears can also hand out a full bundle for the officer they introduce.
  * Pieces never unlock anyone by themselves: you still pay the Gold price in Command HQ.
  */
-export function awardPieces(s: SaveData, o: { won: boolean; rank: string; storyCo?: string }): SaveData {
+export function awardPieces(s: SaveData, o: { won: boolean; rank: string; storyCo?: string; targetCo?: string }): SaveData {
   const pieces: Record<string, number> = { ...(s.coPieces ?? {}) };
   const drops: PieceDrop[] = [];
   const locked = () => PLAYABLE_ORDER.filter((id) => !s.unlockedCos.includes(id) && piecesNeeded(id) > 0);
@@ -33,6 +33,12 @@ export function awardPieces(s: SaveData, o: { won: boolean; rank: string; storyC
     drops.push({ co, n: add, story });
   };
 
+  // Explicit targeted officer piece award (e.g. from playing that character's story mode)
+  if (o.targetCo && o.won) {
+    const amount = 2 + (o.rank === 'S' ? 2 : o.rank === 'A' ? 1 : 0);
+    give(o.targetCo, amount, true);
+  }
+
   if (o.storyCo === 'all') for (const id of locked()) give(id, Math.ceil(piecesNeeded(id) / 2), true);
   else if (o.storyCo && locked().includes(o.storyCo)) give(o.storyCo, piecesNeeded(o.storyCo), true);
 
@@ -44,4 +50,22 @@ export function awardPieces(s: SaveData, o: { won: boolean; rank: string; storyC
 
   lastDrops = drops;
   return { ...s, coPieces: pieces };
+}
+
+/** Promotes officer rank based on completed character story chapters (1 rank per 2 chapters cleared, up to Rank 4 Legend). */
+export function levelUpCoFromStory(s: SaveData, coId: string): SaveData {
+  const cleared = s.storyCleared?.[coId] ?? {};
+  const clearedCount = Object.values(cleared).filter(Boolean).length;
+  const currentRank = s.coRank?.[coId] ?? 0;
+  const targetRank = Math.min(4, Math.floor(clearedCount / 2));
+  if (targetRank > currentRank) {
+    return {
+      ...s,
+      coRank: {
+        ...(s.coRank ?? {}),
+        [coId]: targetRank,
+      },
+    };
+  }
+  return s;
 }

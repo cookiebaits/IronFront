@@ -506,23 +506,32 @@ export default function GameView(props: Props) {
     } else if (stop === 'load') {
       menu.push({ id: 'load', label: 'Load' });
     } else {
-      const targets = targetsFrom(gs, unit, px, py, moved, visRef.current);
-      if (targets.length) menu.push({ id: 'fire', label: 'Fire' });
-      const tile = gs.tiles[py][px];
-      if (UNITS[unit.type].capture && TERRAIN[tile.t].prop && tile.owner !== unit.team) menu.push({ id: 'capture', label: 'Capture' });
-      if (unit.cargo) {
-        const ox = unit.x, oy = unit.y;
-        unit.x = px; unit.y = py;
-        const d = dropTiles(gs, unit);
-        unit.x = ox; unit.y = oy;
-        if (d.length) menu.push({ id: 'drop', label: 'Drop' });
-      }
       const unitDef = UNITS[unit.type];
-      if (unitDef.cat === 'air' || unitDef.cat === 'naval') {
+      const targets = targetsFrom(gs, unit, px, py, moved, visRef.current);
+      const isAirUnit = unitDef.cat === 'air';
+      const isOutOfFuel = isAirUnit && (unit.fuel ?? 0) <= 0;
+
+      if (isOutOfFuel) {
+        if (targets.length) menu.push({ id: 'fire', label: 'Fire' });
         const isDrone = unit.type === 'drone' || unit.type === 'gundrone';
         menu.push({ id: 'refuel', label: isDrone ? 'Recharge' : 'Refuel' });
+      } else {
+        if (targets.length) menu.push({ id: 'fire', label: 'Fire' });
+        const tile = gs.tiles[py][px];
+        if (UNITS[unit.type].capture && TERRAIN[tile.t].prop && tile.owner !== unit.team) menu.push({ id: 'capture', label: 'Capture' });
+        if (unit.cargo) {
+          const ox = unit.x, oy = unit.y;
+          unit.x = px; unit.y = py;
+          const d = dropTiles(gs, unit);
+          unit.x = ox; unit.y = oy;
+          if (d.length) menu.push({ id: 'drop', label: 'Drop' });
+        }
+        if (unitDef.cat === 'air' || unitDef.cat === 'naval') {
+          const isDrone = unit.type === 'drone' || unit.type === 'gundrone';
+          menu.push({ id: 'refuel', label: isDrone ? 'Recharge' : 'Refuel' });
+        }
+        menu.push({ id: 'wait', label: 'Wait' });
       }
-      menu.push({ id: 'wait', label: 'Wait' });
     }
     if (!u.pending?.ambush && !u.pending?.committed) menu.push({ id: 'cancel', label: 'Cancel' });
     if (mission.tutorial && (guideEvent() === 'first-capture' || guideEvent() === 'capture-radio')) {

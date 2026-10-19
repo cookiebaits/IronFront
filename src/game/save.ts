@@ -44,6 +44,7 @@ export function defaultSave(): SaveData {
     fogCleared: {},
     advancedUnlocked: false,
     advancedMode: false,
+    storyCleared: {},
   };
 }
 
@@ -73,6 +74,7 @@ export function loadSave(): SaveData {
       fogCleared: d.fogCleared ?? {},
       advancedUnlocked,
       advancedMode: d.advancedMode ?? false,
+      storyCleared: d.storyCleared ?? {},
       ownedSkills: d.ownedSkills ?? [],
       loadout: d.loadout ?? {},
       unitUps: d.unitUps ?? {},

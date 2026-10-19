@@ -142,7 +142,7 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
   switch (co) {
     case 'rhea':
       if (pl === 1) { move += 1; atk += 10; }
-      if (pl === 2) { move += 1; atk += 25; }
+      if (pl === 2) { move += 1; atk += 25; def += 15; }
       break;
     case 'dax':
       if (treads) atk += 20;
@@ -275,7 +275,9 @@ export function reachable(s: GameState, u: Unit, vis?: Set<number> | null, maxOv
         ? modsWithBonus.move
         : Math.min(baseMoveNoBonus, modsWithBonus.move);
       if (maxOverride !== undefined) effectiveMaxMove = Math.min(maxOverride, effectiveMaxMove);
-      const max = Math.min(effectiveMaxMove, u.fuel ?? Infinity);
+      // Air units can fly to engage/attack enemy targets even if low/out of fuel (fuel is spent per tile moved)
+      const isAirUnit = UNITS[u.type].cat === 'air';
+      const max = isAirUnit ? effectiveMaxMove : Math.min(effectiveMaxMove, u.fuel ?? Infinity);
 
       if (c > max) continue;
       const ex = res.get(k);

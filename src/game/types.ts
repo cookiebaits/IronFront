@@ -157,6 +157,8 @@ export interface SaveData {
   fogCleared?: Record<string, boolean>;
   advancedUnlocked?: boolean;
   advancedMode?: boolean;
+  /** Cleared character story chapters per CO ID (1..10) */
+  storyCleared?: Record<string, Record<number, boolean>>;
 }
 
 export type GraphicsQuality = 'auto' | 'ultra' | 'high' | 'medium' | 'low';

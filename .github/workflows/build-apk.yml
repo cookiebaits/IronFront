@@ -1,15 +1,13 @@
-name: Build Android APK
+name: Build Android APK & iOS App
 
-# Builds a landscape, fullscreen debug APK and attaches it to the workflow run.
+# Builds a portrait fullscreen debug APK and iOS App bundle, attaching them to the workflow run.
 on:
   workflow_dispatch:
   push:
     branches: [main, master]
 
-# A new push supersedes an older APK build on the same branch instead of letting both
-# compete for runner/network time.
 concurrency:
-  group: android-apk-${{ github.workflow }}-${{ github.ref }}
+  group: mobile-build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
@@ -17,11 +15,8 @@ permissions:
 
 jobs:
   build-apk:
-    name: Build debug APK
-    # Pin the runner image so the announced ubuntu-latest -> Ubuntu 26 migration
-    # cannot change the Android toolchain underneath this workflow.
+    name: Build Portrait Debug APK
     runs-on: ubuntu-24.04
-    # First-time Android/Gradle dependency downloads can exceed 30 minutes on a cold runner.
     timeout-minutes: 90
 
     steps:
@@ -32,7 +27,6 @@ jobs:
         uses: actions/setup-node@v5
         with:
           node-version: 22
-          # There is intentionally no committed package-lock.json.
           package-manager-cache: false
 
       - name: Set up JDK 21
@@ -46,8 +40,6 @@ jobs:
         timeout-minutes: 15
         run: |
           set -euxo pipefail
-          echo "ANDROID_HOME=${ANDROID_HOME:-}"
-          echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT:-}"
           SDKMANAGER="$(command -v sdkmanager || true)"
           if [ -z "$SDKMANAGER" ]; then
             SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
@@ -58,15 +50,11 @@ jobs:
             exit 1
           fi
 
-          # GitHub's preinstalled SDK can be mounted read-only. Do not chmod files in it.
-          # sdkmanager is normally executable; if not, invoke the readable shell script via bash.
           if [ -x "$SDKMANAGER" ]; then
             SDKMANAGER_RUN=("$SDKMANAGER")
           else
-            echo "sdkmanager is readable but not executable; invoking it with bash"
             SDKMANAGER_RUN=(bash "$SDKMANAGER")
           fi
-          ls -l "$SDKMANAGER"
           timeout 5m bash -c "yes | bash '$SDKMANAGER' --licenses >/dev/null" || true
 
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
@@ -76,43 +64,21 @@ jobs:
           [ -d "$SDK_ROOT/build-tools/36.0.0" ] || PACKAGES+=("build-tools;36.0.0")
           if [ ${#PACKAGES[@]} -gt 0 ]; then
             echo "Installing missing Android packages: ${PACKAGES[*]}"
-            # Retry once for transient Google repository/network failures.
             timeout 10m "${SDKMANAGER_RUN[@]}" --install "${PACKAGES[@]}" \
               || timeout 10m "${SDKMANAGER_RUN[@]}" --install "${PACKAGES[@]}"
-          else
-            echo "Android SDK 36 packages already present on the runner"
           fi
 
-          # sdkmanager may install platform-tools without adding it to PATH for later steps.
-          # Persist the resolved SDK paths through GitHub's environment files.
           echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
           echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
           echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
 
-          # These are required to compile. ADB itself is not required to build the APK.
           test -d "$SDK_ROOT/platforms/android-36"
           test -d "$SDK_ROOT/build-tools/36.0.0"
-          ls -la "$SDK_ROOT/platform-tools" | head -n 20
 
-      - name: Print toolchain versions
+      - name: Install Python Pillow for Icon Generation
         shell: bash
-        run: |
-          set -euxo pipefail
-          node --version
-          npm --version
-          java --version
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          # ADB is useful for local installation, but it is not part of APK compilation.
-          # Print it when available without failing the workflow when PATH propagation differs.
-          if command -v adb >/dev/null 2>&1; then
-            adb --version
-          elif [ -x "$ANDROID_HOME/platform-tools/adb" ]; then
-            "$ANDROID_HOME/platform-tools/adb" --version
-          else
-            echo "NOTICE: adb is unavailable; continuing because APK compilation does not require adb"
-          fi
+        run: pip3 install --break-system-packages pillow || pip3 install pillow || true
 
       - name: Cache npm downloads
         uses: actions/cache@v5
@@ -143,8 +109,10 @@ jobs:
             npx cap add android
           fi
 
-      - name: Sync Capacitor assets
-        run: npx cap sync android
+      - name: Sync Capacitor assets & Tank Icons
+        run: |
+          python3 scripts/generate_app_icons.py
+          npx cap sync android
 
       - name: Cache and configure Gradle
         uses: gradle/actions/setup-gradle@v5
@@ -175,11 +143,11 @@ jobs:
           cp "$KEYSTORE" "$HOME/.android/debug.keystore"
           echo "sdk.dir=$ANDROID_HOME" > android/local.properties
 
-      - name: Build Landscape APK
+      - name: Build Portrait APK
         shell: bash
         run: |
           set -euxo pipefail
-          python3 scripts/patch-android.py landscape
+          python3 scripts/patch-android.py portrait
           npx cap sync android
           cd android
           chmod +x gradlew
@@ -190,41 +158,69 @@ jobs:
           "$BUILD_TOOLS/apksigner" sign --ks scripts/debug.keystore \
             --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
             --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
-          cp "$APK" iron-front-landscape.apk
+          cp "$APK" iron-front-tactics.apk
 
-      - name: Build Portrait APK
-        shell: bash
-        run: |
-          set -euxo pipefail
-          python3 scripts/patch-android.py portrait
-          npx cap sync android
-          cd android
-          ./gradlew :app:assembleDebug --no-daemon --max-workers=2
-          cd ..
-          BUILD_TOOLS="$ANDROID_HOME/build-tools/36.0.0"
-          APK="android/app/build/outputs/apk/debug/app-debug.apk"
-          "$BUILD_TOOLS/apksigner" sign --ks scripts/debug.keystore \
-            --ks-pass pass:android --ks-key-alias androiddebugkey --key-pass pass:android \
-            --v1-signing-enabled true --v2-signing-enabled true --v3-signing-enabled true "$APK"
-          cp "$APK" iron-front-portrait.apk
-
-      - name: Upload installable APKs
+      - name: Upload installable Portrait APK
         uses: actions/upload-artifact@v6
         with:
-          name: iron-front-apks
-          path: |
-            iron-front-landscape.apk
-            iron-front-portrait.apk
+          name: iron-front-apk
+          path: iron-front-tactics.apk
           if-no-files-found: error
           retention-days: 30
 
-      - name: Upload Gradle log if the build failed
-        if: failure()
+  build-ios:
+    name: Build iOS App Project
+    runs-on: macos-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          package-manager-cache: false
+
+      - name: Install Python Pillow for Icon Generation
+        shell: bash
+        run: pip3 install --break-system-packages pillow || pip3 install pillow || true
+
+      - name: Install JavaScript dependencies
+        timeout-minutes: 10
+        run: npm install --no-audit --no-fund
+
+      - name: Build web game
+        timeout-minutes: 10
+        run: npm run build
+
+      - name: Create and Sync Capacitor iOS Project
+        timeout-minutes: 10
+        run: |
+          if [ ! -d ios ]; then
+            npx cap add ios
+          fi
+          python3 scripts/generate_app_icons.py
+          npx cap sync ios
+
+      - name: Build iOS App with Xcode
+        shell: bash
+        run: |
+          set -euxo pipefail
+          cd ios/App
+          if [ -d App.xcworkspace ]; then
+            xcodebuild -workspace App.xcworkspace -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          else
+            xcodebuild -project App.xcodeproj -scheme App -configuration Debug -sdk iphonesimulator -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          fi
+          cd ../..
+          zip -r iron-front-ios-project.zip ios/
+
+      - name: Upload iOS App Artifact
         uses: actions/upload-artifact@v6
         with:
-          name: android-build-diagnostics
-          path: |
-            gradle-build.log
-            android/app/build/reports/**
-          if-no-files-found: ignore
-          retention-days: 14
+          name: iron-front-ios
+          path: iron-front-ios-project.zip
+          if-no-files-found: error
+          retention-days: 30

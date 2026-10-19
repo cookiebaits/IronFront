@@ -109,8 +109,15 @@ export function planAIUnit(s: GameState, u: Unit, threats: Map<number, Unit[]>):
   const myVal = def.cost * (u.hp / 100);
   const riskW = lvl <= 0 ? 0 : lvl === 1 ? 0.35 : lvl === 2 ? 0.7 : 0.9;
 
-  // Low-fuel aircraft & naval units prioritize refueling / recharging.
-  if ((def.cat === 'air' || def.cat === 'naval') && u.fuel !== undefined && u.fuel <= Math.max(2, unitMods(s, u).move + 1)) {
+  // Check if an air unit has any reachable enemy target to attack this turn
+  const hasReachableTarget = def.cat === 'air' && [...reach.keys()].some((k) => {
+    const x = k % s.w, y = Math.floor(k / s.w);
+    if (canStop(s, u, x, y) !== 'ok') return false;
+    return targetsFrom(s, u, x, y, x !== u.x || y !== u.y, aiVis).length > 0;
+  });
+
+  // Low-fuel aircraft & naval units prioritize refueling / recharging unless an air unit can engage an enemy this turn.
+  if ((def.cat === 'air' || def.cat === 'naval') && u.fuel !== undefined && u.fuel <= Math.max(2, unitMods(s, u).move + 1) && !hasReachableTarget) {
     let fx = -1, fy = -1, nearest = Infinity;
     for (let y = 0; y < s.h; y++) for (let x = 0; x < s.w; x++) {
       if (!isRefuelSite(s, team, x, y) && def.cat !== 'air') continue;

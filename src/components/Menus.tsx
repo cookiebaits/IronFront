@@ -26,19 +26,22 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
   const chapters = getCharacterStoryChapters(selCo);
   const selectedChapter = chapters[selChapterIdx] ?? chapters[0];
 
+  const coCleared = save.storyCleared?.[selCo] ?? {};
+  const clearedCount = Object.values(coCleared).filter(Boolean).length;
+
   return (
     <Screen title="CHARACTER STORIES" onBack={onBack}>
       <div className="max-w-4xl mx-auto grid gap-4">
         <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 flex gap-3 items-center rounded-xl">
           <Portrait id={selCo} size={64} className="shrink-0 rounded-lg border border-amber-400" />
           <div className="flex-1 min-w-0 text-xs">
-            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORYLINES & PROFICIENCY BATTLES</div>
+            <div className="font-black text-amber-300 text-sm mb-0.5">CHARACTER STORYLINES & LEVELING MISSIONS</div>
             <div className="text-slate-200 leading-relaxed">
               Every officer features 10 dedicated story chapters tailored specifically to their vehicle strengths!
               <br />
-              • <b className="text-amber-300">Matching Forces:</b> Sora commands Air Wings; Dax commands Tank Battalions; Mira leads Naval Armadas; Brann operates Siege Batteries!
+              • <b className="text-amber-300">Targeted Rewards:</b> Win story chapters to earn 🧩 <b className="text-fuchsia-300">{co?.name} Pieces</b> and promote officer rank!
               <br />
-              • <b className="text-emerald-300">Level Up Characters:</b> Win story chapters to earn Rank XP, Gold, and officer-specific 🧩 CO Pieces.
+              • <b className="text-emerald-300">Level Up Officers:</b> Every 2 cleared story chapters promote your CO Rank (+3% Atk/Def per rank + extra Skill Slots) to conquer difficult late-game levels.
             </div>
           </div>
         </div>
@@ -50,6 +53,8 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
               const c = COS[id];
               const isSelected = selCo === id;
               const isEvil = c.faction === 'crimson';
+              const coCl = save.storyCleared?.[id] ?? {};
+              const clCnt = Object.values(coCl).filter(Boolean).length;
               return (
                 <button
                   key={id}
@@ -63,6 +68,7 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
                       {isEvil && <span className="text-[9px] bg-rose-900/80 text-rose-300 px-1 rounded font-bold">EVIL</span>}
                     </div>
                     <div className="text-[10px] text-amber-300 font-bold">★ {RANK_NAMES[save.coRank[id] ?? 0]}</div>
+                    <div className="text-[9px] text-emerald-300 font-bold">{clCnt}/10 Cleared</div>
                   </div>
                 </button>
               );
@@ -78,7 +84,10 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
                 <span className="font-black text-lg text-white">{co.title} {co.name}</span>
                 {isEvilCo && <span className="bg-rose-900 border border-rose-500 text-rose-200 text-[10px] px-2 py-0.5 rounded font-black">CRIMSON DOMINION (EVIL)</span>}
               </div>
-              <div className="text-amber-300 font-bold mt-0.5">★ {RANK_NAMES[rank]} · Character Level {rank + 1}/5</div>
+              <div className="flex items-center gap-3 mt-1">
+                <span className="text-amber-300 font-bold">★ {RANK_NAMES[rank]} · Character Level {rank + 1}/5</span>
+                <span className="bg-emerald-950 border border-emerald-700 text-emerald-300 px-2 py-0.5 rounded font-black">Story Progress: {clearedCount}/10 Cleared</span>
+              </div>
               <div className="text-slate-300 mt-1 italic">{co.bio}</div>
               <div className="text-slate-200 mt-2"><b className="text-slate-400">Tactical Focus:</b> {co.d2d}</div>
               <div className="text-fuchsia-300 font-bold mt-1">✦ {co.superName}: <span className="text-slate-300 font-normal">{co.superDesc}</span></div>
@@ -90,27 +99,40 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
         )}
 
         <div>
-          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest">2. SELECT STORY CHAPTER (1 - 10)</div>
+          <div className="text-xs text-sky-300 mb-1 font-black tracking-widest flex items-center justify-between">
+            <span>2. SELECT STORY CHAPTER (1 - 10)</span>
+            <span className="text-emerald-300 font-bold">Leveling Rewards: 🧩 CO Pieces + Officer Rank XP</span>
+          </div>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-            {chapters.map((ch, idx) => (
-              <button
-                key={ch.id}
-                onClick={() => { setSelChapterIdx(idx); sfx.cursor(); }}
-                className={`p-2 rounded-xl border-2 text-left transition flex flex-col justify-between ${selChapterIdx === idx ? 'border-sky-400 bg-sky-500/10 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}`}
-              >
-                <div>
-                  <div className="text-[10px] font-black text-amber-400 tracking-wider">CHAPTER {ch.chapterIndex}</div>
-                  <div className="text-xs font-black text-white truncate">{ch.title}</div>
-                </div>
-                <div className="text-[9px] text-slate-400 mt-2">vs {COS[ch.mission.enemyCo]?.name.split(' ')[0]}</div>
-              </button>
-            ))}
+            {chapters.map((ch, idx) => {
+              const isCleared = !!coCleared[ch.chapterIndex];
+              const recRank = ch.mission.recommendedRank ?? Math.min(4, Math.floor(idx / 2));
+              return (
+                <button
+                  key={ch.id}
+                  onClick={() => { setSelChapterIdx(idx); sfx.cursor(); }}
+                  className={`p-2 rounded-xl border-2 text-left transition flex flex-col justify-between ${selChapterIdx === idx ? 'border-sky-400 bg-sky-500/10 shadow-[0_0_12px_rgba(56,189,248,0.4)]' : isCleared ? 'border-emerald-700/80 bg-emerald-950/20' : 'border-slate-800 bg-slate-900/80 hover:border-slate-700'}`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-black text-amber-400 tracking-wider">CH.{ch.chapterIndex}</span>
+                      {isCleared ? <span className="text-[9px] bg-emerald-500 text-slate-950 px-1 rounded font-black">✓ CLEAR</span> : <span className="text-[9px] text-slate-400 font-bold">Rec: Lv{recRank + 1}</span>}
+                    </div>
+                    <div className="text-xs font-black text-white truncate mt-0.5">{ch.title}</div>
+                  </div>
+                  <div className="text-[9px] text-slate-400 mt-2 flex justify-between items-end">
+                    <span>vs {COS[ch.mission.enemyCo]?.name.split(' ')[0]}</span>
+                    <span className="text-fuchsia-300 font-bold">🧩 +2-4</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 
         {selectedChapter && (
           <div className="hud-panel p-3 border-sky-400/80 bg-slate-900/90 rounded-xl flex flex-col gap-2">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex items-center gap-2">
                 <Portrait id={selectedChapter.mission.enemyCo} size={40} className="rounded border border-rose-500" />
                 <div>
@@ -118,7 +140,10 @@ export function CharacterStories({ save, onBack, onStart }: { save: SaveData; on
                   <div className="text-sm font-black text-white">{selectedChapter.title}</div>
                 </div>
               </div>
-              <span className="text-xs font-bold text-amber-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Opponent: {COS[selectedChapter.mission.enemyCo]?.name}</span>
+              <div className="flex items-center gap-2 text-xs font-bold">
+                <span className="text-amber-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Opponent: {COS[selectedChapter.mission.enemyCo]?.name}</span>
+                <span className="text-fuchsia-300 bg-slate-800 px-2 py-1 rounded border border-slate-700">Reward: 🧩 {co?.name} Pieces</span>
+              </div>
             </div>
             <div className="text-xs text-slate-200 leading-relaxed bg-slate-950/80 p-2 rounded-lg border border-slate-800">
               {selectedChapter.summary}
@@ -886,7 +911,7 @@ export function Help({ onBack, onTutorial }: { onBack: () => void; onTutorial: (
         </section>
         <section className="hud-panel p-3">
           <h3 className="font-black text-amber-300 mb-1">AIR REFUEL</h3>
-          <p>Every air unit has a finite fuel tank. Fuel is spent for each tile flown, and weather can increase the cost. Land on a captured city, base, HQ or airport at the start of your turn to refill. Double-tap an aircraft to inspect its remaining fuel.</p>
+          <p>Every air unit has a finite fuel tank. Fuel is spent for each tile flown, and weather can increase the cost. Aircraft can always fly to engage and attack enemies on that same turn. Forced refueling is only required when out of gas with no enemies to attack. Land on a captured city, base, HQ or airport to refill. Double-tap an aircraft to inspect its remaining fuel.</p>
         </section>
         <section className="hud-panel p-3">
           <h3 className="font-black text-amber-300 mb-2">UNITS</h3>

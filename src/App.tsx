@@ -11,7 +11,7 @@ import { COS, PLAYABLE_ORDER, rankSlots } from './game/data';
 /** Story campaign missions only allow Good (Azure Republic) officers. Evil officers cannot be chosen for campaign. */
 const allowedFor = (m: MissionDef) => (m.tutorial ? ['rhea'] : PLAYABLE_ORDER.filter((c) => c !== m.enemyCo && COS[c]?.faction !== 'crimson'));
 import { addHighScore, clearResume, loadResume, loadSave, writeResume, writeSave, type ResumeSave } from './game/save';
-import { awardPieces } from './game/unlocks';
+import { awardPieces, levelUpCoFromStory } from './game/unlocks';
 import { setSfx } from './game/audio';
 import type { GameState, MissionDef, SaveData, Settings, Weather } from './game/types';
 
@@ -132,40 +132,53 @@ export default function App() {
     const earnedGems = w ? (score.rank === 'S' ? 15 : score.rank === 'A' ? 10 : score.rank === 'B' ? 6 : 3) : 1;
     let s: SaveData = { ...save, merits: save.merits + score.merits, gems: (save.gems ?? 0) + earnedGems };
     let storyCo: string | undefined;
-    if (cfg?.isCampaign && w) {
-      const isFog = !!cfg.opts?.fog;
-      const normalCleared = { ...(s.normalCleared ?? {}) };
-      const fogCleared = { ...(s.fogCleared ?? {}) };
-      if (isFog) {
-        fogCleared[cfg.mission.id] = true;
-      } else {
-        normalCleared[cfg.mission.id] = true;
-      }
-      s.normalCleared = normalCleared;
-      s.fogCleared = fogCleared;
+    let targetCo: string | undefined;
 
-      const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
-      const firstClear = !auditJump && cfg.idx >= s.progress;
-      if (firstClear) s.merits += MERIT_BONUS;
-      const rid = REWARDS[cfg.mission.id];
-      if (!auditJump && rid && !s.ownedSkills.includes(rid)) {
-        s.ownedSkills = [...s.ownedSkills, rid];
-        // auto-equip on the officer who earned it if they have a free slot
-        const co = cfg.playerCo;
-        const cur = s.loadout[co] ?? [];
-        if (cur.length < rankSlots(s.coRank[co] ?? 0)) s.loadout = { ...s.loadout, [co]: [...cur, rid] };
+    if (cfg) {
+      if (cfg.isCampaign && w) {
+        const isFog = !!cfg.opts?.fog;
+        const normalCleared = { ...(s.normalCleared ?? {}) };
+        const fogCleared = { ...(s.fogCleared ?? {}) };
+        if (isFog) {
+          fogCleared[cfg.mission.id] = true;
+        } else {
+          normalCleared[cfg.mission.id] = true;
+        }
+        s.normalCleared = normalCleared;
+        s.fogCleared = fogCleared;
+
+        const auditJump = s.missionAuditUnlocked && cfg.idx > s.progress;
+        const firstClear = !auditJump && cfg.idx >= s.progress;
+        if (firstClear) s.merits += MERIT_BONUS;
+        const rid = REWARDS[cfg.mission.id];
+        if (!auditJump && rid && !s.ownedSkills.includes(rid)) {
+          s.ownedSkills = [...s.ownedSkills, rid];
+          // auto-equip on the officer who earned it if they have a free slot
+          const co = cfg.playerCo;
+          const cur = s.loadout[co] ?? [];
+          if (cur.length < rankSlots(s.coRank[co] ?? 0)) s.loadout = { ...s.loadout, [co]: [...cur, rid] };
+        }
+        if (!auditJump) {
+          s.progress = Math.max(s.progress, cfg.idx + 1);
+          if (s.progress >= MISSIONS.length - 1) s.advancedUnlocked = true;
+        }
+        const prev = s.best[cfg.mission.id];
+        if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
+        if (firstClear) storyCo = cfg.mission.unlockCo;
+        if (!auditJump && cfg.mission.tutorial) s.tutorialComplete = true;
+      } else if (!cfg.isCampaign && w && cfg.playerCo) {
+        // Character Story Chapter Clear
+        targetCo = cfg.playerCo;
+        const storyCleared = { ...(s.storyCleared ?? {}) };
+        const coStory = { ...(storyCleared[cfg.playerCo] ?? {}) };
+        coStory[cfg.idx] = true;
+        storyCleared[cfg.playerCo] = coStory;
+        s.storyCleared = storyCleared;
+        // Level up / promote officer rank upon clearing character story chapters!
+        s = levelUpCoFromStory(s, cfg.playerCo);
       }
-      if (!auditJump) {
-        s.progress = Math.max(s.progress, cfg.idx + 1);
-        if (s.progress >= MISSIONS.length - 1) s.advancedUnlocked = true;
-      }
-      const prev = s.best[cfg.mission.id];
-      if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
-      // Story clears no longer hand out officers: they award CO Pieces (unlock them in Command HQ with Gold).
-      if (firstClear) storyCo = cfg.mission.unlockCo;
-      if (!auditJump && cfg.mission.tutorial) s.tutorialComplete = true;
     }
-    s = awardPieces(s, { won: w, rank: score.rank, storyCo });
+    s = awardPieces(s, { won: w, rank: score.rank, storyCo, targetCo });
     let place = -1;
     if (score.total > 0) {
       const r = addHighScore(s, {
