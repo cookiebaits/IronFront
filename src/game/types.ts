@@ -131,10 +131,16 @@ export interface Upgrades {
   def: Record<Category, number>;
 }
 
+export interface AfkHarvestData {
+  lastClaimTime: number;
+  level: number;
+}
+
 export interface SaveData {
   progress: number; // index of highest unlocked mission
   merits: number;
   gems?: number; // premium currency earned from battle victories & achievements
+  afkHarvest?: AfkHarvestData;
   upgrades: Upgrades;
   mods: Partial<Record<UnitType, ModId>>;
   ownedMods: ModId[];

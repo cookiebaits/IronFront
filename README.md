@@ -4,11 +4,17 @@
 
 **Iron Front: Tactics** is a feature-rich, high-performance turn-based tactical strategy game built with React 19, Vite, Tailwind CSS, and HTML5 Canvas, packaged for Android using Capacitor.
 
-Inspired by classic turn-based tactics games, *Iron Front: Tactics* features deep strategic combat across 25 story campaign missions, 10 officers with unique powers and ultimate abilities, 19 unit types across land, air, and naval branches, custom unit upgrade tracks, tactical skills, online multiplayer (PvP & Co-op), and dynamic performance tuning.
+Inspired by classic turn-based tactics games, *Iron Front: Tactics* features deep strategic combat across 32 campaign missions, 14 officers with unique powers and ultimate abilities, 19 unit types across land, air, and naval branches, an automated AFK Gold Harvesting system, rebalanced tactical economy, custom unit upgrade tracks, tactical skills, online multiplayer (PvP & Co-op), and dynamic performance tuning.
 
 ---
 
 ## 🌟 Key Features
+
+- **⛏️ Automated AFK Gold Harvesting System:**
+  - **Offline Gold Generation:** Automatically harvests gold continuously offline or online up to a strict **24-hour max storage cap** (86,400 seconds).
+  - **24-Hour Harvesting Pause:** If uncollected, harvesting safely pauses at the 24-hour capacity limit until claimed by the player.
+  - **Upgradable Mining Rigs:** Players can upgrade their Harvester across 5 tiers (from *Gold Drill Lv.1* at 500 Gold/hr up to *Quantum Harvester Lv.5* at 2,400 Gold/hr).
+  - **Rebalanced Tactical Economy:** Progression costs for unit upgrade tracks, officer unlocks, promotions, and workshop perks are rebalanced so 24 hours of AFK harvesting allows purchasing 1-2 upgrades, creating a rewarding and challenging progression curve.
 
 - **📱 Fully Responsive Dynamic Screen Scaling & Calibrated Touch Input:**
   - Auto-fits all phone display aspect ratios (including **Google Pixel 9**, 19.5:9 / 20:9 screens, tablets, and desktop displays).
@@ -17,13 +23,13 @@ Inspired by classic turn-based tactics games, *Iron Front: Tactics* features dee
   - **Ghost-Tap & Passthrough Prevention:** Opening safety buffer prevents synthetic touch/click passthroughs on modals (such as unit deployment or shop purchases).
   - **Calibrated Touch Sensitivity:** Fine-tuned touchscreen gesture threshold (14px) and double-tap detection window (280ms) for deliberate, mistake-free control.
 
-- **⚡ High Refresh Rate & Smooth Performance (P1):**
+- **⚡ High Refresh Rate & Smooth Performance:**
   - Buttery smooth rendering loop supporting **90Hz, 120Hz, 144Hz+** high refresh rate displays.
   - Full delta-time (`dtFactor`) game tick for frame-rate-independent physics, particle effects, floating damage text, and smooth camera panning.
   - Automatic hardware spec detection (CPU cores, estimated RAM, WebGL GPU tier) on startup, selecting the optimal graphics preset.
   - In-game **Graphics & Performance Settings** modal with configurable FPS targets (Uncapped 120Hz+, 120, 90, 60, 30), canvas resolution scale (DPR), particle density, and weather effects toggle.
 
-- **🎖️ Tank-Based App Icon (P3):**
+- **🎖️ Tank-Based App Icon:**
   - Stylized custom tank app icon featuring metallic armor, dual treads, star emblem, and long cannon barrel.
   - Provided in vector SVG (`public/icon.svg`), high-res PNG formats (`512x512`, `192x192`, `apple-touch-icon.png`), and auto-generated Android launcher mipmaps (`ic_launcher.png`, `ic_launcher_round.png`, `ic_launcher_foreground.png`).
 
