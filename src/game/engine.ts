@@ -141,46 +141,79 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
   atk += s.coRank[u.team] * 3; def += s.coRank[u.team] * 3;
   switch (co) {
     case 'rhea':
+      atk += 5;
+      if (pl !== 2 && d.cat === 'naval') def -= 10;
       if (pl === 1) { move += 1; atk += 10; }
       if (pl === 2) { move += 1; atk += 25; def += 15; }
       break;
     case 'dax':
       if (treads) atk += 20;
-      if (d.cat === 'infantry') atk -= 10;
+      if (pl !== 2 && d.cat === 'infantry') atk -= 10;
       if (pl >= 1 && treads) { move += 2; atk += pl === 1 ? 10 : 40; if (pl === 2) def += 20; }
       break;
     case 'sora':
       if (air) atk += 20;
-      if (d.cat === 'naval') atk -= 10;
+      if (pl !== 2 && d.cat === 'naval') atk -= 10;
       if (pl >= 1 && air) move += 2;
       if (pl === 2 && air) atk += 40;
       break;
     case 'mira':
       if (d.cat === 'naval') atk += 20;
+      if (pl !== 2 && air) atk -= 10;
       if (pl === 2 && d.cat === 'naval') move += 2;
       break;
     case 'brann':
-      if (indirect) atk += 15; else if (canAttackAny(u.type)) atk -= 10;
+      if (indirect) atk += 15;
+      if (pl !== 2 && !indirect && canAttackAny(u.type)) atk -= 10;
       if (pl >= 1 && indirect) { rmax += 1; if (pl === 1) atk += 15; }
+      break;
+    case 'kaelen':
+      if (air) { atk += 15; move += 1; }
+      if (pl !== 2 && d.cat === 'naval') def -= 10;
+      if (pl >= 1 && air) { move += 1; atk += 10; }
+      if (pl === 2) {
+        if (air) { move += 1; atk += 25; }
+        if (!air && d.cat !== 'naval') move += 1; // ground units +1 move
+      }
+      break;
+    case 'aria':
+      vision += 1;
+      if (pl !== 2 && !indirect && d.cat !== 'air' && d.cat !== 'naval' && canAttackAny(u.type)) atk -= 10; // direct units
+      if (pl === 2) atk += 25;
       break;
     case 'grimm':
       if (d.cat === 'infantry') atk += 20;
-      if (d.cat === 'vehicle' || d.cat === 'artillery') def -= 10;
+      if (pl !== 2 && (d.cat === 'vehicle' || d.cat === 'artillery')) def -= 10;
       if (pl >= 1 && d.cat === 'infantry') { move += 2; atk += pl === 1 ? 20 : 40; }
+      break;
+    case 'frost':
+      if (pl !== 2 && d.cat === 'vehicle') atk -= 10;
       break;
     case 'nyx':
       vision += 1;
       if (s.fog) atk += 10;
+      if (pl !== 2 && indirect) atk -= 10;
       if (pl === 1) { move += 1; atk += 20; }
       if (pl === 2) { move += 2; atk += 30; }
       break;
     case 'volkov':
       atk += 10; def += 10;
+      if (pl !== 2 && d.cat === 'air') { atk -= 10; def -= 10; }
       if (pl === 1) atk += 20;
       if (pl === 2) { atk += 40; def += 20; }
       break;
+    case 'zero':
+      if (indirect) { atk += 15; rmax += 1; }
+      if (pl !== 2 && !indirect && canAttackAny(u.type)) def -= 10;
+      if (pl >= 1 && indirect) { rmax += 1; atk += 15; }
+      break;
+    case 'seraphina':
+      if (pl !== 2) atk -= 10;
+      if (pl === 2) def += 30;
+      break;
     case 'architect':
       atk += 10; def += 10;
+      if (pl !== 2 && air) atk -= 10;
       if (pl === 2) { atk += 30; def += 30; }
       break;
   }
