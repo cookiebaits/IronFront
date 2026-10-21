@@ -121,7 +121,7 @@ export const MISSIONS: MissionDef[] = [
     ],
     units: [
       ['tank', 4, 2, 0], ['tank', 4, 5, 0], ['artillery', 2, 3, 0], ['artillery', 2, 6, 0], ['infantry', 3, 1, 0], ['infantry', 1, 4, 0], ['mech', 5, 4, 0], ['mech', 2, 2, 0], ['aa', 4, 7, 0], ['infantry', 2, 8, 0],
-      ['tank', 11, 1, 1], ['tank', 12, 4, 1], ['tank', 12, 6, 1], ['infantry', 10, 2, 1], ['infantry', 12, 7, 1], ['artillery', 9, 5, 1], ['recon', 11, 8, 1], ['mech', 9, 7, 1], ['infantry', 13, 2, 1],
+      ['tank', 11, 1, 1], ['tank', 12, 6, 1], ['infantry', 10, 2, 1], ['infantry', 12, 7, 1], ['artillery', 9, 5, 1], ['recon', 11, 8, 1], ['mech', 9, 7, 1], ['infantry', 13, 2, 1],
     ],
     funds: [4000, 3000], weather: 'snow', weatherPool: ['snow', 'snow', 'clear'], fog: false, unitCap: [12, 14],
     objective: { type: 'survive', days: 7 }, aiLevel: 1,

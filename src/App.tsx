@@ -178,6 +178,7 @@ export default function App() {
         s = levelUpCoFromStory(s, cfg.playerCo);
       }
     }
+
     s = awardPieces(s, { won: w, rank: score.rank, storyCo, targetCo });
     let place = -1;
     if (score.total > 0) {
