@@ -269,7 +269,7 @@ export const COS: Record<string, CODef> = {
     superName: 'Blitzkrieg', superDesc: 'Tread units +2 move, +40% attack, +20% defense.', powerCost: 50, superCost: 100 },
   sora: { id: 'sora', name: 'Sora Akai', title: 'Lieutenant', faction: 'azure', color: '#06b6d4', emoji: '✈️',
     bio: 'Prodigy pilot who never lost a dogfight. Cocky, brilliant, and fiercely loyal.',
-    d2d: 'Air units +20% attack, −10% cost. Mission Complete +1000 Gold.', powerName: 'Tailwind', powerDesc: 'Air units +2 move.',
+    d2d: 'Air units +20% attack, −10% cost. Naval −10% attack.', powerName: 'Tailwind', powerDesc: 'Air units +2 move.',
     superName: 'Sky Fury', superDesc: 'Air units +2 move, +40% attack, ignore weather.', powerCost: 45, superCost: 100 },
   mira: { id: 'mira', name: 'Mira Tull', title: 'Admiral', faction: 'azure', color: '#14b8a6', emoji: '⚓',
     bio: 'Veteran admiral who reads storms like maps. Calm as still water, deadly as a tide.',

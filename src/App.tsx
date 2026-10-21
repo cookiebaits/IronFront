@@ -179,11 +179,6 @@ export default function App() {
       }
     }
 
-    // Add Sora 1000 Gold bonus on win if Sora was played
-    if (w && cfg?.playerCo === 'sora') {
-      s.merits += 1000;
-    }
-
     s = awardPieces(s, { won: w, rank: score.rank, storyCo, targetCo });
     let place = -1;
     if (score.total > 0) {
