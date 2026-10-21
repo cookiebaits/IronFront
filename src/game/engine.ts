@@ -151,7 +151,6 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
       break;
     case 'sora':
       if (air) atk += 20;
-      if (d.cat === 'naval') atk -= 10;
       if (pl >= 1 && air) move += 2;
       if (pl === 2 && air) atk += 40;
       break;
