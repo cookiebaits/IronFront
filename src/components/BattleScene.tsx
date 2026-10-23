@@ -13,8 +13,7 @@ interface Props {
 }
 
 const RAPID: UnitType[] = ['infantry', 'aa', 'recon', 'drone', 'gundrone'];
-const BIG: UnitType[] = ['battleship', 'cruiser', 'sub', 'bomber', 'fighter'];
-const count = (t: UnitType, hp: number) => (hp <= 0 ? 0 : BIG.includes(t) ? Math.ceil(hp / 34) : Math.ceil(hp / 20));
+const count = (hp: number) => (hp <= 0 ? 0 : Math.ceil(hp / 20));
 const SLOTS = [[0.58, 0.02], [0.34, 0.08], [0.8, 0.12], [0.48, 0.2], [0.22, 0.24]];
 
 interface P { x: number; y: number; vx: number; vy: number; life: number; max: number; c: string; s: number; g: number }
@@ -42,7 +41,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
     const parts: P[] = [];
     let shake = 0;
     const fired = { a: false, b: false, h1: false, h2: false };
-    const alive = { L: count(r.aType, r.aBefore), R: count(r.dType, r.dBefore) };
+    const alive = { L: count(r.aBefore), R: count(r.dBefore) };
     const PW = W / 2;
     const us = Math.min(H * 0.26, PW * 0.19);
     const groundY = H * 0.62;
@@ -75,7 +74,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
       if (!fired.h1 && e >= T.hit1) { fired.h1 = true; shake = 10; sfx.hit(); }
       if (hasCounter && !fired.b && e >= T.fire2) { fired.b = true; (RAPID.includes(r.dType) ? sfx.gun : sfx.shot)(); }
       if (hasCounter && !fired.h2 && e >= T.hit2) { fired.h2 = true; shake = 8; sfx.hit(); }
-      const nL = count(r.aType, aHp), nR = count(r.dType, dHp);
+      const nL = count(aHp), nR = count(dHp);
       while (alive.R > nR) { alive.R--; const p = slotPos(1, alive.R, r.dType); explode(p.x, p.y - us * 0.2, 26); shake = 14; sfx.boom(); }
       while (alive.L > nL) { alive.L--; const p = slotPos(0, alive.L, r.aType); explode(p.x, p.y - us * 0.2, 26); shake = 14; sfx.boom(); }
 
@@ -158,8 +157,8 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
           if (prog > 0.92) explode(tx + (Math.random() - 0.5) * 20, ty, 4);
         }
       };
-      shots(0, count(r.aType, r.aBefore), r.aType, r.dType, Math.max(1, alive.R), T.fire1, T.hit1, r.indirect);
-      if (hasCounter) shots(1, count(r.dType, r.dAfter), r.dType, r.aType, Math.max(1, alive.L), T.fire2, T.hit2, false);
+      shots(0, count(r.aBefore), r.aType, r.dType, Math.max(1, alive.R), T.fire1, T.hit1, r.indirect);
+      if (hasCounter) shots(1, count(r.dAfter), r.dType, r.aType, Math.max(1, alive.L), T.fire2, T.hit2, false);
       // particles
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i];

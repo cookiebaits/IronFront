@@ -537,6 +537,17 @@ export function evaluateAdaptiveTrigger(s: GameState, event?: 'bossPhaseBreak' |
     if (s.mission.adaptiveObjective) {
       s.mission.objective = s.mission.adaptiveObjective;
     }
+    if (tr.reinforcements) {
+      for (const [type, x, y, team] of tr.reinforcements) {
+        s.units.push({
+          id: s.nextId++, type, team, x, y, hp: 100, moved: true, cargo: null, capturing: false, vet: 0, facing: 1, fuel: UNITS[type].fuel, landed: UNITS[type].cat === 'air', isAlly: team === 0 && (s.allyCo ? true : false)
+        });
+      }
+    }
+    if (tr.fundsBonus) {
+      s.funds[0] += tr.fundsBonus[0] ?? 0;
+      s.funds[1] += tr.fundsBonus[1] ?? 0;
+    }
     return s.mission.adaptiveDialogue ?? null;
   }
   return null;

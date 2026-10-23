@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations', 'Act XV — Allied Vanguard', 'Act XVI — Dual Front', 'Act XVII — Sovereign Alliance'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations', 'Act XV — Allied Vanguard', 'Act XVI — Dual Front', 'Act XVII — Sovereign Alliance', 'Act XVIII — Desperate Measures', 'Act XIX — United Front', 'Act XX — The Omega Clash'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -671,6 +671,82 @@ export const MISSIONS: MissionDef[] = [
       { who: 'narrator', text: 'VICTORY! The Sovereign Alliance has defeated the final war machine. Total peace reigns across the entire frontier.' },
     ],
   },
+  {
+    id: 'm35', name: 'Desperate Measures', act: 18, par: 12, cos: ['dax', 'sora', 'mira', 'brann', 'rhea'], enemyCo: 'zero', enemyCo2: 'volkov',
+    map: sym(['mmmff..', 'mH=c...', 'fB==~.#', '..f=~.c', '.A.====', 'f..c~f.', 'm..f~..', '.c.=#..', 'mmm.f..']),
+    units: mir(14, [['infantry', 3, 1], ['mech', 4, 3], ['tank', 3, 5]], [['heavy', 9, 2], ['artillery', 10, 4], ['rockets', 11, 6], ['tank', 11, 2], ['tank', 9, 7], ['aa', 10, 1]]),
+    funds: [2000, 6000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: false, unitCap: [15, 20], objective: { type: 'survive', days: 5 },
+    adaptiveTrigger: { day: 5, reinforcements: [['heavy', 2, 2, 0], ['heavy', 2, 6, 0], ['rockets', 1, 4, 0], ['bomber', 0, 3, 0]], fundsBonus: [10000, 0] }, adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'rhea', text: 'Hold the line! Republic reinforcements have arrived!' },
+      { who: 'dax', text: 'Heavy armor and air support on site. Time to push back!' },
+      { who: 'volkov', text: 'They brought reserves! Do not let them turn the tide!' },
+    ],
+    aiLevel: 3,
+    hint: 'Survive the massive onslaught until Day 5 when powerful reinforcements arrive, then wipe out the enemy!',
+    briefing: [
+      { who: 'narrator', text: 'The Crimson Dominion launches a surprise overwhelming assault on a border outpost.' },
+      { who: 'volkov', text: 'Your outpost is surrounded. Surrender immediately.' },
+      { who: 'zero', text: 'Targeting locked on all escape routes.' },
+      { who: 'rhea', text: 'We are severely outgunned. Fall back to defensive positions and hold out for reinforcements!' },
+    ],
+    outro: [
+      { who: 'volkov', text: 'A tactical withdrawal is necessary. Their reinforcements were too strong.' },
+      { who: 'rhea', text: 'We held them off. But this is just the beginning of their new offensive.' },
+    ],
+  },
+  {
+    id: 'm36', name: 'United Front', act: 19, par: 14, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', enemyCo2: 'frost', allyCo: 'brann', recommendedRank: 4, recommendedUpgrades: 12,
+    map: sym(['mm.ff...', 'mH=c...m', 'fB==c...', '..f=..m.', '.A.====.', 'f..f..t.', 'm.c...f.', '..c.=...', 'mm..f...']),
+    units: mir(16, [
+      ['tank', 4, 1], ['mech', 5, 2], ['artillery', 2, 4], ['infantry', 4, 3], ['aa', 2, 7],
+    ], [['heavy', 12, 3], ['artillery', 13, 6], ['rockets', 11, 7], ['tank', 11, 2], ['mech', 13, 4]]),
+    funds: [8000, 12000], weather: 'snow', weatherPool: ['snow', 'rain', 'clear'], fog: false, unitCap: [20, 24], objective: { type: 'hq' },
+    aiLevel: 3,
+    hint: 'Colonel Brann fights alongside you! Use his artillery cover to advance against Nyx and Frost.',
+    briefing: [
+      { who: 'narrator', text: 'A coordinated strike deep into Dominion territory. Colonel Brann provides artillery support.' },
+      { who: 'brann', text: 'My guns are sighted and ready. Let\'s show them the power of Republic artillery.' },
+      { who: 'nyx', text: 'Shadows hide us, cold slows you. A foolish advance.' },
+      { who: 'frost', text: 'The snow will bury your combined forces.' },
+      { who: 'rhea', text: 'Use the cover of Brann\'s bombardment to secure their HQ.' },
+    ],
+    outro: [
+      { who: 'brann', text: 'Target area secured. Beautiful coordination, Commander.' },
+      { who: 'nyx', text: 'We fall back to the Omega Facility...' },
+    ],
+  },
+  {
+    id: 'm37', name: 'The Omega Clash', act: 20, par: 20, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'volkov', allyCo: 'sora', recommendedRank: 5, recommendedUpgrades: 15,
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=t.', 'wwsfA.=.', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [
+      ['battleship', 0, 5], ['cruiser', 1, 7], ['tank', 5, 2], ['heavy', 4, 4], ['rockets', 2, 8],
+    ], [['heavy', 11, 4], ['bomber', 12, 3], ['battleship', 15, 7], ['rockets', 13, 6], ['fighter', 14, 2]]),
+    boss: { x: 11, y: 4, team: 1, type: 'heavy', name: 'OMEGA CONSTRUCT', hp: 100, phases: 6 },
+    funds: [10000, 18000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [24, 30], objective: { type: 'hq' },
+    adaptiveTrigger: { bossPhaseBreak: true, reinforcements: [['bomber', 2, 3, 0], ['fighter', 2, 4, 0], ['fighter', 1, 2, 0], ['bcopter', 1, 6, 0]], fundsBonus: [15000, 0] },
+    adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'architect', text: 'OMEGA SHIELD DAMAGED. REROUTING ALL POWER TO OFFENSIVE CAPABILITIES.' },
+      { who: 'sora', text: 'I\'m bringing the full Air Wing, Commander! Clear the skies!' },
+      { who: 'volkov', text: 'No matter how many planes you bring, the Iron General stands!' },
+    ],
+    aiLevel: 3,
+    hint: 'Ultimate 2v2 Showdown! Break a boss phase to trigger massive air reinforcements from Sora, then rout the enemy!',
+    briefing: [
+      { who: 'narrator', text: 'The Omega Facility. The final stronghold of the rebuilt war machine network.' },
+      { who: 'sora', text: 'I\'m flying cover, but they have heavy anti-air. I\'ll bring the heavy bombers once you crack their main shield!' },
+      { who: 'architect', text: 'OMEGA CONSTRUCT ONLINE. PREPARE FOR ANNIHILATION.' },
+      { who: 'volkov', text: 'I will personally see to your destruction.' },
+      { who: 'rhea', text: 'This is it. Break their construct, call in Sora\'s reinforcements, and end this!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'OMEGA CONSTRUCT DESTROYED... SYSTEM FAILURE...' },
+      { who: 'volkov', text: 'Impossible... the combined might of the Republic... defeated us.' },
+      { who: 'rhea', text: 'The facility is secure. The frontier is finally safe.' },
+      { who: 'narrator', text: 'Total Victory! You have conquered the most desperate battles.' },
+    ],
+  },
 ];
 
 /** First-clear skill rewards — the story hands you new tactical skills as you progress. */
@@ -682,6 +758,7 @@ export const REWARDS: Record<string, string> = {
   m20: 'airstrike', m21: 'stealth', m22: 'overdrive', m23: 'nanite', m24: 'orbital',
   m25: 'airstrike', m26: 'emp', m27: 'orbital', m28: 'nanite', m29: 'meteor',
   m30: 'whiteout', m31: 'tempest', m32: 'orbital', m33: 'overdrive', m34: 'meteor',
+  m35: 'aegis', m36: 'strike', m37: 'orbital',
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
@@ -720,6 +797,9 @@ export const ACT_INTROS = [
   'Allied Vanguard: Major Dax joins your battalion on the battlefield against General Volkov and Baron Frost.',
   'Dual Front: Lieutenant Sora flies air support alongside your ground forces against the Architect and Siege Director Zero.',
   'Sovereign Alliance: Admiral Mira commands the naval armada alongside your combined forces in the ultimate confrontation.',
+  'Desperate Measures: Survive a massive ambush until reinforcements arrive to turn the tide.',
+  'United Front: Colonel Brann brings heavy artillery support as your AI ally in a joint assault.',
+  'The Omega Clash: The ultimate showdown. Break the boss shield to trigger massive air reinforcements from Sora.',
 ];
 
 /** Pre-deployed army value used by the hidden title-screen mission audit mode. */
