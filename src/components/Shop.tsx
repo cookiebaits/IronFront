@@ -188,7 +188,7 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                   const r = save.coRank[id] ?? 0;
                   return (
                     <button key={id} onClick={() => { sfx.cursor(); setSelCo(id); }}
-                      className={`shrink-0 w-16 flex flex-col items-center rounded-xl p-1 border-2 transition ${selCo === id ? 'border-amber-400 scale-105' : 'border-transparent'} ${own ? '' : 'opacity-60 grayscale'}`}>
+                      className={`shrink-0 w-[72px] flex flex-col items-center rounded-xl p-1 border-2 transition ${selCo === id ? 'border-amber-400 scale-105' : 'border-transparent'} ${own ? '' : 'opacity-60 grayscale'}`}>
                       <Portrait id={id} size={58} />
                       <div className="text-[10px] w-full font-bold text-center text-slate-200 mt-0.5 truncate">{COS[id].name.split(' ')[0]}</div>
                       <div className="text-[9px] w-full text-center text-amber-300 h-3 truncate">{own ? '★'.repeat(r) || '·' : <span className={piecesHave(save, id) >= (CO_PIECES[id] ?? 0) ? 'text-emerald-300' : 'text-fuchsia-300'}>🧩{piecesHave(save, id)}/{CO_PIECES[id]}</span>}</div>
@@ -197,13 +197,13 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                 })}
               </div>
 
-              <div className="hud-panel p-3 mt-1" style={{ borderColor: co.color }}>
-                <div className="flex gap-3">
-                  <Portrait id={selCo} size={92} />
+              <div className="hud-panel p-3 mt-1 min-w-0 overflow-hidden" style={{ borderColor: co.color }}>
+                <div className="flex gap-3 min-w-0">
+                  <Portrait id={selCo} size={92} className="shrink-0" />
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] font-black tracking-widest" style={{ color: co.color }}>{co.faction === 'azure' ? 'AZURE REPUBLIC' : 'CRIMSON DOMINION'} · {co.title.toUpperCase()}</div>
                     <div className="text-xl font-black text-white leading-tight">{co.name}</div>
-                    <div className="text-[11px] text-slate-300">{co.d2d}</div>
+                    <div className="text-[11px] text-slate-300 leading-snug">{co.d2d}</div>
                     <div className="text-[11px] mt-1"><span className="text-fuchsia-300 font-bold">✦ {co.superName}</span> <span className="text-slate-500">(Ultimate charge {ultimateCost(co.id)})</span></div>
                     <button className="text-[11px] text-sky-300 underline font-bold mt-0.5" onClick={() => setInfo(selCo)}>ⓘ Full power details</button>
                   </div>
@@ -279,30 +279,30 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                   </div>
                 ) : (
                   <>
-                    <div className="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-2">
-                      <div className="flex justify-between items-center">
-                        <div>
+                    <div className="mt-3 rounded-lg bg-slate-900/80 border border-slate-700 p-2 min-w-0">
+                      <div className="flex justify-between items-center gap-2">
+                        <div className="min-w-0 flex-1">
                           <div className="text-[10px] font-black text-slate-400 tracking-widest">RANK</div>
-                          <div className="font-black text-amber-300">{'★'.repeat(rank)}{'☆'.repeat(RANK_MAX - rank)} {RANK_NAMES[rank]}</div>
+                          <div className="font-black text-amber-300 truncate">{'★'.repeat(rank)}{'☆'.repeat(RANK_MAX - rank)} {RANK_NAMES[rank]}</div>
                         </div>
                         {rank < RANK_MAX ? (
-                          <button className={`menu-btn h-11 text-sm ${save.merits >= RANK_PRICE[rank] ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`} onClick={rankUp}>Promote · 🪙 {RANK_PRICE[rank]}</button>
-                        ) : <div className="text-emerald-300 font-black text-sm">MAX RANK</div>}
+                          <button className={`menu-btn h-11 text-sm shrink-0 ${save.merits >= RANK_PRICE[rank] ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`} onClick={rankUp}>Promote · 🪙 {RANK_PRICE[rank]}</button>
+                        ) : <div className="text-emerald-300 font-black text-sm shrink-0">MAX RANK</div>}
                       </div>
-                      <div className="text-[11px] text-slate-300 mt-1">Now: {rankDesc(rank)}</div>
-                      {rank < RANK_MAX && <div className="text-[11px] text-emerald-300">Next: {rankDesc(rank + 1)}</div>}
+                      <div className="text-[11px] text-slate-300 mt-1 leading-snug">Now: {rankDesc(rank)}</div>
+                      {rank < RANK_MAX && <div className="text-[11px] text-emerald-300 leading-snug">Next: {rankDesc(rank + 1)}</div>}
                     </div>
 
-                    <div className="mt-3">
+                    <div className="mt-3 min-w-0">
                       <div className="text-[10px] font-black text-emerald-300 tracking-widest mb-1">🎴 SKILL SLOTS ({slots}) · tap a slot to equip</div>
-                      <div className="grid gap-1.5">
+                      <div className="grid gap-1.5 min-w-0">
                         {Array.from({ length: slots }).map((_, i) => {
                           const sk = loadout[i] ? SKILLS[loadout[i]] : null;
                           return (
-                            <button key={i} onClick={() => { sfx.menu(); setSlotPick(i); }} className="flex items-center gap-2 p-2 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 text-left active:scale-[0.99]">
-                              <div className="text-2xl w-8 text-center">{sk ? sk.icon : '＋'}</div>
+                            <button key={i} onClick={() => { sfx.menu(); setSlotPick(i); }} className="flex items-center gap-2 p-2 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 text-left active:scale-[0.99] w-full min-w-0 overflow-hidden">
+                              <div className="text-2xl w-8 text-center shrink-0">{sk ? sk.icon : '＋'}</div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-sm font-black text-white">{sk ? sk.name : 'Empty slot'}</div>
+                                <div className="text-sm font-black text-white truncate">{sk ? sk.name : 'Empty slot'}</div>
                                 <div className="text-[11px] text-slate-400 truncate">{sk ? `${sk.kind} · Charge ${sk.cost} · ${sk.desc}` : 'Equip a skill you own'}</div>
                               </div>
                             </button>
