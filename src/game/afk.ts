@@ -13,15 +13,15 @@ export interface HarvesterLevelDef {
   desc: string;
 }
 
-export const MAX_HARVEST_HOURS = 24;
+export const MAX_HARVEST_HOURS = 21.6;
 export const MAX_HARVEST_SECONDS = MAX_HARVEST_HOURS * 3600;
 
 export const HARVESTER_LEVELS: HarvesterLevelDef[] = [
-  { level: 1, name: 'Gold Drill Lv.1', ratePerHour: 500, upgradeCost: 0, desc: 'Standard gold harvesting rig. Produces 500 Gold/hr (Max 12,000 Gold / 24h).' },
-  { level: 2, name: 'Gold Excavator Lv.2', ratePerHour: 800, upgradeCost: 8000, desc: 'Enhanced hydraulic drill array. Produces 800 Gold/hr (Max 19,200 Gold / 24h).' },
-  { level: 3, name: 'Deep Core Miner Lv.3', ratePerHour: 1200, upgradeCost: 16000, desc: 'Heavy magma core extractor. Produces 1,200 Gold/hr (Max 28,800 Gold / 24h).' },
-  { level: 4, name: 'Automated Foundry Lv.4', ratePerHour: 1700, upgradeCost: 28000, desc: 'Automated refining plant. Produces 1,700 Gold/hr (Max 40,800 Gold / 24h).' },
-  { level: 5, name: 'Quantum Harvester Lv.5', ratePerHour: 2400, upgradeCost: 45000, desc: 'Orbital energy collector. Produces 2,400 Gold/hr (Max 57,600 Gold / 24h).' },
+  { level: 1, name: 'Gold Drill Lv.1', ratePerHour: 500, upgradeCost: 0, desc: 'Standard gold harvesting rig. Produces 500 Gold/hr (Max 10,800 Gold / 21.6h).' },
+  { level: 2, name: 'Gold Excavator Lv.2', ratePerHour: 800, upgradeCost: 8000, desc: 'Enhanced hydraulic drill array. Produces 800 Gold/hr (Max 17,280 Gold / 21.6h).' },
+  { level: 3, name: 'Deep Core Miner Lv.3', ratePerHour: 1200, upgradeCost: 16000, desc: 'Heavy magma core extractor. Produces 1,200 Gold/hr (Max 25,920 Gold / 21.6h).' },
+  { level: 4, name: 'Automated Foundry Lv.4', ratePerHour: 1700, upgradeCost: 28000, desc: 'Automated refining plant. Produces 1,700 Gold/hr (Max 36,720 Gold / 21.6h).' },
+  { level: 5, name: 'Quantum Harvester Lv.5', ratePerHour: 2400, upgradeCost: 45000, desc: 'Orbital energy collector. Produces 2,400 Gold/hr (Max 51,840 Gold / 21.6h).' },
 ];
 
 export function getHarvesterLevel(level: number): HarvesterLevelDef {
