@@ -188,10 +188,10 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                   const r = save.coRank[id] ?? 0;
                   return (
                     <button key={id} onClick={() => { sfx.cursor(); setSelCo(id); }}
-                      className={`shrink-0 rounded-xl p-1 border-2 transition ${selCo === id ? 'border-amber-400 scale-105' : 'border-transparent'} ${own ? '' : 'opacity-60 grayscale'}`}>
+                      className={`shrink-0 w-16 flex flex-col items-center rounded-xl p-1 border-2 transition ${selCo === id ? 'border-amber-400 scale-105' : 'border-transparent'} ${own ? '' : 'opacity-60 grayscale'}`}>
                       <Portrait id={id} size={58} />
-                      <div className="text-[10px] font-bold text-center text-slate-200 mt-0.5">{COS[id].name.split(' ')[0]}</div>
-                      <div className="text-[9px] text-center text-amber-300 h-3">{own ? '★'.repeat(r) || '·' : <span className={piecesHave(save, id) >= (CO_PIECES[id] ?? 0) ? 'text-emerald-300' : 'text-fuchsia-300'}>🧩{piecesHave(save, id)}/{CO_PIECES[id]}</span>}</div>
+                      <div className="text-[10px] w-full font-bold text-center text-slate-200 mt-0.5 truncate">{COS[id].name.split(' ')[0]}</div>
+                      <div className="text-[9px] w-full text-center text-amber-300 h-3 truncate">{own ? '★'.repeat(r) || '·' : <span className={piecesHave(save, id) >= (CO_PIECES[id] ?? 0) ? 'text-emerald-300' : 'text-fuchsia-300'}>🧩{piecesHave(save, id)}/{CO_PIECES[id]}</span>}</div>
                     </button>
                   );
                 })}
