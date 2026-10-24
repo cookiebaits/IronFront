@@ -346,10 +346,10 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
   };
 
   const missionChoices = MISSIONS.map((m, i) => ({ m, i })).filter(({ m, i }) => i > 0 && i <= Math.max(1, save.progress) && !m.tutorial);
-  const selectCO = (id: string) => { setHostCo(id); setGuestReady(false); setLocalReady(false); sfx.cursor(); sendLobby(); };
+  const selectCO = (id: string) => { setHostCo(id); setGuestReady(false); setLocalReady(false); sfx.cursor(); stateRef.current.hostCo = id; sendLobby(); };
   const selectGuestCO = (id: string) => { setGuestCo(id); setLocalReady(false); sfx.cursor(); };
-  const selectMode = (next: OnlineMode) => { setMode(next); setGuestReady(false); setLocalReady(false); sfx.select(); sendLobby(); };
-  const selectMission = (next: number) => { setMissionIndex(next); setGuestReady(false); setLocalReady(false); sendLobby(); };
+  const selectMode = (next: OnlineMode) => { setMode(next); setGuestReady(false); setLocalReady(false); sfx.select(); stateRef.current.mode = next; sendLobby(); };
+  const selectMission = (next: number) => { setMissionIndex(next); setGuestReady(false); setLocalReady(false); stateRef.current.missionIndex = next; sendLobby(); };
   const gamePlayerCo = match ? match.hostCo : hostCo;
   const gameEnemyCo = match ? (match.mode === 'pvp' ? match.guestCo : match.mission.enemyCo) : 'rhea';
 
@@ -479,7 +479,7 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
                       <div className="text-xs font-black text-slate-300 mb-2">MAP SELECTION</div>
                       <div className="flex flex-wrap gap-2">
                         {PVP_MAPS.map((m, i) => (
-                          <button key={i} onClick={() => { setPvpMapIndex(i); setGuestReady(false); setLocalReady(false); sendLobby(); sfx.select(); }} className={`px-2 py-1 rounded font-black text-[10px] border transition ${pvpMapIndex === i ? 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_10px_#06b6d4]' : 'bg-slate-800 text-slate-400 border-slate-600'}`}>{m.name}</button>
+                          <button key={i} onClick={() => { setPvpMapIndex(i); setGuestReady(false); setLocalReady(false); stateRef.current.pvpMapIndex = i; sendLobby(); sfx.select(); }} className={`px-2 py-1 rounded font-black text-[10px] border transition ${pvpMapIndex === i ? 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_10px_#06b6d4]' : 'bg-slate-800 text-slate-400 border-slate-600'}`}>{m.name}</button>
                         ))}
                       </div>
                       <div className="text-[10px] text-slate-400 mt-2">{PVP_MAPS[pvpMapIndex].hint}</div>

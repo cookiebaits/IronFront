@@ -540,7 +540,7 @@ export function evaluateAdaptiveTrigger(s: GameState, event?: 'bossPhaseBreak' |
     if (tr.reinforcements) {
       for (const [type, x, y, team] of tr.reinforcements) {
         s.units.push({
-          id: s.nextId++, type, team, x, y, hp: 100, moved: true, cargo: null, capturing: false, vet: 0, facing: 1, fuel: UNITS[type].fuel, landed: UNITS[type].cat === 'air', isAlly: team === 0 && (s.allyCo ? true : false)
+          id: s.nextId++, type, team, x, y, hp: 100, moved: true, cargo: null, capturing: false, vet: 0, facing: 1, fuel: UNITS[type].fuel, landed: false, isAlly: team === 0 && (s.allyCo ? true : false)
         });
       }
     }
