@@ -102,12 +102,13 @@ export const isRefuelSite = (s: GameState, team: Team, x: number, y: number) => 
 export const isIndirect = (t: UnitType) => !!UNITS[t].indirect;
 export const canAttackType = (a: UnitType, d: UnitType, dUnit?: Unit | null) => {
   const base = UNITS[a].dmg[UNITS[d].armor] ?? 0;
-  if (base > 0) return true;
+  if (base > 0 && !dUnit?.landed) return true;
+  if (base > 0 && dUnit?.landed && isAir(a)) return true; // Air units can hit landed air units if they normally can
   if (dUnit?.landed) {
     const landedBase = UNITS[a].dmg['LIGHT'] ?? UNITS[a].dmg['INF'] ?? UNITS[a].dmg['HELI'] ?? 0;
     return landedBase > 0;
   }
-  return false;
+  return base > 0;
 };
 export const canAttackAny = (a: UnitType) => Object.keys(UNITS[a].dmg).length > 0;
 export const unitCount = (s: GameState, team: Team) =>
