@@ -91,7 +91,7 @@ export interface AdaptiveTrigger {
   bossPhaseBreak?: boolean;
   enemyCountBelow?: number;
   hqCaptured?: boolean;
-  reinforcements?: [UnitType, number, number, Team][];
+  reinforcements?: [UnitType, number, number, Team, boolean?][];
   fundsBonus?: [number, number];
 }
 

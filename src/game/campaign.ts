@@ -558,7 +558,7 @@ export const MISSIONS: MissionDef[] = [
   },
   {
     id: 'm30', name: 'Stratosphere Supremacy', act: 14, par: 14, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen', forcedCo: 'sora', recommendedRank: 4, recommendedUpgrades: 12,
-    map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
     units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]], [['bomber', 13, 5], ['drone', 14, 2]]),
     funds: [8000, 10000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow'], fog: false, unitCap: [16, 18], objective: { type: 'rout' }, aiLevel: 3,
     hint: 'Air-only battle! Control the skyways with fighters and bombers. Refuel at captured airports.',
@@ -724,7 +724,7 @@ export const MISSIONS: MissionDef[] = [
     ], [['heavy', 11, 4], ['bomber', 12, 3], ['battleship', 15, 7], ['rockets', 13, 6], ['fighter', 14, 2]]),
     boss: { x: 11, y: 4, team: 1, type: 'heavy', name: 'OMEGA CONSTRUCT', hp: 100, phases: 6 },
     funds: [10000, 18000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [24, 30], objective: { type: 'hq' },
-    adaptiveTrigger: { bossPhaseBreak: true, reinforcements: [['bomber', 2, 3, 0], ['fighter', 2, 4, 0], ['fighter', 1, 2, 0], ['bcopter', 1, 6, 0]], fundsBonus: [15000, 0] },
+    adaptiveTrigger: { day: 5, reinforcements: [['bomber', 2, 3, 0, true], ['fighter', 2, 4, 0, true], ['fighter', 1, 2, 0, true], ['bcopter', 1, 6, 0, true]], fundsBonus: [15000, 0] },
     adaptiveObjective: { type: 'rout' },
     adaptiveDialogue: [
       { who: 'architect', text: 'OMEGA SHIELD DAMAGED. REROUTING ALL POWER TO OFFENSIVE CAPABILITIES.' },
@@ -749,598 +749,635 @@ export const MISSIONS: MissionDef[] = [
   },
 
   {
-    id: 'm38', name: 'Mission 38', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', enemyCo2: 'volkov', allyCo: 'dax',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['artillery', 2, 5]], [['heavy', 11, 4], ['rockets', 12, 6], ['tank', 10, 2]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    id: 'm38', name: 'Mission 38', act: 20, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', allyCo: 'mira',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [11800, 13700], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "A rogue faction of the Crimson Dominion is attempting to seize the northern factories." },
+      { who: 'mira', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'nyx', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'nyx', text: 'Impossible... we have been defeated.' },
+      { who: 'mira', text: 'Sector 38 secured. Good work.' }
     ],
   },
   {
-    id: 'm39', name: 'Mission 39', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', enemyCo2: 'volkov', allyCo: 'dax',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['artillery', 2, 5]], [['heavy', 11, 4], ['rockets', 12, 6], ['tank', 10, 2]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm40', name: 'Mission 40', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', enemyCo2: 'volkov', allyCo: 'dax',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['artillery', 2, 5]], [['heavy', 11, 4], ['rockets', 12, 6], ['tank', 10, 2]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm41', name: 'Mission 41', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', allyCo: 'mira',
+    id: 'm39', name: 'Mission 39', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['sub', 2, 8]], [['battleship', 15, 6], ['cruiser', 14, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [11900, 13850], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "Intel suggests Baron Frost is moving heavy armor through this pass. Intercept them." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'volkov', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'volkov', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 39 secured. Good work.' }
     ],
   },
   {
-    id: 'm42', name: 'Mission 42', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', allyCo: 'mira',
+    id: 'm40', name: 'Mission 40', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', allyCo: 'rhea',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12000, 14000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The Architect's signal is bouncing through these ancient comm towers. Secure them." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'zero', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'zero', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 40 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm41', name: 'Mission 41', act: 21, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12100, 14150], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "Siege Director Zero has established a perimeter. We must break it before they dig in." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'seraphina', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'seraphina', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 41 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm42', name: 'Mission 42', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'sora',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['sub', 2, 8]], [['battleship', 15, 6], ['cruiser', 14, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12200, 14300], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "Local resistance fighters are pinned down. Move in and clear the Dominion forces." },
+      { who: 'sora', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'architect', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'architect', text: 'Impossible... we have been defeated.' },
+      { who: 'sora', text: 'Sector 42 secured. Good work.' }
     ],
   },
   {
-    id: 'm43', name: 'Mission 43', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', allyCo: 'mira',
+    id: 'm43', name: 'Mission 43', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12300, 14450], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A massive sandstorm is moving in. We must secure the oasis before visibility drops." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'aria', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'aria', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 43 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm44', name: 'Mission 44', act: 22, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'brann',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12400, 14600], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "Medic General Seraphina is testing a new nanite strain here. Shut down the operation." },
+      { who: 'brann', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'kaelen', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'kaelen', text: 'Impossible... we have been defeated.' },
+      { who: 'brann', text: 'Sector 44 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm45', name: 'Mission 45', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['cruiser', 1, 7], ['sub', 2, 8]], [['battleship', 15, 6], ['cruiser', 14, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12500, 14750], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "Flight Captain Kaelen is running drills. Show them what a real dogfight looks like." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'grimm', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'grimm', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 45 secured. Good work.' }
     ],
   },
   {
-    id: 'm44', name: 'Mission 44', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero',
+    id: 'm46', name: 'Mission 46', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost', allyCo: 'dax',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12600, 14900], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The frozen river provides a rare crossing opportunity. Secure the bridgehead." },
+      { who: 'dax', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'frost', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'frost', text: 'Impossible... we have been defeated.' },
+      { who: 'dax', text: 'Sector 46 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm47', name: 'Mission 47', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx',
     map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['mech', 3, 1], ['tank', 4, 4], ['artillery', 2, 5]], [['rockets', 12, 6], ['artillery', 11, 2]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12700, 15050], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "A convoy of experimental Dominion weaponry is passing through. Do not let it escape." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'nyx', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'nyx', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 47 secured. Good work.' }
     ],
   },
   {
-    id: 'm45', name: 'Mission 45', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['mech', 3, 1], ['tank', 4, 4], ['artillery', 2, 5]], [['rockets', 12, 6], ['artillery', 11, 2]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm46', name: 'Mission 46', act: 23, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['mech', 3, 1], ['tank', 4, 4], ['artillery', 2, 5]], [['rockets', 12, 6], ['artillery', 11, 2]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm47', name: 'Mission 47', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'sora',
-    map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3]], [['fighter', 13, 2], ['bomber', 14, 5]]),
-    funds: [6000, 6000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm48', name: 'Mission 48', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'sora',
-    map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3]], [['fighter', 13, 2], ['bomber', 14, 5]]),
-    funds: [6000, 6000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm49', name: 'Mission 49', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'sora',
-    map: sym(['mmmf..A.', 'mZ=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3]], [['fighter', 13, 2], ['bomber', 14, 5]]),
-    funds: [6000, 6000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm50', name: 'Mission 50', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'frost',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['tank', 3, 1], ['heavy', 4, 4]], [['heavy', 11, 3], ['mech', 12, 5]]),
-    funds: [6000, 6000], weather: 'snow', weatherPool: ['snow'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm51', name: 'Mission 51', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'frost',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['tank', 3, 1], ['heavy', 4, 4]], [['heavy', 11, 3], ['mech', 12, 5]]),
-    funds: [6000, 6000], weather: 'snow', weatherPool: ['snow'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm52', name: 'Mission 52', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'frost',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['tank', 3, 1], ['heavy', 4, 4]], [['heavy', 11, 3], ['mech', 12, 5]]),
-    funds: [6000, 6000], weather: 'snow', weatherPool: ['snow'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm53', name: 'Mission 53', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['recon', 4, 2], ['drone', 5, 5]], [['gundrone', 12, 4], ['drone', 11, 6]]),
-    funds: [6000, 6000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm54', name: 'Mission 54', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['recon', 4, 2], ['drone', 5, 5]], [['gundrone', 12, 4], ['drone', 11, 6]]),
-    funds: [6000, 6000], weather: 'rain', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm55', name: 'Mission 55', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['recon', 4, 2], ['drone', 5, 5]], [['gundrone', 12, 4], ['drone', 11, 6]]),
-    funds: [6000, 6000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm56', name: 'Mission 56', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', enemyCo2: 'zero',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['recon', 2, 2], ['tank', 4, 4], ['artillery', 3, 5]], [['rockets', 13, 7], ['heavy', 11, 3]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm57', name: 'Mission 57', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', enemyCo2: 'zero',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['recon', 2, 2], ['tank', 4, 4], ['artillery', 3, 5]], [['rockets', 13, 7], ['heavy', 11, 3]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm58', name: 'Mission 58', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', enemyCo2: 'zero',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['recon', 2, 2], ['tank', 4, 4], ['artillery', 3, 5]], [['rockets', 13, 7], ['heavy', 11, 3]]),
-    funds: [6000, 6000], weather: 'rain', weatherPool: ['rain', 'clear'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm59', name: 'Mission 59', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['bomber', 5, 6]], [['heavy', 12, 4], ['aa', 11, 2]]),
-    funds: [6000, 6000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm60', name: 'Mission 60', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['bomber', 5, 6]], [['heavy', 12, 4], ['aa', 11, 2]]),
-    funds: [6000, 6000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm61', name: 'Mission 61', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina',
-    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['infantry', 3, 1], ['heavy', 4, 3], ['bomber', 5, 6]], [['heavy', 12, 4], ['aa', 11, 2]]),
-    funds: [6000, 6000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm62', name: 'Mission 62', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
+    id: 'm48', name: 'Mission 48', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', allyCo: 'mira',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['tank', 4, 2], ['artillery', 2, 5]], [['heavy', 12, 4], ['battleship', 15, 6]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12800, 15200], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "Cyber Officer Aria has jammed our long-range comms. Destroy her relay stations." },
+      { who: 'mira', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'volkov', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'volkov', text: 'Impossible... we have been defeated.' },
+      { who: 'mira', text: 'Sector 48 secured. Good work.' }
     ],
   },
   {
-    id: 'm63', name: 'Mission 63', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['tank', 4, 2], ['artillery', 2, 5]], [['heavy', 12, 4], ['battleship', 15, 6]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand', 'rain'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm64', name: 'Mission 64', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['tank', 4, 2], ['artillery', 2, 5]], [['heavy', 12, 4], ['battleship', 15, 6]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm65', name: 'Mission 65', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['tank', 4, 2], ['artillery', 2, 5]], [['heavy', 12, 4], ['battleship', 15, 6]]),
-    funds: [6000, 6000], weather: 'sand', weatherPool: ['sand', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm66', name: 'Mission 66', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'sora',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['heavy', 4, 5]], [['bomber', 14, 5], ['heavy', 12, 3]]),
-    funds: [6000, 6000], weather: 'snow', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm67', name: 'Mission 67', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'sora',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['heavy', 4, 5]], [['bomber', 14, 5], ['heavy', 12, 3]]),
-    funds: [6000, 6000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm68', name: 'Mission 68', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'sora',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['fighter', 2, 1], ['bomber', 3, 2], ['heavy', 4, 5]], [['bomber', 14, 5], ['heavy', 12, 3]]),
-    funds: [6000, 6000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
-    aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
-    briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
-    ],
-    outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
-    ],
-  },
-  {
-    id: 'm69', name: 'Mission 69', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'aria', allyCo: 'volkov',
+    id: 'm49', name: 'Mission 49', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero',
     map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['heavy', 3, 2], ['heavy', 4, 4], ['rockets', 2, 6]], [['heavy', 12, 3], ['rockets', 11, 6], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'snow'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [12900, 15350], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "The Vanguard ridge is heavily fortified. Expect heavy resistance and artillery fire." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'zero', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'zero', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 49 secured. Good work.' }
     ],
   },
   {
-    id: 'm70', name: 'Mission 70', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'aria', allyCo: 'volkov',
+    id: 'm50', name: 'Mission 50', act: 24, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina', allyCo: 'rhea',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['infantry', 3, 1], ['tank', 4, 2], ['recon', 2, 5]], [['artillery', 12, 6], ['tank', 11, 3]]),
+    funds: [13000, 15500], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 4 },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A sudden blizzard has halted Dominion movements. Strike while they are vulnerable." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'seraphina', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'seraphina', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 50 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm51', name: 'Mission 51', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13100, 15650], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "Grimm's raiders are terrorizing the local populace. Show them no mercy." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'architect', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 51 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm52', name: 'Mission 52', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria', allyCo: 'sora',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13200, 15800], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The coastal batteries have gone rogue. Admiral Mira requests immediate assistance." },
+      { who: 'sora', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'aria', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'aria', text: 'Impossible... we have been defeated.' },
+      { who: 'sora', text: 'Sector 52 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm53', name: 'Mission 53', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen',
     map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['heavy', 3, 2], ['heavy', 4, 4], ['rockets', 2, 6]], [['heavy', 12, 3], ['rockets', 11, 6], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'snow'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13300, 15950], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "An abandoned Architect core is pulsing with energy. Neutralize it before it fully awakens." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'kaelen', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'kaelen', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 53 secured. Good work.' }
     ],
   },
   {
-    id: 'm71', name: 'Mission 71', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'aria', allyCo: 'volkov',
+    id: 'm54', name: 'Mission 54', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', allyCo: 'brann',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13400, 16100], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The Dominion is trying to cut off our supply lines. Hold the mountain pass at all costs." },
+      { who: 'brann', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'grimm', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'grimm', text: 'Impossible... we have been defeated.' },
+      { who: 'brann', text: 'Sector 54 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm55', name: 'Mission 55', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost',
     map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
-    units: mir(16, [['heavy', 3, 2], ['heavy', 4, 4], ['rockets', 2, 6]], [['heavy', 12, 3], ['rockets', 11, 6], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'snow'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13500, 16250], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "We have cornered a key Dominion commander. Do not let them slip away into the fog." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'frost', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'frost', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 55 secured. Good work.' }
     ],
   },
   {
-    id: 'm72', name: 'Mission 72', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'architect', allyCo: 'brann',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['heavy', 4, 2], ['rockets', 3, 4], ['bomber', 2, 6]], [['heavy', 11, 3], ['battleship', 15, 7], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'sand', 'snow', 'rain'], fog: true, unitCap: [24, 28], objective: { type: 'rout' },
-
+    id: 'm56', name: 'Mission 56', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', allyCo: 'dax',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13600, 16400], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "The Crimson rebellion is gaining momentum. Crush this uprising before it spreads." },
+      { who: 'dax', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'nyx', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'nyx', text: 'Impossible... we have been defeated.' },
+      { who: 'dax', text: 'Sector 56 secured. Good work.' }
     ],
   },
   {
-    id: 'm73', name: 'Mission 73', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'architect', allyCo: 'brann',
+    id: 'm57', name: 'Mission 57', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov',
     map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['heavy', 4, 2], ['rockets', 3, 4], ['bomber', 2, 6]], [['heavy', 11, 3], ['battleship', 15, 7], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'sand', 'snow', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13700, 16550], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "A hidden submarine base has been located. Launch a pre-emptive strike." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'volkov', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'volkov', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 57 secured. Good work.' }
     ],
   },
   {
-    id: 'm74', name: 'Mission 74', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'architect', allyCo: 'brann',
-    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
-    units: mir(16, [['battleship', 0, 5], ['heavy', 4, 2], ['rockets', 3, 4], ['bomber', 2, 6]], [['heavy', 11, 3], ['battleship', 15, 7], ['bomber', 13, 2]]),
-    funds: [6000, 6000], weather: 'clear', weatherPool: ['clear', 'sand', 'snow', 'rain'], fog: false, unitCap: [24, 28], objective: { type: 'rout' },
-    boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'OMEGA TITAN', hp: 100, phases: 8 },
-    adaptiveTrigger: { bossPhaseBreak: true, reinforcements: [['bomber', 2, 3, 0], ['heavy', 2, 4, 0], ['battleship', 0, 6, 0]], fundsBonus: [20000, 0] },
-    adaptiveObjective: { type: 'rout' },
-    adaptiveDialogue: [{ who: 'architect', text: 'TITAN SHIELDS COMPROMISED. INITIATING FINAL WIPE.' }, { who: 'rhea', text: 'All allied forces, strike now!!' }],
+    id: 'm58', name: 'Mission 58', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', allyCo: 'mira',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13800, 16700], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
-    hint: 'Command your forces effectively to overcome the enemy strategy.',
+    hint: 'A tough battle.',
     briefing: [
-      { who: 'narrator', text: 'The war continues...' },
-      { who: 'rhea', text: 'Commander, the enemy is entrenched. We must break their lines.' },
+      { who: 'narrator', text: "The desert heat is intense, but we must press on and capture the central HQ." },
+      { who: 'mira', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'zero', text: 'You will fall here!' },
     ],
     outro: [
-      { who: 'rhea', text: 'Mission accomplished. Let us move to the next sector.' }
+      { who: 'zero', text: 'Impossible... we have been defeated.' },
+      { who: 'mira', text: 'Sector 58 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm59', name: 'Mission 59', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [13900, 16850], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "An anomaly in the nanite field has been detected. Investigate and secure the area." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'seraphina', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'seraphina', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 59 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm60', name: 'Mission 60', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', allyCo: 'rhea',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14000, 17000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 4 },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "This is a crucial junction. Whoever holds this valley controls the entire sector." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'architect', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 60 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm61', name: 'Mission 61', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14100, 17150], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The Sovereign Core's lingering energy is mutating local wildlife. Cleanse the area." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'aria', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'aria', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 61 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm62', name: 'Mission 62', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'sora',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14200, 17300], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A joint task force is moving in. Coordinate with your allies for a swift victory." },
+      { who: 'sora', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'kaelen', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'kaelen', text: 'Impossible... we have been defeated.' },
+      { who: 'sora', text: 'Sector 62 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm63', name: 'Mission 63', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14300, 17450], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The final pockets of resistance are holding out. Give them no quarter." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'grimm', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'grimm', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 63 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm64', name: 'Mission 64', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost', allyCo: 'brann',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14400, 17600], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A desperate counter-attack by the Dominion. Hold your ground and repel the assault." },
+      { who: 'brann', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'frost', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'frost', text: 'Impossible... we have been defeated.' },
+      { who: 'brann', text: 'Sector 64 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm65', name: 'Mission 65', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14500, 17750], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The air is thick with tension. Expect a massive ambush from the surrounding forests." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'nyx', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'nyx', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 65 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm66', name: 'Mission 66', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'volkov', allyCo: 'dax',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14600, 17900], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "We must secure the orbital uplink before the Dominion can download the Architect's data." },
+      { who: 'dax', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'volkov', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'volkov', text: 'Impossible... we have been defeated.' },
+      { who: 'dax', text: 'Sector 66 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm67', name: 'Mission 67', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14700, 18050], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A treacherous river crossing. Watch out for hidden submarines and long-range artillery." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'zero', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'zero', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 67 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm68', name: 'Mission 68', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina', allyCo: 'mira',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14800, 18200], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The Omega construct's fragments are scattered here. Retrieve them for analysis." },
+      { who: 'mira', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'seraphina', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'seraphina', text: 'Impossible... we have been defeated.' },
+      { who: 'mira', text: 'Sector 68 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm69', name: 'Mission 69', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [14900, 18350], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "This is the last major Dominion stronghold in the region. Break their defenses." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'architect', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 69 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm70', name: 'Mission 70', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria', allyCo: 'rhea',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [15000, 18500], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A quiet border town. Too quiet. Expect heavy stealth resistance from Nyx." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'aria', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'aria', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 70 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm71', name: 'Mission 71', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [15100, 18650], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The final push. Secure this sector and the war will truly be over." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'kaelen', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'kaelen', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 71 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm72', name: 'Mission 72', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', allyCo: 'sora',
+    map: sym(['wwsmmf..', 'wP=H=c..', 'wws.B=..', 'wwsfA.=t', 'rws.c...', 'wws.====', 'wwsf..c.', 'wPs.B=..', 'wwsmf...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [15200, 18800], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The dawn of a new era. Eliminate the remaining threats and bring lasting peace." },
+      { who: 'sora', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'grimm', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'grimm', text: 'Impossible... we have been defeated.' },
+      { who: 'sora', text: 'Sector 72 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm73', name: 'Mission 73', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost',
+    map: sym(['mmf...f..', 'mH=c...m.', 'fB==..f..', '..f=..c..', '.A.====..', 'f..c.f...', 'mm.f..m..', '...=c....', 'mm..f....']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [15300, 18950], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "A legendary commander has arrived. We must show them our strength." },
+      { who: 'rhea', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'frost', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'frost', text: 'Impossible... we have been defeated.' },
+      { who: 'rhea', text: 'Sector 73 secured. Good work.' }
+    ],
+  },
+  {
+    id: 'm74', name: 'Mission 74', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', allyCo: 'brann',
+    map: sym(['mmmf..A.', 'mc=....m', 'f..A.f..', '..f..f..', '.A......', 'f....f..', 'm..f....', '....A...', 'mmm.f...']),
+    units: mir(16, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5]], [['heavy', 12, 6], ['bomber', 11, 3], ['battleship', 14, 5]]),
+    funds: [15400, 19100], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    boss: { x: 12, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 8 },
+    aiLevel: 3,
+    hint: 'A tough battle.',
+    briefing: [
+      { who: 'narrator', text: "The final battle. For peace, for the future. We will not fail." },
+      { who: 'brann', text: 'Commander, the enemy is dug in. We must push through.' },
+      { who: 'nyx', text: 'You will fall here!' },
+    ],
+    outro: [
+      { who: 'nyx', text: 'Impossible... we have been defeated.' },
+      { who: 'brann', text: 'Sector 74 secured. Good work.' }
     ],
   },
 ];

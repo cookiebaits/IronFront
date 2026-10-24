@@ -538,10 +538,12 @@ export function evaluateAdaptiveTrigger(s: GameState, event?: 'bossPhaseBreak' |
       s.mission.objective = s.mission.adaptiveObjective;
     }
     if (tr.reinforcements) {
-      for (const [type, x, y, team] of tr.reinforcements) {
-        s.units.push({
-          id: s.nextId++, type, team, x, y, hp: 100, moved: true, cargo: null, capturing: false, vet: 0, facing: 1, fuel: UNITS[type].fuel, landed: false, isAlly: team === 0 && (s.allyCo ? true : false)
-        });
+      for (const [type, x, y, team, isAlly] of tr.reinforcements) {
+        if (!unitAt(s, x, y)) {
+          s.units.push({
+            id: s.nextId++, type, team, x, y, hp: 100, moved: true, cargo: null, capturing: false, vet: 0, facing: 1, fuel: UNITS[type].fuel, landed: false, isAlly: isAlly ?? false
+          });
+        }
       }
     }
     if (tr.fundsBonus) {

@@ -99,7 +99,7 @@ export const UNITS: Record<UnitType, UnitDef> = {
   artillery: { name: 'Artillery', cost: 6000, move: 5, moveType: 'treads', armor: 'LIGHT', cat: 'artillery', range: [2, 3], vision: 1, indirect: true,
     dmg: { INF: 90, LIGHT: 80, TANK: 70, HEAVY: 45, SHIP: 55, SUB: 55 }, desc: 'Indirect fire 2–3. Cannot move and fire.' },
   rockets: { name: 'Rockets', cost: 15000, move: 2, moveType: 'tires', armor: 'LIGHT', cat: 'artillery', range: [1, 6], vision: 2, indirect: true,
-    dmg: { INF: 95, LIGHT: 90, TANK: 80, HEAVY: 60, HELI: 70, PLANE: 50, SHIP: 65, SUB: 65 }, desc: 'Barrage range 1–6, hits ground, air & sea. Cannot move and fire.' },
+    dmg: { INF: 95, LIGHT: 90, TANK: 80, HEAVY: 60, SHIP: 65, SUB: 65 }, desc: 'Barrage range 1–6, hits ground & sea. Cannot move and fire.' },
   aa: { name: 'Anti-Air', cost: 7500, move: 6, moveType: 'treads', armor: 'LIGHT', cat: 'vehicle', range: [1, 1], vision: 2,
     dmg: { INF: 110, LIGHT: 55, TANK: 25, HEAVY: 10, HELI: 125, PLANE: 70 }, desc: 'Flak cannons. Deadly to aircraft and infantry.' },
   missiles: { name: 'Missiles', cost: 12000, move: 4, moveType: 'tires', armor: 'LIGHT', cat: 'artillery', range: [3, 5], vision: 5, indirect: true,
@@ -121,7 +121,7 @@ export const UNITS: Record<UnitType, UnitDef> = {
   sub: { name: 'Submarine', cost: 20000, move: 5, moveType: 'sea', armor: 'SUB', cat: 'naval', range: [1, 1], vision: 5, fuel: 20,
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
   battleship: { name: 'Battleship', cost: 26000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
-    dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6.' },
+    dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6. Cannot hit air units.' },
 };
 
 export const UNIT_ORDER: UnitType[] = [
