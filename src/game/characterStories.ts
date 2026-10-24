@@ -100,6 +100,14 @@ const CO_SPECIALTY_UNITS: Record<string, [UnitType, number, number][][]> = {
     [['rockets', 2, 3], ['artillery', 4, 2], ['missiles', 1, 5], ['heavy', 5, 3], ['infantry', 6, 1]],
     [['rockets', 2, 3], ['rockets', 4, 2], ['missiles', 1, 5], ['heavy', 5, 3], ['mech', 6, 1]],
   ],
+  valerie: [
+    [['mech', 2, 2], ['tank', 3, 1], ['tank', 2, 4], ['infantry', 4, 3], ['artillery', 1, 5]],
+    [['heavy', 2, 2], ['tank', 3, 1], ['mech', 2, 4], ['apc', 4, 3], ['rockets', 1, 5]],
+  ],
+  malakor: [
+    [['heavy', 2, 2], ['artillery', 3, 1], ['rockets', 2, 4], ['tank', 4, 3], ['aa', 1, 5]],
+    [['heavy', 2, 2], ['heavy', 3, 1], ['artillery', 2, 4], ['rockets', 4, 3], ['missiles', 1, 5]],
+  ],
   seraphina: [
     [['apc', 2, 2], ['tank', 3, 1], ['mech', 2, 4], ['infantry', 4, 3], ['bcopter', 1, 5]],
     [['apc', 2, 2], ['heavy', 3, 1], ['mech', 2, 4], ['infantry', 4, 3], ['tcopter', 1, 5], ['mech', 2, 5]],
@@ -116,6 +124,7 @@ const ENEMY_ROTATIONS: Record<string, string[]> = {
   dax: ['grimm', 'volkov', 'grimm', 'volkov', 'zero', 'grimm', 'volkov', 'architect', 'seraphina', 'architect'],
   mira: ['volkov', 'frost', 'volkov', 'frost', 'mira', 'volkov', 'architect', 'seraphina', 'architect', 'architect'],
   brann: ['zero', 'volkov', 'zero', 'volkov', 'zero', 'architect', 'zero', 'seraphina', 'architect', 'architect'],
+  valerie: ['grimm', 'volkov', 'kaelen', 'frost', 'zero', 'malakor', 'volkov', 'architect', 'malakor', 'architect'],
   kaelen: ['sora', 'nyx', 'sora', 'nyx', 'aria', 'sora', 'nyx', 'kaelen', 'architect', 'architect'],
   aria: ['zero', 'nyx', 'zero', 'nyx', 'aria', 'zero', 'nyx', 'seraphina', 'architect', 'architect'],
   grimm: ['rhea', 'dax', 'rhea', 'dax', 'brann', 'rhea', 'dax', 'volkov', 'architect', 'architect'],
@@ -125,6 +134,7 @@ const ENEMY_ROTATIONS: Record<string, string[]> = {
   zero: ['brann', 'dax', 'brann', 'dax', 'brann', 'dax', 'brann', 'seraphina', 'architect', 'architect'],
   seraphina: ['rhea', 'mira', 'rhea', 'mira', 'rhea', 'mira', 'rhea', 'seraphina', 'architect', 'architect'],
   architect: ['rhea', 'aria', 'sora', 'dax', 'mira', 'brann', 'kaelen', 'volkov', 'seraphina', 'architect'],
+  malakor: ['valerie', 'rhea', 'dax', 'brann', 'mira', 'valerie', 'rhea', 'architect', 'valerie', 'architect'],
 };
 
 const CO_CHAPTER_TITLES: Record<string, string[]> = {
@@ -133,6 +143,7 @@ const CO_CHAPTER_TITLES: Record<string, string[]> = {
   dax: ['Iron Tread', 'Steel Vanguard', 'Canyon Blitz', 'Armor Shock', 'Tank Graveyard', 'Heavy Assault', 'Paved Thunder', 'Breakthrough Column', 'Juggernaut Line', 'Iron Supremacy'],
   mira: ['Coastal Watch', 'Saltmarch Tide', 'Reef Ambush', 'Torpedo Run', 'Monsoon Fleet', 'Abyssal Passage', 'Storm Harbor', 'Battleship Row', 'Typhoon Surge', 'Oceanic Sovereignty'],
   brann: ['Range Finder', 'Long Guns', 'Spotter Grid', 'Sandstorm Barrage', 'Fortress Siege', 'Thunder Valley', 'Over-The-Horizon', 'Rockets Red Glare', 'Chokepoint Shelling', 'Global Battery'],
+  valerie: ['Spearhead Patrol', 'Vanguard Breach', 'Rapid Response', 'Armor Drop', 'Shock Column', 'Pincer Vanguard', 'Reinforcement Grid', 'Iron Spear', 'Vanguard Redoubt', 'Apex Vanguard Dominance'],
   kaelen: ['High Altitude Sortie', 'Aerial Escort', 'Cloud Interception', 'Tailwind Pursuit', 'Airborne Resupply', 'Sky Grid Lock', 'Jetstream Breach', 'Stratosphere Duel', 'Wingman Vanguard', 'Ace Supremacy'],
   aria: ['Signal Hack', 'Radar Jamming', 'Overclock Pulse', 'EM Grid Sweep', 'Cyber Disruption', 'Matrix Lockdown', 'Nanite Protocol', 'Decryption Raid', 'System Overload', 'Apex Cyber Dominance'],
   grimm: ['Human Wave', 'Infantry Horde', 'Trench Assault', 'Bazooka Rush', 'Swarm Protocol', 'Bunker Buster', 'Mass Infiltration', 'Iron Vanguard', 'Unstoppable Horde', 'Warlord Conquest'],
@@ -142,6 +153,7 @@ const CO_CHAPTER_TITLES: Record<string, string[]> = {
   zero: ['Siege Protocol', 'Artillery Battery', 'Long-Range Grid', 'Rockets Barrage', 'Chokepoint Shelling', 'Mortar Network', 'Global Targeter', 'Surgical Shelling', 'Battery Sweep', 'Apex Siege Dominance'],
   seraphina: ['Field Triage', 'Nanite Repair', 'Frontline Sanctuary', 'Endless Defense', 'Property Bastion', 'Med-Evac Escort', 'Restoration Grid', 'Regenerative Surge', 'Aegis Frontline', 'Apex Medic Dominance'],
   architect: ['Matrix Calibration', 'Singularity Calculation', 'Drone Swarm Protocol', 'War Engine Breach', 'Architect Redoubt', 'Neural Overdrive', 'Synthetic Vanguard', 'Global Recalibration', 'Singularity Core Strike', 'Apex Architect Sovereignty'],
+  malakor: ['Dread March', 'Shadow Shock', 'Iron Summon', 'Siege Barrage', 'Dark Legion', 'Heavy Onslaught', 'Dread Redoubt', 'Iron Fortress', 'Warlord Vanguard', 'Apex Malakor Sovereignty'],
 };
 
 /** Generate 10 specialized, story-rich chapters for each officer with customized lore, dialogues, and adaptive events. */

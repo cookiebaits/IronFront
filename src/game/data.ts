@@ -197,9 +197,9 @@ export const RANK_MAX = 4;
 export const RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Ace', 'Legend'];
 export const rankSlots = (rank: number) => 1 + Math.floor(rank / 2);
 export const rankDesc = (rank: number) => `+${rank * 3}% atk & def · +${rank * 6}% charge speed · ${rankSlots(rank)} skill slot${rankSlots(rank) > 1 ? 's' : ''}`;
-export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 4000, sora: 5500, mira: 6000, brann: 6000, grimm: 8500, frost: 9500, nyx: 11000, volkov: 14000, architect: 20000 };
+export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 4000, sora: 5500, mira: 6000, brann: 6000, seraphina: 7000, aria: 7500, valerie: 9000, grimm: 8500, frost: 9500, nyx: 11000, volkov: 14000, zero: 15000, kaelen: 12000, architect: 20000, malakor: 22000 };
 /** CO Pieces required (in addition to Gold) to unlock each officer. Rhea is free. */
-export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, grimm: 20, frost: 20, nyx: 24, volkov: 28, architect: 40 };
+export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, seraphina: 18, aria: 18, valerie: 20, grimm: 20, frost: 20, nyx: 24, volkov: 28, zero: 30, kaelen: 26, architect: 40, malakor: 42 };
 
 /** Only the Ultimate is field-activatable. It charges 20% slower than the old Super threshold. */
 export function ultimateCost(coId: string) {
@@ -279,14 +279,18 @@ export const COS: Record<string, CODef> = {
     bio: 'Grizzled artillery colonel. Patient, methodical, and terrifyingly precise.',
     d2d: 'Indirect +15% attack. Direct −10% attack.', powerName: 'Spotter Net', powerDesc: 'Indirect +1 range, +15% attack.',
     superName: 'Thunder Barrage', superDesc: '3 HP strikes on 2 enemy clusters. Indirect +1 range.', powerCost: 50, superCost: 110 },
-  kaelen: { id: 'kaelen', name: 'Kaelen Vance', title: 'Flight Captain', faction: 'azure', color: '#0284c7', emoji: '✈️',
-    bio: 'Ace squadron commander. Master of high-altitude dominance and aerial strikes.',
-    d2d: 'Air units +15% attack, +1 move. Naval −10% defense.', powerName: 'Tailwind', powerDesc: 'Air units +1 move, +10% attack.',
-    superName: 'Sky Supremacy', superDesc: 'Air units +2 move, +35% attack. Ground units +1 move.', powerCost: 45, superCost: 95 },
+  seraphina: { id: 'seraphina', name: 'Seraphina', title: 'Medic General', faction: 'azure', color: '#10b981', emoji: '🏥',
+    bio: 'Renowned Republic military doctor whose nanite fields keep troops in the fight endlessly.',
+    d2d: 'Units on properties heal +1 HP/turn. All units −10% attack.', powerName: 'Field Triage', powerDesc: 'All friendly units recover 2 HP.',
+    superName: 'Nanite Restoration', superDesc: 'All friendly units recover 4 HP and +30% defense.', powerCost: 45, superCost: 95 },
   aria: { id: 'aria', name: 'Aria Chen', title: 'Cyber Officer', faction: 'azure', color: '#8b5cf6', emoji: '⚡',
     bio: 'Master of cyber warfare and electronic countermeasures. Disruption is her art.',
     d2d: 'Vision +1. Enemy skill charge 15% slower. Direct units −10% attack.', powerName: 'Disruptor', powerDesc: 'All enemy units −1 move on next turn.',
     superName: 'Overclock', superDesc: 'All enemy units −2 move. Friendly units +25% attack.', powerCost: 50, superCost: 100 },
+  valerie: { id: 'valerie', name: 'Valerie', title: 'Spearhead Commander', faction: 'azure', color: '#38bdf8', emoji: '🛡️',
+    bio: 'A frontline vanguard officer who summons rapid mechanized reinforcements to secure the line.',
+    d2d: 'Mech & Tank units +15% attack. Air units −10% defense.', powerName: 'Vanguard Call', powerDesc: 'Summons 2 fresh Mech/Tank units near your HQ or captured bases.',
+    superName: 'Spearhead Assault', superDesc: 'Summons 2 fresh Tank/Heavy units & grants all units +20% attack, +1 move.', powerCost: 55, superCost: 105 },
   grimm: { id: 'grimm', name: 'Grimm', title: 'Warlord', faction: 'crimson', color: '#ef4444', emoji: '💀',
     bio: 'Brutal Dominion warlord who drowns enemies in endless infantry waves.',
     d2d: 'Infantry +20% attack, −20% cost. Vehicles −10% defense.', powerName: 'Human Wave', powerDesc: 'Infantry +2 move, +20% attack.',
@@ -307,17 +311,21 @@ export const COS: Record<string, CODef> = {
     bio: 'Cold-blooded siege strategist. Specializes in long-range destruction.',
     d2d: 'Indirect fire +15% attack, +1 max range. Direct units −10% defense.', powerName: 'Artillery Sweep', powerDesc: 'Indirect units +1 range, +15% attack.',
     superName: 'Global Siege', superDesc: 'All enemy units take 2 HP damage and −15% defense.', powerCost: 55, superCost: 110 },
-  seraphina: { id: 'seraphina', name: 'Seraphina', title: 'Medic General', faction: 'crimson', color: '#059669', emoji: '🏥',
-    bio: 'Renowned military doctor whose nanite fields keep troops in the fight endlessly.',
-    d2d: 'Units on properties heal +1 HP/turn. All units −10% attack.', powerName: 'Field Triage', powerDesc: 'All friendly units recover 2 HP.',
-    superName: 'Nanite Restoration', superDesc: 'All friendly units recover 4 HP and +30% defense.', powerCost: 45, superCost: 95 },
+  kaelen: { id: 'kaelen', name: 'Kaelen Vance', title: 'Flight Captain', faction: 'crimson', color: '#0284c7', emoji: '✈️',
+    bio: 'Rebellious flight captain who defected to lead Crimson aerial strikes.',
+    d2d: 'Air units +15% attack, +1 move. Naval −10% defense.', powerName: 'Tailwind', powerDesc: 'Air units +1 move, +10% attack.',
+    superName: 'Sky Supremacy', superDesc: 'Air units +2 move, +35% attack. Ground units +1 move.', powerCost: 45, superCost: 95 },
   architect: { id: 'architect', name: 'Architect', title: 'Strategist', faction: 'crimson', color: '#e11d48', emoji: '🔺',
     bio: 'A war-machine intelligence that orchestrated the entire conflict. Calculates everything.',
     d2d: 'All units +10% atk & def. Unaffected by sand. Air units −10% attack.', powerName: 'Recalibrate', powerDesc: 'All units heal 3 HP.',
     superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 110, immune: 'sand' },
+  malakor: { id: 'malakor', name: 'Malakor', title: 'Shadow Warlord', faction: 'crimson', color: '#991b1b', emoji: '⚔️',
+    bio: 'A fearsome Dominion warlord who summons heavy mechanized shock troops directly to the battlefield.',
+    d2d: 'Heavy & Artillery units +15% attack. Infantry −10% defense.', powerName: 'Dread Summon', powerDesc: 'Summons 2 fresh Heavy/Artillery units near your HQ or bases.',
+    superName: 'Iron Legion', superDesc: 'Summons 2 fresh Heavy/Rockets units & grants all units +25% attack.', powerCost: 60, superCost: 115 },
 };
 
-export const PLAYABLE_ORDER = ['rhea', 'dax', 'sora', 'mira', 'brann', 'kaelen', 'aria', 'grimm', 'frost', 'nyx', 'volkov', 'zero', 'seraphina', 'architect'];
+export const PLAYABLE_ORDER = ['rhea', 'dax', 'sora', 'mira', 'brann', 'seraphina', 'aria', 'valerie', 'grimm', 'frost', 'nyx', 'volkov', 'zero', 'kaelen', 'architect', 'malakor'];
 
 export function coCost(coId: string, type: UnitType): number {
   const d = UNITS[type];

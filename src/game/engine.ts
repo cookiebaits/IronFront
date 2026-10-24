@@ -182,6 +182,11 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
       if (pl !== 2 && !indirect && d.cat !== 'air' && d.cat !== 'naval' && canAttackAny(u.type)) atk -= 10; // direct units
       if (pl === 2) atk += 25;
       break;
+    case 'valerie':
+      if (u.type === 'mech' || u.type === 'tank' || u.type === 'heavy') atk += 15;
+      if (pl !== 2 && d.cat === 'air') def -= 10;
+      if (pl === 2) { atk += 20; move += 1; }
+      break;
     case 'grimm':
       if (d.cat === 'infantry') atk += 20;
       if (pl !== 2 && (d.cat === 'vehicle' || d.cat === 'artillery')) def -= 10;
@@ -216,6 +221,11 @@ export function unitMods(s: GameState, u: Unit, x = u.x, y = u.y): Mods {
       atk += 10; def += 10;
       if (pl !== 2 && air) atk -= 10;
       if (pl === 2) { atk += 30; def += 30; }
+      break;
+    case 'malakor':
+      if (u.type === 'heavy' || d.cat === 'artillery') atk += 15;
+      if (pl !== 2 && d.cat === 'infantry') def -= 10;
+      if (pl === 2) atk += 25;
       break;
   }
   // weather
@@ -627,6 +637,46 @@ function setWeather(s: GameState, w: Weather, days: number, eff: PowerEffect) {
   eff.weather = w;
 }
 
+export function summonReinforcements(s: GameState, team: Team, types: UnitType[], numToSummon = 2) {
+  // Find properties owned by team (hq, base, city) or valid empty tiles around HQ
+  const spawnTiles: [number, number][] = [];
+  for (let y = 0; y < s.h; y++) {
+    for (let x = 0; x < s.w; x++) {
+      const tile = s.tiles[y][x];
+      if (tile.owner === team && ['hq', 'base', 'city'].includes(tile.t) && !unitAt(s, x, y)) {
+        spawnTiles.push([x, y]);
+      }
+    }
+  }
+  // Fallback: search adjacent empty tiles around team HQ
+  if (spawnTiles.length < numToSummon) {
+    for (let y = 0; y < s.h; y++) {
+      for (let x = 0; x < s.w; x++) {
+        if (s.tiles[y][x].t === 'hq' && s.tiles[y][x].owner === team) {
+          for (const [dx, dy] of DIRS) {
+            const nx = x + dx, ny = y + dy;
+            if (inBounds(s, nx, ny) && !unitAt(s, nx, ny) && passableFor(types[0], s.tiles[ny][nx].t)) {
+              if (!spawnTiles.some(([sx, sy]) => sx === nx && sy === ny)) {
+                spawnTiles.push([nx, ny]);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  const added: Unit[] = [];
+  for (let i = 0; i < numToSummon && i < spawnTiles.length; i++) {
+    const [sx, sy] = spawnTiles[i];
+    const uType = types[i % types.length];
+    const u = addUnit(s, uType, sx, sy, team);
+    u.moved = false; // Fresh summoned unit can act immediately
+    added.push(u);
+  }
+  return added;
+}
+
 export function activatePower(s: GameState, team: Team, level: 1 | 2): PowerEffect {
   level = 2; // basic Power is retired; keep the parameter for save/API compatibility
   const co = COS[s.cos[team]];
@@ -651,6 +701,12 @@ export function activatePower(s: GameState, team: Team, level: 1 | 2): PowerEffe
     case 'volkov': if (level === 2) healAll(s, team, 20, eff); break;
     case 'architect':
       damageAll(s, foe, 20, eff); s.debuff[foe] = 1;
+      break;
+    case 'valerie':
+      summonReinforcements(s, team, ['tank', 'heavy'], 2);
+      break;
+    case 'malakor':
+      summonReinforcements(s, team, ['heavy', 'rockets'], 2);
       break;
     case 'brann':
       if (level === 2) {

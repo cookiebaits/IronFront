@@ -55,7 +55,7 @@ export default function App() {
     const forced = m.forcedCo;
     const isAdv = !!(save.advancedUnlocked && save.advancedMode);
     const opts = getCampaignOpts(m, isAdv, isFogReplay);
-    if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'kaelen' || forced === 'aria')) {
+    if (forced && (save.unlockedCos.includes(forced) || forced === 'rhea' || forced === 'dax' || forced === 'sora' || forced === 'mira' || forced === 'brann' || forced === 'seraphina' || forced === 'aria' || forced === 'valerie')) {
       const next = { mission: m, idx: i, playerCo: forced, enemyCo: m.enemyCo, isCampaign: true, opts };
       if (m.tutorial) startGame(next);
       else { setCfg(next); setScreen('briefing'); }
