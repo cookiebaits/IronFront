@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import Peer, { type DataConnection } from 'peerjs';
 import { COS, PLAYABLE_ORDER } from '../game/data';
 import { MISSIONS } from '../game/campaign';
-import { ONLINE_DUEL } from '../game/onlineMission';
+import { PVP_MAPS } from '../game/onlineMission';
 import { createGame, income } from '../game/engine';
 import type { GameState, MissionDef, SaveData, Team } from '../game/types';
 import GameView, { type OnlineControl, type OnlineSnapshot, type ScoreInfo } from './GameView';
@@ -13,7 +13,7 @@ type OnlineMode = 'pvp' | 'coop';
 type Phase = 'home' | 'setup' | 'game';
 type Wire =
   | { type: 'hello'; name: string }
-  | { type: 'lobby'; mode: OnlineMode; missionIndex: number; hostCo: string; hostName: string }
+  | { type: 'lobby'; mode: OnlineMode; missionIndex: number; pvpMapIndex?: number; hostCo: string; hostName: string }
   | { type: 'ready'; co: string; name: string }
   | { type: 'start'; mode: OnlineMode; mission: MissionDef; missionIndex: number; hostCo: string; guestCo: string; hostName: string; guestName: string; initial: GameState }
   | { type: 'action'; revision: number; event: 'action' | 'undo' | 'turn-start' | 'turn-end'; state: GameState }
@@ -59,6 +59,7 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
   const [hostCo, setHostCo] = useState(save.unlockedCos[0] ?? 'rhea');
   const [guestCo, setGuestCo] = useState('rhea');
   const [missionIndex, setMissionIndex] = useState(Math.max(1, Math.min(save.progress, MISSIONS.length - 1)));
+  const [pvpMapIndex, setPvpMapIndex] = useState(0);
   const [connected, setConnected] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [localReady, setLocalReady] = useState(false);
@@ -82,8 +83,8 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
   const configRef = useRef<MatchConfig | null>(null);
   const roleRef = useRef<'host' | 'guest' | null>(null);
   const modeRef = useRef<OnlineMode>('pvp');
-  const stateRef = useRef({ hostCo, guestCo, missionIndex, hostName, guestName, connected, phase, mode });
-  stateRef.current = { hostCo, guestCo, missionIndex, hostName, guestName, connected, phase, mode };
+  const stateRef = useRef({ hostCo, guestCo, missionIndex, pvpMapIndex, hostName, guestName, connected, phase, mode });
+  stateRef.current = { hostCo, guestCo, missionIndex, pvpMapIndex, hostName, guestName, connected, phase, mode };
   roleRef.current = role;
   modeRef.current = mode;
 
@@ -112,7 +113,7 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
   const sendLobby = () => {
     if (roleRef.current !== 'host' || !connRef.current?.open) return;
     const s = stateRef.current;
-    send({ type: 'lobby', mode: modeRef.current, missionIndex: s.missionIndex, hostCo: s.hostCo, hostName: s.hostName });
+    send({ type: 'lobby', mode: modeRef.current, missionIndex: s.missionIndex, pvpMapIndex: s.pvpMapIndex, hostCo: s.hostCo, hostName: s.hostName });
   };
 
   const makeInitial = (cfg: MatchConfig) => {
@@ -153,7 +154,7 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
       return;
     }
     if (msg.type === 'ready') {
-      setGuestCo(stateRef.current.mode === 'pvp' ? stateRef.current.hostCo : COS[msg.co] ? msg.co : 'rhea');
+      setGuestCo(COS[msg.co] ? msg.co : 'rhea');
       setGuestName(msg.name || 'Commander');
       setGuestReady(true);
       setStatus('Both commanders ready. Launch when you are set.');
@@ -254,9 +255,9 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
       conn.on('data', (raw) => {
         const msg = raw as Wire;
         if (msg.type === 'lobby') {
-          if (msg.mode !== stateRef.current.mode || msg.missionIndex !== stateRef.current.missionIndex || msg.hostCo !== stateRef.current.hostCo) setLocalReady(false);
-          setMode(msg.mode); setMissionIndex(msg.missionIndex); setHostCo(msg.hostCo); setGuestCo(msg.mode === 'pvp' ? msg.hostCo : guestCo); setHostName(msg.hostName);
-          setStatus(msg.mode === 'coop' ? 'Choose an officer. You and the host share the campaign army.' : 'Choose an officer for the mirrored private match.');
+          if (msg.mode !== stateRef.current.mode || msg.missionIndex !== stateRef.current.missionIndex || msg.pvpMapIndex !== stateRef.current.pvpMapIndex || msg.hostCo !== stateRef.current.hostCo) setLocalReady(false);
+          setMode(msg.mode); setMissionIndex(msg.missionIndex); if (msg.pvpMapIndex !== undefined) setPvpMapIndex(msg.pvpMapIndex); setHostCo(msg.hostCo); setHostName(msg.hostName);
+          setStatus(msg.mode === 'coop' ? 'Choose an officer. You and the host share the campaign army.' : 'Choose an officer for the private match.');
         } else if (msg.type === 'start') {
           startMatch({ mode: msg.mode, mission: msg.mission, missionIndex: msg.missionIndex, hostCo: msg.hostCo, guestCo: msg.guestCo, hostName: msg.hostName, guestName: msg.guestName }, 1, msg.initial);
         } else if (msg.type === 'snapshot') {
@@ -290,10 +291,10 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
 
   const begin = () => {
     if (role !== 'host' || !connected || !guestReady) return;
-    const mission = mode === 'pvp' ? ONLINE_DUEL : MISSIONS[missionIndex];
+    const mission = mode === 'pvp' ? PVP_MAPS[pvpMapIndex] : MISSIONS[missionIndex];
     if (!mission) return;
-    const selectedGuestCo = mode === 'pvp' ? hostCo : guestCo;
-    const cfg: MatchConfig = { mode, mission, missionIndex: mode === 'pvp' ? -1 : missionIndex, hostCo, guestCo: selectedGuestCo, hostName, guestName };
+    const selectedGuestCo = guestCo;
+    const cfg: MatchConfig = { mode, mission, missionIndex: mode === 'pvp' ? pvpMapIndex : missionIndex, hostCo, guestCo: selectedGuestCo, hostName, guestName };
     const initial = makeInitial(cfg);
     send({ type: 'start', ...cfg, initial });
     startMatch(cfg, 0, initial);
@@ -345,10 +346,10 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
   };
 
   const missionChoices = MISSIONS.map((m, i) => ({ m, i })).filter(({ m, i }) => i > 0 && i <= Math.max(1, save.progress) && !m.tutorial);
-  const selectCO = (id: string) => { setHostCo(id); if (mode === 'pvp') setGuestCo(id); setGuestReady(false); sfx.cursor(); };
+  const selectCO = (id: string) => { setHostCo(id); setGuestReady(false); setLocalReady(false); sfx.cursor(); stateRef.current.hostCo = id; sendLobby(); };
   const selectGuestCO = (id: string) => { setGuestCo(id); setLocalReady(false); sfx.cursor(); };
-  const selectMode = (next: OnlineMode) => { setMode(next); if (next === 'pvp') setGuestCo(hostCo); setGuestReady(false); setLocalReady(false); sfx.select(); };
-  const selectMission = (next: number) => { setMissionIndex(next); setGuestReady(false); setLocalReady(false); };
+  const selectMode = (next: OnlineMode) => { setMode(next); setGuestReady(false); setLocalReady(false); sfx.select(); stateRef.current.mode = next; sendLobby(); };
+  const selectMission = (next: number) => { setMissionIndex(next); setGuestReady(false); setLocalReady(false); stateRef.current.missionIndex = next; sendLobby(); };
   const gamePlayerCo = match ? match.hostCo : hostCo;
   const gameEnemyCo = match ? (match.mode === 'pvp' ? match.guestCo : match.mission.enemyCo) : 'rhea';
 
@@ -464,20 +465,28 @@ export default function OnlineRoom({ save, onBack, onSettings, onCoopComplete }:
                         <div className="text-[10px] text-slate-300 mt-1">{COS[hostCo].name}</div>
                       </div>
                       <div>
-                        <div className="text-[10px] text-rose-300 font-bold mb-1">{mode === 'pvp' ? 'MIRRORED · SAME CO FOR BOTH SIDES' : role === 'guest' ? 'YOU · CO-OP ADVISOR' : connected ? `${guestName} · CO-OP ADVISOR` : 'WAITING FOR GUEST'}</div>
-                        {mode === 'pvp' ? (
-                          <div className="flex items-center gap-2 p-1 rounded-lg border border-rose-400/50 bg-rose-500/10"><Portrait id={hostCo} size={42} /><div className="text-[10px] text-slate-200">{COS[hostCo].name}<br />Identical CO bonuses on both armies.</div></div>
-                        ) : (
-                          <div className="flex flex-wrap gap-1">{PLAYABLE_ORDER.filter((id) => role !== 'guest' || save.unlockedCos.includes(id)).map((id) => (
-                            <button key={id} disabled={role !== 'guest'} onClick={() => selectGuestCO(id)} className={`rounded-lg p-0.5 border-2 ${guestCo === id ? 'border-rose-300' : 'border-transparent opacity-50'}`}><Portrait id={id} size={42} /></button>
-                          ))}</div>
-                        )}
-                        <div className="text-[10px] text-slate-300 mt-1">{mode === 'pvp' ? 'Commander is mirrored for symmetrical CO powers.' : connected ? COS[guestCo].name : 'Room is private until a friend joins.'}</div>
+                        <div className="text-[10px] text-rose-300 font-bold mb-1">{mode === 'pvp' ? (role === 'guest' ? 'YOU · GUEST' : connected ? `${guestName} · GUEST` : 'WAITING FOR GUEST') : role === 'guest' ? 'YOU · CO-OP ADVISOR' : connected ? `${guestName} · CO-OP ADVISOR` : 'WAITING FOR GUEST'}</div>
+                        <div className="flex flex-wrap gap-1">{PLAYABLE_ORDER.filter((id) => role !== 'guest' || save.unlockedCos.includes(id)).map((id) => (
+                          <button key={id} disabled={role !== 'guest'} onClick={() => selectGuestCO(id)} className={`rounded-lg p-0.5 border-2 ${guestCo === id ? 'border-rose-300' : 'border-transparent opacity-50'}`}><Portrait id={id} size={42} /></button>
+                        ))}</div>
+                        <div className="text-[10px] text-slate-300 mt-1">{!connected && role === 'host' ? 'Room is private until a friend joins.' : COS[guestCo].name}</div>
                       </div>
                     </div>
                   </div>
 
-                  {mode === 'pvp' && <div className="text-[11px] text-slate-400 text-center">Fair start: mirrored forces, identical funds, equivalent income, equal unit caps, and the same CO on both sides. Saved unit upgrades, CO ranks, and skills are disabled.</div>}
+                  {mode === 'pvp' && role === 'host' && (
+                    <div className="mt-2 p-3 rounded-xl border border-slate-700 bg-slate-900/50 mb-2">
+                      <div className="text-xs font-black text-slate-300 mb-2">MAP SELECTION</div>
+                      <div className="flex flex-wrap gap-2">
+                        {PVP_MAPS.map((m, i) => (
+                          <button key={i} onClick={() => { setPvpMapIndex(i); setGuestReady(false); setLocalReady(false); stateRef.current.pvpMapIndex = i; sendLobby(); sfx.select(); }} className={`px-2 py-1 rounded font-black text-[10px] border transition ${pvpMapIndex === i ? 'bg-cyan-500 text-slate-950 border-cyan-300 shadow-[0_0_10px_#06b6d4]' : 'bg-slate-800 text-slate-400 border-slate-600'}`}>{m.name}</button>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-slate-400 mt-2">{PVP_MAPS[pvpMapIndex].hint}</div>
+                    </div>
+                  )}
+
+                  {mode === 'pvp' && <div className="text-[11px] text-slate-400 text-center mb-2">Fair start: mirrored forces, identical funds, equivalent income, and equal unit caps. Saved unit upgrades, CO ranks, and skills are disabled.</div>}
                   {error && <div className="hud-panel border-rose-500 p-2 text-xs text-rose-200">{error}</div>}
                   <div className="grid sm:grid-cols-2 gap-2">
                     {role === 'host' && <button disabled={!connected || !guestReady} className={`menu-btn ${connected && guestReady ? 'bg-emerald-400 text-slate-950' : 'bg-slate-800 text-slate-500'}`} onClick={begin}>START MATCH ▶</button>}
