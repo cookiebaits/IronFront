@@ -1918,9 +1918,12 @@ export default function GameView(props: Props) {
     const max = Math.max(1, gs.skillMeterMax[team]);
     const pct = Math.min(100, (gs.skillMeter[team] / max) * 100);
     const ready = equipped.some((id) => canUseSkill(gs, team, id));
+    const highestTier = Math.max(...equipped.map((id) => SKILLS[id].tier));
     return (
       <div className="flex items-center gap-1 mt-1" title={`Tactical Skill charge ${Math.floor(gs.skillMeter[team])}/${max} · charges 35% slower`}>
-        <span className="text-[8px] font-black tracking-wider text-emerald-300 shrink-0">SKILL</span>
+        <span className="text-[8px] font-black tracking-wider text-emerald-300 shrink-0 flex items-center gap-1">
+          SKILL <span className="text-[7px] text-amber-300 bg-amber-500/20 px-1 rounded border border-amber-400/30">T{highestTier}</span>
+        </span>
         <div className={`relative h-2 flex-1 rounded-full overflow-hidden border bg-slate-950 ${ready ? 'border-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'border-slate-600'}`}>
           <div className={`h-full transition-all duration-500 ${ready ? 'bg-emerald-300' : 'bg-gradient-to-r from-emerald-700 to-emerald-400'}`} style={{ width: `${pct}%` }} />
           {equipped.map((id) => <div key={id} className="absolute top-0 bottom-0 w-px bg-white/70" style={{ left: `${Math.min(99, (SKILLS[id].cost / max) * 100)}%` }} />)}

@@ -636,7 +636,7 @@ export function COSelect({ save, allowed, title, onBack, onPick, enemyCo }: { sa
           <div className="flex-1 text-sm">
             <div className="text-xs font-bold" style={{ color: co.color }}>{co.title.toUpperCase()}</div>
             <div className="text-2xl font-black text-white">{co.name}</div>
-            <div className="text-[11px] font-bold text-amber-300">★ {RANK_NAMES[save.coRank[sel] ?? 0]} · Skills: {(save.loadout[sel] ?? []).slice(0, rankSlots(save.coRank[sel] ?? 0)).filter((id) => SKILLS[id]).map((id) => `${SKILLS[id].icon} ${SKILLS[id].name}`).join(', ') || <span className="text-slate-500">none equipped (Command HQ)</span>}</div>
+            <div className="text-[11px] font-bold text-amber-300">★ {RANK_NAMES[save.coRank[sel] ?? 0]} · Skills: {(save.loadout[sel] ?? []).slice(0, rankSlots(save.coRank[sel] ?? 0)).filter((id) => SKILLS[id]).map((id) => `${SKILLS[id].icon} ${SKILLS[id].name} [T${SKILLS[id].tier}]`).join(', ') || <span className="text-slate-500">none equipped (Command HQ)</span>}</div>
             <div className="text-slate-300 text-xs mt-1 italic">{co.bio}</div>
             <div className="mt-2 text-slate-200"><b className="text-slate-400 text-xs">DAY-TO-DAY (always on):</b> {co.d2d}</div>
             <div className="mt-2 grid gap-2">

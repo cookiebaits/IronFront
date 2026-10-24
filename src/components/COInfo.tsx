@@ -123,10 +123,14 @@ export default function COInfo({ coId, onClose, meter, meterMax, skillMeter, ski
                 const ready = canSkill?.(id) ?? false;
                 return (
                   <div key={id} className="flex items-center gap-2 rounded-lg border border-emerald-500/50 bg-emerald-500/5 p-2">
-                    <div className="text-2xl w-8 text-center">{sk.icon}</div>
+                    <div className="text-2xl w-8 text-center shrink-0">{sk.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-black text-white">{sk.name} <span className="text-[10px] text-slate-400 font-bold">{sk.kind} · Charge {sk.cost}</span></div>
-                      <div className="text-[11px] text-slate-300">{sk.desc}</div>
+                      <div className="text-sm font-black text-white flex items-center gap-1.5 flex-wrap">
+                        <span>{sk.name}</span>
+                        <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">TIER {sk.tier}</span>
+                        <span className="text-[10px] text-slate-400 font-bold">{sk.kind} · Charge {sk.cost}</span>
+                      </div>
+                      <div className="text-[11px] text-slate-300 mt-0.5">{sk.desc}</div>
                     </div>
                     {onSkill && !isEnemy && (
                       <button disabled={!ready} onClick={() => onSkill(id)}

@@ -158,38 +158,53 @@ export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
   };
 }
 
-/* ---------------- CO tactical skills (stronger = longer charge) ---------------- */
+/* ---------------- CO tactical skills (tiered by officer rank / stars) ---------------- */
 export interface SkillDef {
-  id: string; name: string; icon: string; cost: number; price: number; kind: 'Boost' | 'Weather' | 'Global Damage' | 'Support' | 'Control';
+  id: string; name: string; icon: string; cost: number; price: number; tier: 1 | 2 | 3; kind: 'Boost' | 'Weather' | 'Global Damage' | 'Support' | 'Control';
   desc: string; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
 }
+
+export function maxSkillTierForRank(rank: number): 1 | 2 | 3 {
+  if (rank >= 3) return 3; // 3 Stars+ (Ace, Legend)
+  if (rank >= 2) return 2; // 2 Stars+ (Elite)
+  return 1; // 1 Star / Base (Recruit, Veteran)
+}
+
 export const SKILLS: Record<string, SkillDef> = {
-  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 20, price: 350, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
-  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 30, price: 600, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
-  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 35, price: 600, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
-  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 40, price: 750, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
-  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 40, price: 750, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
-  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 40, price: 750, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
-  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 45, price: 900, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
-  blitz: { id: 'blitz', name: 'Blitz', icon: '💨', cost: 50, price: 1000, kind: 'Boost', move: 2, desc: 'All units +2 move.' },
-  repair: { id: 'repair', name: 'Field Repair', icon: '🔧', cost: 50, price: 1000, kind: 'Support', heal: 30, desc: 'All units recover 3 HP.' },
-  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 55, price: 1200, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
-  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 55, price: 1200, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
-  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 65, price: 1400, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
-  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 70, price: 1500, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
-  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 85, price: 1800, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
-  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 2000, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
-  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 2400, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
-  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 3000, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
-  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 1200, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
-  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 1100, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
-  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 1500, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
-  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 1800, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
-  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 1200, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
-  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 750, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
-  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 2500, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
+  // Tier 1 Skills (Unlocked at Rank 0+ / Base)
+  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 20, price: 350, tier: 1, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
+  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 30, price: 600, tier: 1, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
+  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 35, price: 600, tier: 1, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
+  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 40, price: 750, tier: 1, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
+  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 40, price: 750, tier: 1, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
+  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 40, price: 750, tier: 1, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
+  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 750, tier: 1, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
+  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 45, price: 900, tier: 1, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
+  blitz: { id: 'blitz', name: 'Blitz', icon: '💨', cost: 50, price: 1000, tier: 1, kind: 'Boost', move: 2, desc: 'All units +2 move.' },
+  repair: { id: 'repair', name: 'Field Repair', icon: '🔧', cost: 50, price: 1000, tier: 1, kind: 'Support', heal: 30, desc: 'All units recover 3 HP.' },
+
+  // Tier 2 Skills (Unlocked at Rank 2+ / 2 Stars)
+  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 55, price: 1200, tier: 2, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
+  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 55, price: 1200, tier: 2, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
+  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 1100, tier: 2, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
+  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 65, price: 1400, tier: 2, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
+  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 1200, tier: 2, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
+  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 70, price: 1500, tier: 2, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
+  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 1200, tier: 2, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
+  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 1500, tier: 2, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
+  ironshield: { id: 'ironshield', name: 'Shield Bastion', icon: '🛡️', cost: 85, price: 1700, tier: 2, kind: 'Boost', def: 40, atk: 10, desc: 'All friendly units gain +40% defense and +10% attack.' },
+  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 85, price: 1800, tier: 2, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
+  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 2000, tier: 2, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
+
+  // Tier 3 Skills (Unlocked at Rank 3+ / 3 Stars)
+  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 1800, tier: 3, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
+  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 2400, tier: 3, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
+  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 2500, tier: 3, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
+  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 3000, tier: 3, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
+  cataclysm: { id: 'cataclysm', name: 'Cataclysm Strike', icon: '☄️', cost: 140, price: 3200, tier: 3, kind: 'Global Damage', clusters: 2, clusterDmg: 40, desc: '4 HP strikes on the 2 densest enemy clusters.' },
+  hyperdrive: { id: 'hyperdrive', name: 'Hyperdrive', icon: '🚀', cost: 150, price: 3500, tier: 3, kind: 'Boost', move: 3, atk: 40, heal: 30, desc: 'All units +3 move, +40% attack, and heal 3 HP.' },
 };
-export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.cost - b.cost).map((s) => s.id);
+export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.cost - b.cost).map((s) => s.id);
 
 /* ---------------- CO ranks & hiring ---------------- */
 export const RANK_PRICE = [1500, 3000, 5000, 8000];

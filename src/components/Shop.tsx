@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   COS, CO_PIECES, CO_PRICE, PLAYABLE_ORDER, RANK_MAX, RANK_NAMES, RANK_PRICE, SKILLS, SKILL_ORDER, TRACKS, TRACK_MAX, TRACK_ORDER, TRACK_PRICE,
-  UNITS, UNIT_ORDER, rankDesc, rankSlots, ultimateCost, upgradeEffects,
+  UNITS, UNIT_ORDER, maxSkillTierForRank, rankDesc, rankSlots, ultimateCost, upgradeEffects,
 } from '../game/data';
 import { claimAfkGold, formatDuration, getAfkStatus, HARVESTER_LEVELS, MAX_HARVEST_HOURS, upgradeAfkHarvester } from '../game/afk';
 import { REWARDS, MISSIONS } from '../game/campaign';
@@ -94,7 +94,16 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
     if (rank >= RANK_MAX) return;
     spend(RANK_PRICE[rank], { ...save, coRank: { ...save.coRank, [selCo]: rank + 1 } }, `${co.name} promoted to ${RANK_NAMES[rank + 1]}!`);
   };
+  const maxTier = maxSkillTierForRank(rank);
+
   const equip = (slot: number, id: string | null) => {
+    if (id && SKILLS[id]) {
+      if (SKILLS[id].tier > maxTier) {
+        sfx.cancel();
+        toast(`Needs Tier ${SKILLS[id].tier} (${SKILLS[id].tier === 2 ? '2 Stars / Elite' : '3 Stars / Ace'})`);
+        return;
+      }
+    }
     const cur = [...loadout];
     while (cur.length < slots) cur.push('');
     const existing = id ? cur.indexOf(id) : -1;
@@ -302,7 +311,10 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                             <button key={i} onClick={() => { sfx.menu(); setSlotPick(i); }} className="flex items-center gap-2 p-2 rounded-lg border-2 border-dashed border-emerald-500/50 bg-emerald-500/5 text-left active:scale-[0.99] w-full min-w-0 overflow-hidden">
                               <div className="text-2xl w-8 text-center shrink-0">{sk ? sk.icon : '＋'}</div>
                               <div className="flex-1 min-w-0">
-                                <div className="text-sm font-black text-white truncate">{sk ? sk.name : 'Empty slot'}</div>
+                                <div className="text-sm font-black text-white truncate flex items-center gap-1.5">
+                                  {sk ? sk.name : 'Empty slot'}
+                                  {sk && <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">T{sk.tier}</span>}
+                                </div>
                                 <div className="text-[11px] text-slate-400 truncate">{sk ? `${sk.kind} · Charge ${sk.cost} · ${sk.desc}` : 'Equip a skill you own'}</div>
                               </div>
                             </button>
@@ -319,30 +331,52 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
 
           {tab === 'skills' && (
             <>
-              <div className="text-xs text-slate-400 mb-2">Tactical skills can be equipped on any officer. <b className="text-white">The stronger the skill, the more charge it costs.</b> Some are unlocked for free by clearing story missions.</div>
-              <div className="grid gap-1.5">
-                {SKILL_ORDER.map((id) => {
-                  const sk = SKILLS[id];
-                  const have = save.ownedSkills.includes(id);
-                  const rm = rewardMission(id);
+              <div className="text-xs text-slate-400 mb-3">
+                Tactical skills are categorized into <b className="text-amber-300">Tiers (Tier 1 / Tier 2 / Tier 3)</b>. Higher tier skills take longer to charge and require higher officer star levels to equip (Tier 1: Base / ★, Tier 2: ★★ Elite, Tier 3: ★★★ Ace).
+              </div>
+              <div className="flex flex-col gap-4">
+                {([1, 2, 3] as const).map((t) => {
+                  const list = SKILL_ORDER.filter((id) => SKILLS[id].tier === t);
                   return (
-                    <div key={id} className={`flex items-center gap-2 p-2 rounded-xl border bg-slate-900/80 ${have ? 'border-emerald-500/60' : 'border-slate-700'}`}>
-                      <div className="text-3xl w-10 text-center">{sk.icon}</div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-black text-white">{sk.name}</span>
-                          <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${KIND_COLOR[sk.kind]}`}>{sk.kind.toUpperCase()}</span>
-                        </div>
-                        <div className="text-[11px] text-slate-300">{sk.desc}</div>
-                        <div className="flex items-center gap-1.5 mt-1">
-                          <span className="text-[9px] text-slate-400 font-bold w-14">CHARGE {sk.cost}</span>
-                          <div className="flex-1 h-1.5 bg-slate-800 rounded overflow-hidden max-w-[180px]"><div className="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500" style={{ width: `${(sk.cost / 130) * 100}%` }} /></div>
-                        </div>
-                        {!have && rm && <div className="text-[10px] text-sky-300 mt-0.5">🎁 Free reward: {rm}</div>}
+                    <div key={t} className="hud-panel p-2.5 border-slate-700 bg-slate-900/90 rounded-xl">
+                      <div className="flex items-center justify-between border-b border-slate-700 pb-1.5 mb-2">
+                        <span className="font-black text-sm text-amber-300 tracking-wider">
+                          TIER {t} SKILLS {t === 1 ? '· 1★ Recruit+' : t === 2 ? '· 2★ Elite+' : '· 3★ Ace+'}
+                        </span>
+                        <span className="text-[10px] text-slate-400 font-bold">
+                          {t === 1 ? 'Base unlocked' : t === 2 ? 'Requires CO Rank 2' : 'Requires CO Rank 3'}
+                        </span>
                       </div>
-                      {have ? <div className="text-emerald-300 text-xs font-black">OWNED</div> : (
-                        <button onClick={() => buySkill(id)} className={`menu-btn h-10 text-xs ${save.merits >= sk.price ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`}>🪙 {sk.price}</button>
-                      )}
+                      <div className="grid gap-1.5">
+                        {list.map((id) => {
+                          const sk = SKILLS[id];
+                          const have = save.ownedSkills.includes(id);
+                          const rm = rewardMission(id);
+                          return (
+                            <div key={id} className={`flex items-center gap-2 p-2 rounded-xl border bg-slate-950/80 ${have ? 'border-emerald-500/60' : 'border-slate-800'}`}>
+                              <div className="text-3xl w-10 text-center shrink-0">{sk.icon}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="font-black text-white">{sk.name}</span>
+                                  <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">TIER {sk.tier}</span>
+                                  <span className={`text-[9px] font-black px-1.5 py-0.5 rounded border ${KIND_COLOR[sk.kind]}`}>{sk.kind.toUpperCase()}</span>
+                                </div>
+                                <div className="text-[11px] text-slate-300 mt-0.5">{sk.desc}</div>
+                                <div className="flex items-center gap-1.5 mt-1">
+                                  <span className="text-[9px] text-slate-400 font-bold w-16 shrink-0">CHARGE {sk.cost}</span>
+                                  <div className="flex-1 h-1.5 bg-slate-800 rounded overflow-hidden max-w-[180px]">
+                                    <div className="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-rose-500" style={{ width: `${(sk.cost / 150) * 100}%` }} />
+                                  </div>
+                                </div>
+                                {!have && rm && <div className="text-[10px] text-sky-300 mt-0.5">🎁 Free reward: {rm}</div>}
+                              </div>
+                              {have ? <div className="text-emerald-300 text-xs font-black shrink-0">OWNED</div> : (
+                                <button onClick={() => buySkill(id)} className={`menu-btn h-10 text-xs shrink-0 ${save.merits >= sk.price ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`}>🪙 {sk.price}</button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 })}
@@ -525,22 +559,29 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
 
       {slotPick !== null && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/70 anim-fade p-2" onClick={() => setSlotPick(null)}>
-          <div className="hud-panel p-3 w-[min(440px,96vw)] max-h-[85vh] overflow-auto anim-zoom" onClick={(e) => e.stopPropagation()}>
-            <div className="font-black text-emerald-300 mb-2">Equip skill · Slot {slotPick + 1}</div>
+          <div className="hud-panel p-3 w-[min(460px,96vw)] max-h-[85vh] overflow-auto anim-zoom" onClick={(e) => e.stopPropagation()}>
+            <div className="font-black text-emerald-300 mb-1">Equip skill · Slot {slotPick + 1} ({co.name})</div>
+            <div className="text-[11px] text-slate-400 mb-2">Officer Rank: <b className="text-amber-300">★{rank} ({RANK_NAMES[rank]})</b> · Max Tier: <b className="text-amber-300">Tier {maxTier}</b></div>
             {save.ownedSkills.length === 0 && <div className="text-xs text-slate-400 mb-2">You don't own any skills yet. Buy them in the Skills tab, or earn them from story missions.</div>}
             <div className="grid gap-1.5">
               <button className="p-2 rounded-lg bg-slate-800 border border-slate-700 text-left text-sm font-bold text-slate-300" onClick={() => equip(slotPick, null)}>✕ Empty slot</button>
               {SKILL_ORDER.filter((id) => save.ownedSkills.includes(id)).map((id) => {
                 const sk = SKILLS[id];
                 const inUse = loadout.includes(id);
+                const lockedByTier = sk.tier > maxTier;
                 return (
-                  <button key={id} onClick={() => equip(slotPick, id)} className={`flex items-center gap-2 p-2 rounded-lg border text-left ${inUse ? 'border-emerald-400 bg-emerald-500/10' : 'border-slate-700 bg-slate-900'}`}>
-                    <div className="text-2xl w-8 text-center">{sk.icon}</div>
+                  <button key={id} disabled={lockedByTier} onClick={() => equip(slotPick, id)} className={`flex items-center gap-2 p-2 rounded-lg border text-left transition ${lockedByTier ? 'opacity-40 bg-slate-900 border-slate-800 cursor-not-allowed' : inUse ? 'border-emerald-400 bg-emerald-500/10' : 'border-slate-700 bg-slate-900'}`}>
+                    <div className="text-2xl w-8 text-center shrink-0">{sk.icon}</div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-black text-white">{sk.name} <span className="text-[10px] text-slate-400">Charge {sk.cost}</span></div>
+                      <div className="text-sm font-black text-white flex items-center gap-1.5">
+                        <span>{sk.name}</span>
+                        <span className="text-[9px] font-black px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40">T{sk.tier}</span>
+                        <span className="text-[10px] text-slate-400 font-normal">Charge {sk.cost}</span>
+                      </div>
                       <div className="text-[11px] text-slate-400">{sk.desc}</div>
+                      {lockedByTier && <div className="text-[10px] font-bold text-rose-400 mt-0.5">🔒 Needs CO Rank {sk.tier === 2 ? '2 (Elite)' : '3 (Ace)'}</div>}
                     </div>
-                    {inUse && <span className="text-[10px] text-emerald-300 font-black">EQUIPPED</span>}
+                    {inUse && <span className="text-[10px] text-emerald-300 font-black shrink-0">EQUIPPED</span>}
                   </button>
                 );
               })}
