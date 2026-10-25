@@ -303,7 +303,7 @@ export const COS: Record<string, CODef> = {
     d2d: 'Vision +1. Enemy skill charge 15% slower. Direct units −10% attack.', powerName: 'Disruptor', powerDesc: 'All enemy units −1 move on next turn.',
     superName: 'Overclock', superDesc: 'All enemy units −2 move. Friendly units +25% attack.', powerCost: 50, superCost: 100 },
   valerie: { id: 'valerie', name: 'Valerie', title: 'Spearhead Commander', faction: 'azure', color: '#38bdf8', emoji: '🛡️',
-    bio: 'A frontline vanguard officer who summons rapid mechanized reinforcements to secure the line.',
+    bio: 'Separated from her twin brother Malakor during the Shadow War, Valerie became Azure\'s premier Spearhead Commander, summoning rapid vanguard armor to secure the front line.',
     d2d: 'Mech & Tank units +15% attack. Air units −10% defense.', powerName: 'Vanguard Call', powerDesc: 'Summons 2 fresh Mech/Tank units near your HQ or captured bases.',
     superName: 'Spearhead Assault', superDesc: 'Summons 2 fresh Tank/Heavy units & grants all units +20% attack, +1 move.', powerCost: 55, superCost: 105 },
   grimm: { id: 'grimm', name: 'Grimm', title: 'Warlord', faction: 'crimson', color: '#ef4444', emoji: '💀',
@@ -335,7 +335,7 @@ export const COS: Record<string, CODef> = {
     d2d: 'All units +10% atk & def. Unaffected by sand. Air units −10% attack.', powerName: 'Recalibrate', powerDesc: 'All units heal 3 HP.',
     superName: 'Singularity', superDesc: '+30% atk & def. Enemies take 2 HP and −1 move next turn.', powerCost: 60, superCost: 110, immune: 'sand' },
   malakor: { id: 'malakor', name: 'Malakor', title: 'Shadow Warlord', faction: 'crimson', color: '#991b1b', emoji: '⚔️',
-    bio: 'A fearsome Dominion warlord who summons heavy mechanized shock troops directly to the battlefield.',
+    bio: 'Separated from his twin sister Valerie as a child, Malakor grew up among Dominion warlords. He commands crushing siege engines and summons heavy shock troops.',
     d2d: 'Heavy & Artillery units +15% attack. Infantry −10% defense.', powerName: 'Dread Summon', powerDesc: 'Summons 2 fresh Heavy/Artillery units near your HQ or bases.',
     superName: 'Iron Legion', superDesc: 'Summons 2 fresh Heavy/Rockets units & grants all units +25% attack.', powerCost: 60, superCost: 115 },
 };
