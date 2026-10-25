@@ -1,5 +1,5 @@
 import { COS } from './data';
-import type { MissionDef, Team, UnitType, Weather } from './types';
+import type { Dialogue, MissionDef, Team, UnitType, Weather } from './types';
 
 const SWAP: Record<string, string> = { C: 'X', X: 'C', B: 'Y', Y: 'B', A: 'Z', Z: 'A', P: 'Q', Q: 'P', T: 'V', V: 'T', H: 'E', E: 'H' };
 
@@ -158,9 +158,6 @@ const CO_CHAPTER_TITLES: Record<string, string[]> = {
 
 /** Generate 10 specialized, story-rich chapters for each officer with customized lore, dialogues, and adaptive events. */
 function getValerieStoryChapters(): CharacterStoryChapter[] {
-  const valerieDef = COS['valerie'];
-  const malakorDef = COS['malakor'];
-
   const valerieChapters: {
     title: string;
     summary: string;
