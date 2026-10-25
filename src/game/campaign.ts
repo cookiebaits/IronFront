@@ -752,7 +752,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm38', name: 'Naval Blockade Operation', act: 20, par: 15, cos: ['mira', 'rhea', 'dax', 'zero'], enemyCo: 'volkov', forcedCo: 'mira', recommendedRank: 4, recommendedUpgrades: 12,
     map: sym(['wws.P..w.', 'wP=w.r.w.', 'rws..P..w', 'wws.w.r.w', 'rws..P..w', 'wws..Q.w.', 'm..f..w.f', '....P...m', 'mmm.f..f.']),
-    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 1, 6], ['cruiser', 2, 7]], [['sub', 15, 3], ['battleship', 16, 5]]),
+    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 0, 5], ['cruiser', 1, 4]], [['sub', 15, 3], ['battleship', 16, 5]]),
     funds: [12000, 15000], weather: 'clear', weatherPool: ['clear', 'rain'], fog: false, unitCap: [20, 24], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Naval-only operation! Cruisers protect battleships against enemy submarines in deep reef waters.',
@@ -923,7 +923,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm48', name: 'Coral Reef Fleet Strike', act: 24, par: 15, cos: ['mira', 'rhea', 'volkov', 'zero'], enemyCo: 'volkov', allyCo: 'mira', recommendedRank: 5, recommendedUpgrades: 15,
     map: sym(['wws.P..w.', 'wP=w.r.w.', 'rws..P..w', 'wws.w.r.w', 'rws..P..w', 'wws..Q.w.', 'm..f..w.f', '....P...m', 'mmm.f..f.']),
-    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 1, 6], ['cruiser', 2, 7]], [['sub', 15, 3], ['battleship', 16, 5], ['cruiser', 15, 6]]),
+    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 0, 5], ['cruiser', 1, 4]], [['sub', 15, 3], ['battleship', 16, 5], ['cruiser', 15, 4]]),
     funds: [16000, 18500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Naval-only operation under fog! Use cruisers to detect hidden submarines.',
@@ -993,7 +993,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm52', name: 'Coastal Battery Assault', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria', allyCo: 'sora', recommendedRank: 5, recommendedUpgrades: 15,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [17000, 20000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Fog of war! Cyber Officer Aria jams long-range sensors.',
@@ -1010,7 +1010,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm53', name: 'Core Awaking', act: 25, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', recommendedRank: 5, recommendedUpgrades: 15,
     map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
-    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['fighter', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['fighter', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['rockets', 20, 5]]),
     funds: [17500, 20500], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Rain slows air and ground movement. Strike before the core wakes.',
@@ -1027,7 +1027,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm54', name: 'Supply Pass Defense', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 16,
     map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [18000, 21000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Colonel Brann provides long-range artillery support across the mountain pass.',
@@ -1061,7 +1061,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm56', name: 'Rebellion Suppression', act: 26, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 16,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [19000, 22000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: "Fog of war! Nyx's rebels strike from forested ambushes.",
@@ -1095,7 +1095,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm58', name: 'Desert Citadel Siege II', act: 27, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', allyCo: 'mira', recommendedRank: 5, recommendedUpgrades: 16,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [20000, 23000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Admiral Mira provides naval gunfire support along the citadel canal.',
@@ -1148,7 +1148,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm61', name: 'Sovereign Cleansing', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria', recommendedRank: 5, recommendedUpgrades: 17,
     map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
-    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['rockets', 20, 5]]),
     funds: [21000, 24000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Cleanse the area of remaining cyber relays in heavy rain.',
@@ -1165,7 +1165,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm62', name: 'Joint Task Force', act: 28, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'kaelen', allyCo: 'sora', recommendedRank: 5, recommendedUpgrades: 17,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [21500, 24500], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: "Sora's air wing coordinates with your land assault.",
@@ -1199,7 +1199,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm64', name: 'Mountain Pass Counter', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 17,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [22500, 25500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Colonel Brann provides long-range artillery support in fog.',
@@ -1216,7 +1216,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm65', name: 'Forest Ambush', act: 29, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', recommendedRank: 5, recommendedUpgrades: 17,
     map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
-    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['rockets', 20, 5]]),
     funds: [23000, 26000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Forest ambush in heavy rain. Use thermal optics and recon.',
@@ -1250,7 +1250,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm67', name: 'Treacherous River', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', recommendedRank: 5, recommendedUpgrades: 18,
     map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
-    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['rockets', 20, 5]]),
     funds: [24000, 27000], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Sandstorm cuts indirect range along the river.',
@@ -1267,7 +1267,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm68', name: 'Construct Retrieval', act: 30, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'seraphina', allyCo: 'mira', recommendedRank: 5, recommendedUpgrades: 18,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [24500, 27500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: "Fog of war! Retrieve construct fragments under Seraphina's nanite interference.",
@@ -1302,7 +1302,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm70', name: 'Silent Border', act: 31, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'aria', allyCo: 'rhea', recommendedRank: 5, recommendedUpgrades: 18,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [25000, 28000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Snow reduces movement. Secure border radio towers.',
@@ -1353,7 +1353,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm73', name: 'Final Stand', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'frost', recommendedRank: 5, recommendedUpgrades: 20,
     map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
-    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['rockets', 20, 5]]),
     funds: [26500, 29500], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: "Baron Frost's final stand in torrential rain.",
@@ -1370,7 +1370,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm74', name: 'Eternal Apex Titan', act: 32, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'nyx', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 20,
     map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
-    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
     funds: [27000, 30000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     boss: { x: 16, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 8 },
     aiLevel: 3,

@@ -2163,6 +2163,11 @@ export default function GameView(props: Props) {
                       <span className="text-emerald-300">{m.def}%</span>
                       {d.fuel !== undefined && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel} SQ</span>}
                     </div>
+                    {curUnit.cargo && (
+                      <div className="mt-1 text-[9.5px] font-black text-cyan-200 flex items-center gap-1 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/40">
+                        📦 INSIDE: <span className="text-white">{UNITS[curUnit.cargo.type].name} ({dispHp(curUnit.cargo.hp)}/10 HP)</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               );

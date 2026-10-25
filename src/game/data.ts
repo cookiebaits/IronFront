@@ -122,11 +122,14 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
   battleship: { name: 'Battleship', cost: 26000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6. Cannot hit air units.' },
+  carrier: { name: 'Aircraft Carrier', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 4, fuel: 30,
+    carry: ['infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'artillery', 'rockets', 'aa', 'missiles', 'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber'], supply: true,
+    dmg: { INF: 60, LIGHT: 50, TANK: 40, HEAVY: 20, HELI: 100, PLANE: 75, SHIP: 30, SUB: 30 }, desc: 'Fleet capital ship. Carries 1 air or ground unit and supplies adjacent allies.' },
 };
 
 export const UNIT_ORDER: UnitType[] = [
   'infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'artillery', 'rockets', 'aa', 'missiles',
-  'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber', 'cruiser', 'sub', 'battleship',
+  'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber', 'cruiser', 'sub', 'battleship', 'carrier',
 ];
 
 /* ---------------- Unit upgrade tracks (every upgrade has a trade-off) ---------------- */

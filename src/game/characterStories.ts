@@ -17,6 +17,22 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
+const SEA_TILES = new Set(['w', 's', 'r', 'P', 'Q']);
+
+/** Replaces naval units placed on non-sea tiles with ground equivalents so units aren't trapped on land. */
+function sanitizeUnitsForMap(map: string[], units: [UnitType, number, number, Team][]): [UnitType, number, number, Team][] {
+  return units.map(([type, x, y, team]) => {
+    const tile = map[y]?.[x];
+    if (tile && !SEA_TILES.has(tile)) {
+      if (type === 'battleship') return ['rockets', x, y, team];
+      if (type === 'cruiser') return ['aa', x, y, team];
+      if (type === 'sub') return ['recon', x, y, team];
+      if ((type as string) === 'carrier') return ['heavy', x, y, team];
+    }
+    return [type, x, y, team];
+  });
+}
+
 export interface CharacterStoryChapter {
   id: string;
   coId: string;
@@ -187,10 +203,10 @@ function getValerieStoryChapters(): CharacterStoryChapter[] {
       fog: false,
       hint: 'Valerie\'s Spearhead doctrine excels with mobile Mech & Tank pushes. Breach Malakor\'s defensive line!',
       briefing: [
-        { who: 'valerie', text: 'Command HQ, this is Spearhead Valerie. I\'ve intercepted a Crimson armored column along the border.' },
-        { who: 'valerie', text: 'Wait... their reinforcement calling signals... they\'re identical to the Vanguard doctrine my family used before the raid on Solaria!' },
+        { who: 'valerie', text: 'Command HQ, this is Spearhead Valerie. I was separated from my twin sister Malakor during the Shadow War, and I\'ve intercepted a Crimson armored column along the border.' },
+        { who: 'valerie', text: 'Wait... their reinforcement calling signals... they\'re identical to the Vanguard doctrine my family used before we were separated!' },
         { who: 'malakor', text: 'Azure Republic trespassers! I am Malakor, Shadow Warlord of Crimson. You will be crushed under heavy treads!' },
-        { who: 'valerie', text: 'Malakor?! That name... could it really be my long-lost twin sister?!' },
+        { who: 'valerie', text: 'Malakor?! That name... could it really be my twin sister from whom I was separated?!' },
       ],
       outro: [
         { who: 'valerie', text: 'Malakor! Hold your fire! Look at the twin silver pendant on my neck—it matches yours!' },
@@ -413,7 +429,7 @@ function getValerieStoryChapters(): CharacterStoryChapter[] {
         act: 1,
         par: 8 + i,
         map: mapTemplate,
-        units: mir(14, ch.myUnits, ch.enemyUnits),
+        units: sanitizeUnitsForMap(mapTemplate, mir(14, ch.myUnits, ch.enemyUnits)),
         cos: ['valerie'],
         enemyCo: ch.enemyCo,
         allyCo: ch.allyCo,
@@ -472,7 +488,7 @@ export function getCharacterStoryChapters(coId: string): CharacterStoryChapter[]
         act: 1,
         par: 7 + i,
         map: mapTemplate,
-        units: mir(14, myUnits, enemyExtras),
+        units: sanitizeUnitsForMap(mapTemplate, mir(14, myUnits, enemyExtras)),
         cos: [coId],
         enemyCo,
         funds: [4500 + i * 500, 5000 + i * 500],

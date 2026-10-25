@@ -11,7 +11,7 @@ export type Category = 'infantry' | 'vehicle' | 'artillery' | 'air' | 'naval';
 export type UnitType =
   | 'infantry' | 'mech' | 'recon' | 'apc' | 'tank' | 'heavy' | 'artillery' | 'rockets' | 'aa' | 'missiles'
   | 'drone' | 'gundrone' | 'tcopter' | 'bcopter' | 'fighter' | 'bomber'
-  | 'cruiser' | 'sub' | 'battleship';
+  | 'cruiser' | 'sub' | 'battleship' | 'carrier';
 export type Weather = 'clear' | 'rain' | 'snow' | 'sand';
 export type ModId = 'armor' | 'weapons' | 'engine' | 'optics' | 'targeting' | 'coating' | 'composite';
 export type TrackId = 'fire' | 'armor' | 'mobility' | 'economy' | 'range' | 'tactical' | 'veterancy' | 'logistics';
@@ -250,6 +250,7 @@ export interface AttackResult {
   defenderId: number;
   aType: UnitType;
   dType: UnitType;
+  cargoCounterType?: UnitType;
   aTeam: Team;
   dTeam: Team;
   aBefore: number;

@@ -391,9 +391,14 @@ export function forecast(s: GameState, a: Unit, ax: number, ay: number, d: Unit)
   const hi = calcDamage(s, a, ax, ay, d, d.x, d.y, a.hp, 9);
   let counter = 0;
   const remaining = d.hp - lo;
-  if (remaining > 0 && !isIndirect(d.type) && dist(ax, ay, d.x, d.y) === 1 && canAttackType(d.type, a.type, a)) {
-    const tmp = { ...d, hp: remaining };
-    counter = calcDamage(s, tmp, d.x, d.y, a, ax, ay, remaining, 4);
+  if (remaining > 0 && dist(ax, ay, d.x, d.y) === 1) {
+    if (d.cargo && canAttackType(d.cargo.type, a.type, a)) {
+      const tmpCargo = { ...d.cargo, x: d.x, y: d.y, team: d.team };
+      counter = calcDamage(s, tmpCargo, d.x, d.y, a, ax, ay, d.cargo.hp, 4);
+    } else if (!d.cargo && !isIndirect(d.type) && canAttackType(d.type, a.type, a)) {
+      const tmp = { ...d, hp: remaining };
+      counter = calcDamage(s, tmp, d.x, d.y, a, ax, ay, remaining, 4);
+    }
   }
   return { lo: Math.min(lo, d.hp), hi: Math.min(hi, d.hp), counter: Math.min(counter, a.hp) };
 }
@@ -447,18 +452,35 @@ export function resolveAttack(s: GameState, a: Unit, d: Unit, rng = Math.random)
     }
   } else {
     res.dAfter = d.hp;
-    if (!res.indirect && !isIndirect(d.type) && canAttackType(d.type, a.type, a)) {
-      const c = Math.min(a.hp, calcDamage(s, d, d.x, d.y, a, a.x, a.y, d.hp, Math.floor(rng() * 10)));
-      a.hp -= c;
-      res.counter = c;
-      s.stats.dmg[d.team] += c;
-      chargeMeter(s, d.team, dmgCharge(c, a.type));
-      chargeMeter(s, a.team, dmgCharge(c, a.type) * 0.5);
-      if (a.hp <= 0) {
-        res.aKilled = true;
-        d.vet = Math.min(3, d.vet + 1);
-        chargeMeter(s, d.team, 8);
-        removeUnit(s, a);
+    if (!res.indirect) {
+      if (d.cargo && canAttackType(d.cargo.type, a.type, a)) {
+        res.cargoCounterType = d.cargo.type;
+        const tmpCargo = { ...d.cargo, x: d.x, y: d.y, team: d.team };
+        const c = Math.min(a.hp, calcDamage(s, tmpCargo, d.x, d.y, a, a.x, a.y, d.cargo.hp, Math.floor(rng() * 10)));
+        a.hp -= c;
+        res.counter = c;
+        s.stats.dmg[d.team] += c;
+        chargeMeter(s, d.team, dmgCharge(c, a.type));
+        chargeMeter(s, a.team, dmgCharge(c, a.type) * 0.5);
+        if (a.hp <= 0) {
+          res.aKilled = true;
+          d.vet = Math.min(3, d.vet + 1);
+          chargeMeter(s, d.team, 8);
+          removeUnit(s, a);
+        }
+      } else if (!d.cargo && !isIndirect(d.type) && canAttackType(d.type, a.type, a)) {
+        const c = Math.min(a.hp, calcDamage(s, d, d.x, d.y, a, a.x, a.y, d.hp, Math.floor(rng() * 10)));
+        a.hp -= c;
+        res.counter = c;
+        s.stats.dmg[d.team] += c;
+        chargeMeter(s, d.team, dmgCharge(c, a.type));
+        chargeMeter(s, a.team, dmgCharge(c, a.type) * 0.5);
+        if (a.hp <= 0) {
+          res.aKilled = true;
+          d.vet = Math.min(3, d.vet + 1);
+          chargeMeter(s, d.team, 8);
+          removeUnit(s, a);
+        }
       }
     }
   }
@@ -530,7 +552,7 @@ export function dropTiles(s: GameState, t: Unit): [number, number][] {
 export function dropCargo(s: GameState, t: Unit, x: number, y: number) {
   const c = t.cargo!;
   t.cargo = null;
-  c.x = x; c.y = y; c.moved = true; c.capturing = false;
+  c.x = x; c.y = y; c.moved = false; c.capturing = false;
   s.units.push(c);
 }
 

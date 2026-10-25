@@ -72,7 +72,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
       // sounds & events
       if (!fired.a && e >= T.fire1) { fired.a = true; (RAPID.includes(r.aType) ? sfx.gun : sfx.shot)(); }
       if (!fired.h1 && e >= T.hit1) { fired.h1 = true; shake = 10; sfx.hit(); }
-      if (hasCounter && !fired.b && e >= T.fire2) { fired.b = true; (RAPID.includes(r.dType) ? sfx.gun : sfx.shot)(); }
+      if (hasCounter && !fired.b && e >= T.fire2) { fired.b = true; (RAPID.includes(r.cargoCounterType ?? r.dType) ? sfx.gun : sfx.shot)(); }
       if (hasCounter && !fired.h2 && e >= T.hit2) { fired.h2 = true; shake = 8; sfx.hit(); }
       const nL = count(aHp), nR = count(dHp);
       while (alive.R > nR) { alive.R--; const p = slotPos(1, alive.R, r.dType); explode(p.x, p.y - us * 0.2, 26); shake = 14; sfx.boom(); }
@@ -158,7 +158,7 @@ export default function BattleScene({ r, cos, speed, weather, onDone }: Props) {
         }
       };
       shots(0, count(r.aBefore), r.aType, r.dType, Math.max(1, alive.R), T.fire1, T.hit1, r.indirect);
-      if (hasCounter) shots(1, count(r.dAfter), r.dType, r.aType, Math.max(1, alive.L), T.fire2, T.hit2, false);
+      if (hasCounter) shots(1, count(r.dAfter), r.cargoCounterType ?? r.dType, r.aType, Math.max(1, alive.L), T.fire2, T.hit2, false);
       // particles
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i];
