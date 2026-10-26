@@ -392,7 +392,7 @@ export function forecast(s: GameState, a: Unit, ax: number, ay: number, d: Unit)
   let counter = 0;
   const remaining = d.hp - lo;
   if (remaining > 0 && dist(ax, ay, d.x, d.y) === 1) {
-    if (d.cargo && canAttackType(d.cargo.type, a.type, a)) {
+    if (d.cargo && ['infantry', 'mech', 'rockets'].includes(d.cargo.type) && canAttackType(d.cargo.type, a.type, a)) {
       const tmpCargo = { ...d.cargo, x: d.x, y: d.y, team: d.team };
       counter = calcDamage(s, tmpCargo, d.x, d.y, a, ax, ay, d.cargo.hp, 4);
     } else if (!d.cargo && !isIndirect(d.type) && canAttackType(d.type, a.type, a)) {
@@ -453,7 +453,7 @@ export function resolveAttack(s: GameState, a: Unit, d: Unit, rng = Math.random)
   } else {
     res.dAfter = d.hp;
     if (!res.indirect) {
-      if (d.cargo && canAttackType(d.cargo.type, a.type, a)) {
+      if (d.cargo && ['infantry', 'mech', 'rockets'].includes(d.cargo.type) && canAttackType(d.cargo.type, a.type, a)) {
         res.cargoCounterType = d.cargo.type;
         const tmpCargo = { ...d.cargo, x: d.x, y: d.y, team: d.team };
         const c = Math.min(a.hp, calcDamage(s, tmpCargo, d.x, d.y, a, a.x, a.y, d.cargo.hp, Math.floor(rng() * 10)));
