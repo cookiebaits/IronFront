@@ -67,7 +67,7 @@ interface UI {
   reach: Map<number, ReachNode> | null;
   stops: Set<number>;
   atk: Set<number>;
-  danger: { reach: Set<number>; atk: Set<number>; indirect?: boolean } | null;
+  danger: { reach: Set<number>; atk: Set<number> } | null;
   pending: { x: number; y: number; path: [number, number][]; ambush: boolean; committed?: boolean } | null;
   targets: Unit[];
   tIdx: number;
@@ -491,7 +491,7 @@ export default function GameView(props: Props) {
     const reach = reachable(gs, unit, null);
     const r = new Set<number>();
     for (const k of reach.keys()) if (canStop(gs, unit, k % gs.w, Math.floor(k / gs.w))) r.add(k);
-    ui.current.danger = { reach: r, atk: attackRangeTiles(gs, unit, reach), indirect: isIndirect(unit.type) };
+    ui.current.danger = { reach: r, atk: attackRangeTiles(gs, unit, reach) };
     sfx.menu();
     bump();
   };
@@ -1488,46 +1488,30 @@ export default function GameView(props: Props) {
       g.stroke();
       // highlights
       const pulse = 0.75 + Math.sin(now / 220) * 0.25;
+      const fillSet = (set: Set<number>, col: string, skip?: Set<number>) => {
+        g.fillStyle = col;
+        for (const k of set) { if (skip && skip.has(k)) continue; const x = k % s.w, y = Math.floor(k / s.w); g.fillRect(x * ts + 1, y * ts + 1, ts - 2, ts - 2); }
+      };
       if (U.danger) {
-        // Movement distance tiles in high-contrast RED
-        g.fillStyle = `rgba(239,68,68,${0.4 * pulse})`;
-        g.strokeStyle = '#f87171';
-        g.lineWidth = Math.max(2, ts * 0.08);
-        for (const k of U.danger.reach) {
-          const x = k % s.w, y = Math.floor(k / s.w);
-          g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
-          g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
-        }
-        // Attack/firing range tiles in high-contrast BLUE
-        g.fillStyle = `rgba(59,130,246,${0.45 * pulse})`;
-        g.strokeStyle = '#60a5fa';
-        g.lineWidth = Math.max(1.5, ts * 0.06);
-        for (const k of U.danger.atk) {
-          if (!U.danger.indirect && U.danger.reach.has(k)) continue;
-          const x = k % s.w, y = Math.floor(k / s.w);
-          g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
-          g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
-        }
+        fillSet(U.danger.atk, `rgba(239,68,68,${0.28 * pulse})`, U.danger.reach);
+        fillSet(U.danger.reach, `rgba(249,115,22,${0.35 * pulse})`);
       }
       if (U.mode === 'selected' || U.mode === 'moving') {
-        const selUnitObj = U.selId != null ? unitById(s, U.selId) : null;
-        const selIndirect = selUnitObj ? isIndirect(selUnitObj.type) : false;
-
-        // High-contrast movement distance tiles (vibrant RED fill with sharp glowing red outline)
-        g.fillStyle = `rgba(239,68,68,${0.4 * pulse})`;
-        g.strokeStyle = '#f87171';
+        // High-contrast movement tiles (vibrant cyan fill with sharp glowing cyan outline)
+        g.fillStyle = `rgba(6,182,212,${0.5 * pulse})`;
+        g.strokeStyle = '#22d3ee';
         g.lineWidth = Math.max(2, ts * 0.08);
         for (const k of U.stops) {
           const x = k % s.w, y = Math.floor(k / s.w);
           g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
           g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
         }
-        // Attack/firing range tiles (vibrant BLUE fill and outline for firing reach)
-        g.fillStyle = `rgba(59,130,246,${0.45 * pulse})`;
-        g.strokeStyle = '#60a5fa';
+        // Attack/indirect range tiles (high-contrast red/amber fill and outline for firing reach beyond move)
+        g.fillStyle = `rgba(239,68,68,${0.32 * pulse})`;
+        g.strokeStyle = '#f87171';
         g.lineWidth = Math.max(1.5, ts * 0.06);
         for (const k of U.atk) {
-          if (!selIndirect && U.stops.has(k)) continue;
+          if (U.stops.has(k)) continue;
           const x = k % s.w, y = Math.floor(k / s.w);
           g.fillRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
           g.strokeRect(x * ts + 2, y * ts + 2, ts - 4, ts - 4);
@@ -2163,11 +2147,6 @@ export default function GameView(props: Props) {
                       <span className="text-emerald-300">{m.def}%</span>
                       {d.fuel !== undefined && <span className="text-sky-300">FUEL {curUnit.fuel ?? 0}/{d.fuel} SQ</span>}
                     </div>
-                    {curUnit.cargo && (
-                      <div className="mt-1 text-[9.5px] font-black text-cyan-200 flex items-center gap-1 bg-cyan-950/60 px-1.5 py-0.5 rounded border border-cyan-500/40">
-                        📦 INSIDE: <span className="text-white">{UNITS[curUnit.cargo.type].name} ({dispHp(curUnit.cargo.hp)}/10 HP)</span>
-                      </div>
-                    )}
                   </div>
                 </div>
               );

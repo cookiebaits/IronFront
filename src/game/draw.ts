@@ -216,7 +216,7 @@ export function drawUnit(g: CanvasRenderingContext2D, type: UnitType, cx: number
   g.translate(cx, cy);
   g.scale(k * facing, k);
   const air = ['drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber'].includes(type);
-  const sea = ['cruiser', 'sub', 'battleship', 'carrier'].includes(type);
+  const sea = ['cruiser', 'sub', 'battleship'].includes(type);
   const bob = air && !landed ? Math.sin(time / 260) * 2.5 : 0;
   if (shadow && !sea) {
     g.fillStyle = 'rgba(0,0,0,0.25)';
@@ -403,13 +403,6 @@ export function drawUnit(g: CanvasRenderingContext2D, type: UnitType, cx: number
       rect(12, -6, 12, 7, M, 3); rect(20, -6, 14, 3, '#1f2937', 1);
       rect(-26, -6, 12, 7, M, 3); rect(-14, -6, 12, 3, '#1f2937', 1);
       g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(-30, 14, 58, 2);
-      break;
-    case 'carrier':
-      g.fillStyle = D; g.beginPath(); g.moveTo(-34, -2); g.lineTo(36, -2); g.lineTo(28, 14); g.lineTo(-30, 14); g.closePath(); g.fill(); g.stroke();
-      rect(-32, -12, 66, 10, M, 2);
-      g.fillStyle = '#fde047'; g.fillRect(-28, -8, 52, 2);
-      rect(-18, -20, 14, 8, L, 2);
-      g.fillStyle = 'rgba(255,255,255,0.6)'; g.fillRect(-32, 14, 60, 2);
       break;
   }
   g.restore();

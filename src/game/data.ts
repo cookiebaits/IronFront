@@ -108,9 +108,8 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { INF: 45, LIGHT: 30, TANK: 12, HEAVY: 5, HELI: 35, SHIP: 8 }, desc: 'Cheap flying harasser with long vision.' },
   gundrone: { name: 'Gun Drone', cost: 5500, move: 7, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 3, fuel: 18,
     dmg: { INF: 85, LIGHT: 50, TANK: 12, HEAVY: 5, HELI: 60, PLANE: 20, SHIP: 6 }, desc: 'Twin machine-gun drone. Shreds infantry, light vehicles & copters.' },
-  tcopter: { name: 'T-Copter', cost: 4800, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 2, fuel: 25,
-    carry: ['infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'artillery', 'rockets', 'aa', 'missiles', 'cruiser', 'sub', 'battleship'],
-    dmg: {}, desc: 'Heavy transport helicopter. Carries 1 land unit or vessel over any terrain.' },
+  tcopter: { name: 'T-Copter', cost: 4800, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 2, fuel: 25, carry: ['infantry', 'mech'],
+    dmg: {}, desc: 'Transport helicopter. Carries 1 foot unit over any terrain.' },
   bcopter: { name: 'Gunship', cost: 9000, move: 5, moveType: 'air', armor: 'HELI', cat: 'air', range: [1, 1], vision: 3, fuel: 18,
     dmg: { INF: 75, LIGHT: 60, TANK: 55, HEAVY: 25, HELI: 65, SHIP: 25, SUB: 25 }, desc: 'Attack helicopter. Ignores terrain.' },
   fighter: { name: 'Fighter', cost: 20000, move: 8, moveType: 'air', armor: 'PLANE', cat: 'air', range: [1, 1], vision: 2, fuel: 18,
@@ -123,14 +122,11 @@ export const UNITS: Record<UnitType, UnitDef> = {
     dmg: { SHIP: 75, SUB: 55 }, desc: 'Stealth hunter-killer of ships.' },
   battleship: { name: 'Battleship', cost: 26000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [2, 6], vision: 2, fuel: 25, indirect: true,
     dmg: { INF: 95, LIGHT: 90, TANK: 75, HEAVY: 55, SHIP: 50, SUB: 65 }, desc: 'Massive naval guns, range 2–6. Cannot hit air units.' },
-  carrier: { name: 'Aircraft Carrier', cost: 28000, move: 5, moveType: 'sea', armor: 'SHIP', cat: 'naval', range: [1, 1], vision: 4, fuel: 30,
-    carry: ['infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'artillery', 'rockets', 'aa', 'missiles', 'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber'], supply: true,
-    dmg: { INF: 60, LIGHT: 50, TANK: 40, HEAVY: 20, HELI: 100, PLANE: 75, SHIP: 30, SUB: 30 }, desc: 'Fleet capital ship. Carries 1 air or ground unit and supplies adjacent allies.' },
 };
 
 export const UNIT_ORDER: UnitType[] = [
   'infantry', 'mech', 'recon', 'apc', 'tank', 'heavy', 'artillery', 'rockets', 'aa', 'missiles',
-  'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber', 'cruiser', 'sub', 'battleship', 'carrier',
+  'drone', 'gundrone', 'tcopter', 'bcopter', 'fighter', 'bomber', 'cruiser', 'sub', 'battleship',
 ];
 
 /* ---------------- Unit upgrade tracks (every upgrade has a trade-off) ---------------- */
