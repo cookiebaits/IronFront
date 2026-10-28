@@ -21,7 +21,7 @@ function mir(width: number, list: [UnitType, number, number][], extra: [UnitType
   return out;
 }
 
-export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations', 'Act XV — Allied Vanguard', 'Act XVI — Dual Front', 'Act XVII — Sovereign Alliance', 'Act XVIII — Desperate Measures', 'Act XIX — United Front', 'Act XX — The Omega Clash', 'Act XXI — The Crimson Rebellion', 'Act XXII — Naval Blockade', 'Act XXIII — The Desert Scourge', 'Act XXIV — Aerial Dominance', 'Act XXV — The Frozen Tundra', 'Act XXVI — Cyber Overload', 'Act XXVII — The Shadow War', 'Act XXVIII — Nanite Plague', 'Act XXIX — Architects Echo', 'Act XXX — Sovereign Core', 'Act XXXI — The Last Alliance', 'Act XXXII — Eternal Peace'];
+export const ACTS = ['Boot Camp', 'Act I — Border Fire', 'Act II — Skies of Ash', 'Act III — The Iron Throne', 'Act IV — Ghost Protocol', 'Act V — The Final Signal', 'Act VI — Fractured Peace', 'Act VII — Zero Dawn', 'Act VIII — Desert Citadel', 'Act IX — Citadel of Shadows', 'Act X — Apex Vanguard', 'Act XI — Titan\'s Citadel', 'Act XII — Omega Horizon', 'Act XIII — Final Victory', 'Act XIV — Sky & Sea Operations', 'Act XV — Allied Vanguard', 'Act XVI — Dual Front', 'Act XVII — Sovereign Alliance', 'Act XVIII — Desperate Measures', 'Act XIX — United Front', 'Act XX — The Omega Clash', 'Act XXI — The Crimson Rebellion', 'Act XXII — Naval Blockade', 'Act XXIII — The Desert Scourge', 'Act XXIV — Aerial Dominance', 'Act XXV — The Frozen Tundra', 'Act XXVI — Cyber Overload', 'Act XXVII — The Shadow War', 'Act XXVIII — Nanite Plague', 'Act XXIX — Architects Echo', 'Act XXX — Sovereign Core', 'Act XXXI — The Last Alliance', 'Act XXXII — Eternal Peace', 'Act XXXIII — Old Friends & Reunions', 'Act XXXIV — Solaria Accord', 'Act XXXV — Veteran Vanguard', 'Act XXXVI — Steel & Faith', 'Act XXXVII — Sovereign Reunion', 'Act XXXVIII — The Final Reunion'];
 
 export const MISSIONS: MissionDef[] = [
   {
@@ -1374,16 +1374,441 @@ export const MISSIONS: MissionDef[] = [
     funds: [27000, 30000], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     boss: { x: 16, y: 4, team: 1, type: 'heavy', name: 'TITAN CORE', hp: 100, phases: 8 },
     aiLevel: 3,
-    hint: 'Ultimate final campaign battle! Destroy all 8 shield phases of the TITAN CORE for eternal victory.',
+    hint: 'Ultimate campaign climax! Destroy all 8 shield phases of the TITAN CORE.',
     briefing: [
-      { who: 'narrator', text: 'The final battle of the campaign. For peace, for the future. We will not fail.' },
+      { who: 'narrator', text: 'The final battle of the core arc. For peace, for the future. We will not fail.' },
       { who: 'brann', text: 'All heavy batteries fire at will! Break the Titan Core!' },
       { who: 'nyx', text: 'You will fall here!' },
     ],
     outro: [
       { who: 'nyx', text: 'Titan Core destroyed... global peace achieved!' },
-      { who: 'brann', text: 'We won, Commander. The war is finally over!' },
-      { who: 'narrator', text: 'CONGRATULATIONS! You have completed the entire 75-mission campaign!' },
+      { who: 'brann', text: 'We won, Commander. But old friends are calling from across the frontier!' },
+    ],
+  },
+  {
+    id: 'm75', name: 'Academy Reunion', act: 33, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 20,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['tank', 4, 2], ['artillery', 2, 5], ['mech', 5, 4], ['infantry', 3, 6]], [['heavy', 16, 6], ['tank', 15, 3], ['rockets', 18, 5]]),
+    funds: [27500, 30500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Old Friends Arc! Captain Rhea and Major Dax gather with old Solaria Military Academy classmates.',
+    briefing: [
+      { who: 'narrator', text: 'Act XXXIII — Old Friends & Reunions. Captain Rhea returns to Solaria Military Academy where her old cohort has gathered.' },
+      { who: 'dax', text: 'Good to see you again, old friend! Just like back in our academy cadet days.' },
+      { who: 'rhea', text: 'Grimm\'s raiders are testing our old academy grounds. Let\'s show them our veteran synergy!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Haha! The old academy squad hasn\'t lost its touch!' },
+      { who: 'rhea', text: 'Onward to meet Dax\'s former tank battalion comrades.' },
+    ],
+  },
+  {
+    id: 'm76', name: 'Veteran Tread', act: 33, par: 15, cos: ['dax', 'brann', 'rhea', 'volkov'], enemyCo: 'volkov', allyCo: 'dax', forcedCo: 'dax', recommendedRank: 5, recommendedUpgrades: 21,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 4, 2], ['tank', 5, 3], ['mech', 3, 4], ['artillery', 2, 5], ['rockets', 1, 6], ['recon', 2, 7], ['aa', 4, 8]], [['heavy', 18, 3], ['tank', 17, 2], ['rockets', 19, 6], ['mech', 18, 4]]),
+    funds: [28000, 31000], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Ground-only veteran tank clash! Major Dax leads his old armor division brothers in arms.',
+    briefing: [
+      { who: 'narrator', text: 'Tread Pass. Major Dax reunites with his original 4th Armored Division veterans.' },
+      { who: 'dax', text: 'My old tank brothers! Roll heavy treads under the sandstorm!' },
+      { who: 'volkov', text: 'A reunion of iron veterans... let us test your steel!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Tread division stands victorious! Old friends never crumble!' },
+    ],
+  },
+  {
+    id: 'm77', name: 'Wings of Memory', act: 33, par: 15, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'kaelen', allyCo: 'sora', forcedCo: 'sora', recommendedRank: 5, recommendedUpgrades: 21,
+    map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
+    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5], ['fighter', 2, 7]], [['bomber', 17, 5], ['drone', 18, 2], ['fighter', 16, 3]]),
+    funds: [28500, 31500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Air-only dogfight! Sora flies alongside her original Red Falcons flight squad wingmates.',
+    briefing: [
+      { who: 'narrator', text: 'Red Falcon Skyway. Lieutenant Sora Akai rejoins her original flight squad wingmates.' },
+      { who: 'sora', text: 'Red Falcons, form up! Old wingmates, let\'s show Kaelen\'s squadron our signature sky dance!' },
+      { who: 'kaelen', text: 'Impressive formation, Falcon flight!' },
+    ],
+    outro: [
+      { who: 'sora', text: 'Red Falcons rule the skies! Smooth landing, squad!' },
+    ],
+  },
+  {
+    id: 'm78', name: 'Old Gunners Oath', act: 33, par: 15, cos: ['brann', 'zero', 'rhea', 'dax'], enemyCo: 'zero', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 21,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['artillery', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['rockets', 15, 3], ['artillery', 18, 5]]),
+    funds: [29000, 32000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Colonel Brann reunites with his veteran artillery battery crew at Thunder Ridge.',
+    briefing: [
+      { who: 'narrator', text: 'Thunder Ridge. Colonel Brann meets his original heavy battery crew from twenty years ago.' },
+      { who: 'brann', text: 'Old battery crew, check your sights! Range 2400 yards, open fire!' },
+      { who: 'zero', text: 'A duel of master artillery officers...' },
+    ],
+    outro: [
+      { who: 'brann', text: 'Guns clear! Perfect target accuracy, old friends!' },
+    ],
+  },
+  {
+    id: 'm79', name: 'Tides of Friendship', act: 34, par: 15, cos: ['mira', 'rhea', 'volkov', 'zero'], enemyCo: 'volkov', allyCo: 'mira', forcedCo: 'mira', recommendedRank: 5, recommendedUpgrades: 22,
+    map: sym(['wws.P..w.', 'wP=w.r.w.', 'rws..P..w', 'wws.w.r.w', 'rws..P..w', 'wws..Q.w.', 'm..f..w.f', '....P...m', 'mmm.f..f.']),
+    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['carrier', 0, 5], ['cruiser', 1, 6]], [['sub', 15, 3], ['battleship', 16, 5], ['cruiser', 15, 6]]),
+    funds: [29500, 32500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Act XXXIV — Solaria Accord. Admiral Mira Tull meets her old naval academy shipmates.',
+    briefing: [
+      { who: 'narrator', text: 'Saltmarch Reef. Admiral Mira meets her former naval academy comrades.' },
+      { who: 'mira', text: 'Welcome aboard, old friends! Battleships forward, cruisers screen against subs!' },
+      { who: 'volkov', text: 'Your fleet coordination is formidable, Admiral.' },
+    ],
+    outro: [
+      { who: 'mira', text: 'Flawless naval maneuver! Safe waters secured with old friends!' },
+    ],
+  },
+  {
+    id: 'm80', name: 'Desert Companions', act: 34, par: 15, cos: ['valerie', 'dax', 'rhea', 'malakor'], enemyCo: 'frost', allyCo: 'valerie', recommendedRank: 5, recommendedUpgrades: 22,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 3, 1], ['tank', 4, 2], ['mech', 2, 5], ['artillery', 5, 4], ['apc', 3, 6]], [['heavy', 18, 6], ['tank', 17, 3], ['rockets', 20, 5]]),
+    funds: [30000, 33000], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Valerie and her childhood friend Captain Kord spearhead a mobile desert vanguard.',
+    briefing: [
+      { who: 'narrator', text: 'Glass Oasis. Valerie meets Captain Kord, her childhood friend from the Solaria frontier.' },
+      { who: 'valerie', text: 'Captain Kord! It\'s good to fight side-by-side again after all these years!' },
+      { who: 'frost', text: 'Your nostalgic reunion ends in my sandstorm!' },
+    ],
+    outro: [
+      { who: 'valerie', text: 'Oasis cleared! Childhood bonds never rust!' },
+    ],
+  },
+  {
+    id: 'm81', name: 'The Veterans Redoubt', act: 34, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', enemyCo2: 'volkov', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 22,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [30500, 33500], weather: 'snow', fog: false, unitCap: [24, 28],
+    objective: { type: 'survive', days: 6 },
+    adaptiveTrigger: { day: 4, reinforcements: [['heavy', 1, 1, 0, true], ['rockets', 2, 1, 0, true]], fundsBonus: [10000, 0] },
+    adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'brann', text: 'Old friends artillery reinforcement on site! Wipe out their siege line!' },
+      { who: 'dax', text: 'All units, full counter-offensive!' },
+    ],
+    aiLevel: 3,
+    hint: 'Defend the redoubt for 4 days with Major Dax until Brann\'s veteran artillery arrives!',
+    briefing: [
+      { who: 'narrator', text: 'The Veteran Redoubt. Hold out against Zero and Volkov as veteran friends gather reserves.' },
+      { who: 'dax', text: 'We hold this line together! Reinforcements are coming on Day 4!' },
+      { who: 'rhea', text: 'Stand firm, team!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Redoubt held! Excellent defensive work!' },
+    ],
+  },
+  {
+    id: 'm82', name: 'Shadows of Solaria', act: 34, par: 15, cos: ['valerie', 'malakor', 'rhea', 'dax'], enemyCo: 'nyx', allyCo: 'valerie', recommendedRank: 5, recommendedUpgrades: 23,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 3, 1], ['tank', 4, 2], ['mech', 2, 5], ['artillery', 5, 4], ['rockets', 3, 6]], [['heavy', 18, 6], ['tank', 17, 3], ['rockets', 20, 5]]),
+    funds: [31000, 34000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Valerie and Malakor return to Solaria with old friends under fog of war.',
+    briefing: [
+      { who: 'narrator', text: 'Solaria Ruins. Valerie and Malakor investigate old pre-war archives with veteran allies.' },
+      { who: 'valerie', text: 'Malakor, look! Our old academy records are intact in these archives!' },
+      { who: 'nyx', text: 'The past should stay buried in darkness...' },
+    ],
+    outro: [
+      { who: 'valerie', text: 'Archives secured! Our true history is restored!' },
+    ],
+  },
+  {
+    id: 'm83', name: 'Skywing Brotherhood', act: 35, par: 15, cos: ['sora', 'kaelen', 'rhea', 'aria'], enemyCo: 'architect', allyCo: 'sora', forcedCo: 'sora', recommendedRank: 5, recommendedUpgrades: 23,
+    map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
+    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5], ['fighter', 2, 7]], [['bomber', 17, 5], ['drone', 18, 2], ['fighter', 16, 3]]),
+    funds: [31500, 34500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Act XXXV — Veteran Vanguard. Sora and Flight Captain Kaelen hold a joint sky exhibition.',
+    briefing: [
+      { who: 'narrator', text: 'Skywing Peak. Sora and Flight Captain Kaelen assemble their veteran pilot buddies.' },
+      { who: 'sora', text: 'Kaelen! Old skywing brothers, let\'s show these rogue drones how real pilots fly!' },
+      { who: 'kaelen', text: 'Formation tight! Strike on my mark!' },
+    ],
+    outro: [
+      { who: 'sora', text: 'Skywing brotherhood holds the high sky!' },
+    ],
+  },
+  {
+    id: 'm84', name: 'Iron Brotherhood', act: 35, par: 15, cos: ['dax', 'volkov', 'rhea', 'brann'], enemyCo: 'grimm', allyCo: 'volkov', recommendedRank: 5, recommendedUpgrades: 23,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 4, 2], ['tank', 5, 3], ['mech', 3, 4], ['artillery', 2, 5], ['rockets', 1, 6], ['recon', 2, 7], ['aa', 4, 8]], [['heavy', 18, 3], ['tank', 17, 2], ['rockets', 19, 6], ['mech', 18, 4]]),
+    funds: [32000, 35000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Major Dax and General Volkov lead a joint iron armor column of old veteran tank officers.',
+    briefing: [
+      { who: 'narrator', text: 'Iron Valley. Major Dax and General Volkov unite their old tank commander friends.' },
+      { who: 'dax', text: 'Volkov! Two old armor legends on the same battlefield!' },
+      { who: 'volkov', text: 'Indeed, Dax. Together, our heavy armor is indestructible!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Iron Brotherhood victorious! Unstoppable treads!' },
+    ],
+  },
+  {
+    id: 'm85', name: 'Artillery Cadre', act: 35, par: 15, cos: ['brann', 'zero', 'rhea', 'dax'], enemyCo: 'zero', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 24,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['artillery', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['rockets', 15, 3], ['artillery', 18, 5]]),
+    funds: [32500, 35500], weather: 'sand', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Colonel Brann and Siege Director Zero lead a master artillery exercise under sandstorm cover.',
+    briefing: [
+      { who: 'narrator', text: 'Siege Ridge. Colonel Brann reunites with veteran artillery instructors.' },
+      { who: 'brann', text: 'Old artillery cadre, calibrate heavy guns! Over-the-horizon volley!' },
+      { who: 'zero', text: 'Calculated precision...' },
+    ],
+    outro: [
+      { who: 'brann', text: 'Target grid obliterated! Masterclass artillery work!' },
+    ],
+  },
+  {
+    id: 'm86', name: 'Cyber Alliance', act: 35, par: 15, cos: ['aria', 'seraphina', 'rhea', 'sora'], enemyCo: 'aria', allyCo: 'aria', recommendedRank: 5, recommendedUpgrades: 24,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 18, 6], ['bomber', 17, 3], ['battleship', 20, 5]]),
+    funds: [33000, 36000], weather: 'rain', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Cyber Officer Aria Chen and Seraphina deploy a joint digital defense grid with old tech friends.',
+    briefing: [
+      { who: 'narrator', text: 'Cyber Hub. Cyber Officer Aria Chen and Medic General Seraphina align their tech cohort.' },
+      { who: 'aria', text: 'Digital network online. Old tech friends, execute firewall protocol!' },
+      { who: 'seraphina', text: 'Nanite grid backing up all systems.' },
+    ],
+    outro: [
+      { who: 'aria', text: 'System secured! Cyber alliance flawless!' },
+    ],
+  },
+  {
+    id: 'm87', name: 'Old Friends Ambush', act: 36, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', enemyCo2: 'nyx', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 24,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [33500, 36500], weather: 'clear', fog: true, unitCap: [24, 28],
+    objective: { type: 'survive', days: 6 },
+    adaptiveTrigger: { day: 4, reinforcements: [['heavy', 1, 1, 0, true], ['bomber', 2, 1, 0, true]], fundsBonus: [12000, 0] },
+    adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'dax', text: 'Major Dax arriving with Sora\'s air wing! Break the ambush!' },
+      { who: 'rhea', text: 'Old friends united! Counter-attack now!' },
+    ],
+    aiLevel: 3,
+    hint: 'Act XXXVI — Steel & Faith. Ambushed under fog! Survive 4 days until Dax and Sora arrive!',
+    briefing: [
+      { who: 'narrator', text: 'Shadow Valley. Rhea and Brann\'s veteran squad is ambushed under fog of war.' },
+      { who: 'brann', text: 'Hold the perimeter! Dax and Sora are rushing with heavy air-armor support on Day 4!' },
+      { who: 'rhea', text: 'Form defensive circle!' },
+    ],
+    outro: [
+      { who: 'rhea', text: 'Ambush broken! Excellent coordination, team!' },
+    ],
+  },
+  {
+    id: 'm88', name: 'Reunion at Kessel', act: 36, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 25,
+    map: sym(['mmf..f.', 'mH=c...', 'fB=d..c', '..f=.f.', '.c.dddd', 'f..f...', 'mm.c.ff', '.f...t.', 'mmm.f..']),
+    units: mir(14, [['infantry', 4, 1], ['infantry', 4, 5], ['tank', 4, 2], ['recon', 2, 5], ['artillery', 2, 3], ['mech', 4, 3]], [['heavy', 9, 7], ['tank', 8, 5]]),
+    funds: [34000, 37000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Nostalgic return to Kessel Valley where the campaign first began in Mission 1!',
+    briefing: [
+      { who: 'narrator', text: 'Kessel Valley. The original Azure officers return to the very first battlefield of the war.' },
+      { who: 'rhea', text: 'Look at Kessel Valley... where we first fought Grimm together as green officers.' },
+      { who: 'dax', text: 'Now we return as veteran legends! Clear out Grimm\'s remnant raiders!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Kessel Valley is peaceful once more. What a journey it\'s been, old friends.' },
+    ],
+  },
+  {
+    id: 'm89', name: 'Glacier Accord', act: 36, par: 15, cos: ['frost', 'rhea', 'dax', 'mira'], enemyCo: 'architect', allyCo: 'frost', recommendedRank: 5, recommendedUpgrades: 25,
+    map: sym(['mmsf..f', 'EH=c.m.', 'fB=d.m.', '..f=.f.', '.c.dddd', 'f..f...', 'mm.c.ff', '.f...t.', 'mmm.f..']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [34500, 37500], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Baron Frost and Captain Rhea hold a veteran peace ceremony on the Glacier Pass.',
+    briefing: [
+      { who: 'narrator', text: 'Glacier Pass. Baron Frost invites his old Republic rivals for a peace accord.' },
+      { who: 'frost', text: 'Captain Rhea, Major Dax... welcome to my glacier. Let us defend these snows together.' },
+      { who: 'rhea', text: 'A honor, Baron. Neutralize the rogue automated units!' },
+    ],
+    outro: [
+      { who: 'frost', text: 'The Glacier Accord is sealed in victory!' },
+    ],
+  },
+  {
+    id: 'm90', name: 'Silent Brotherhood', act: 36, par: 15, cos: ['nyx', 'valerie', 'rhea', 'sora'], enemyCo: 'nyx', allyCo: 'nyx', recommendedRank: 5, recommendedUpgrades: 25,
+    map: sym(['.t.f..f', 'mH=c.t.', 'fB=d.tc', '..f=.f.', '.c.dddd', 'f.t.f..', 'mm.c.ff', '.f...t.', 'mmm.f..']),
+    units: mir(22, [['heavy', 3, 1], ['tank', 4, 2], ['mech', 2, 5], ['artillery', 5, 4], ['recon', 3, 6]], [['heavy', 18, 6], ['tank', 17, 3], ['rockets', 20, 5]]),
+    funds: [35000, 38000], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Nyx and Valerie team up under fog of war to locate missing recon veterans.',
+    briefing: [
+      { who: 'narrator', text: 'Silent Forest. Nyx and Valerie lead a stealth search mission for missing recon veterans.' },
+      { who: 'nyx', text: 'Shadows protect us. Follow my scout trail, Valerie.' },
+      { who: 'valerie', text: 'Spearhead unit right behind you, Nyx!' },
+    ],
+    outro: [
+      { who: 'nyx', text: 'Recon veterans rescued. Shadows retreat...' },
+    ],
+  },
+  {
+    id: 'm91', name: 'Old Friends Unleashed', act: 37, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'volkov', allyCo: 'sora', recommendedRank: 5, recommendedUpgrades: 26,
+    map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
+    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['heavy', 4, 4], ['rockets', 2, 5]], [['bomber', 17, 5], ['heavy', 18, 2], ['battleship', 16, 3]]),
+    funds: [35500, 38500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Act XXXVII — Sovereign Reunion. Sora and Mira support Rhea against a rogue automated army.',
+    briefing: [
+      { who: 'narrator', text: 'Sovereign Pass. Sora\'s air wing and Mira\'s fleet anchor Rhea\'s assault.' },
+      { who: 'sora', text: 'Sky and sea support active! Old friends, charge!' },
+      { who: 'rhea', text: 'Unleash full combined arms!' },
+    ],
+    outro: [
+      { who: 'rhea', text: 'Sovereign Pass secured! Flawless joint victory!' },
+    ],
+  },
+  {
+    id: 'm92', name: 'The Veterans Stand', act: 37, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'zero', enemyCo2: 'frost', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 26,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [36000, 39000], weather: 'snow', fog: false, unitCap: [24, 28],
+    objective: { type: 'survive', days: 6 },
+    adaptiveTrigger: { day: 4, reinforcements: [['heavy', 1, 1, 0, true], ['tank', 2, 1, 0, true]], fundsBonus: [15000, 0] },
+    adaptiveObjective: { type: 'rout' },
+    adaptiveDialogue: [
+      { who: 'brann', text: 'Veteran heavy reinforcements arrived! Push them back!' },
+      { who: 'dax', text: 'Time for total annihilation!' },
+    ],
+    aiLevel: 3,
+    hint: 'Survive 4 days with Major Dax until Brann\'s veteran heavy armor arrives on Day 4!',
+    briefing: [
+      { who: 'narrator', text: 'Veterans Stand. Hold the line against Zero and Frost until Brann\'s heavy column arrives.' },
+      { who: 'dax', text: 'Hold the bridgehead, team! Day 4 brings heavy reinforcement!' },
+    ],
+    outro: [
+      { who: 'dax', text: 'Stand successful! Old friends never break!' },
+    ],
+  },
+  {
+    id: 'm93', name: 'Pinnacle Vanguard', act: 37, par: 15, cos: ['brann', 'kaelen', 'rhea', 'sora'], enemyCo: 'kaelen', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 26,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['fighter', 2, 5], ['bomber', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['rockets', 18, 5]]),
+    funds: [36500, 39500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Brann and Kaelen lead a joint land-air strike on Pinnacle Fortress.',
+    briefing: [
+      { who: 'narrator', text: 'Pinnacle Fortress. Colonel Brann and Flight Captain Kaelen coordinate heavy artillery and air strikes.' },
+      { who: 'brann', text: 'Kaelen, mark the targets from above! Heavy guns firing!' },
+      { who: 'kaelen', text: 'Targets painted! Bombers away!' },
+    ],
+    outro: [
+      { who: 'brann', text: 'Pinnacle Fortress taken! Land and sky perfectly synchronized!' },
+    ],
+  },
+  {
+    id: 'm94', name: 'Solaria Legacy', act: 37, par: 15, cos: ['valerie', 'malakor', 'rhea', 'dax'], enemyCo: 'architect', allyCo: 'valerie', recommendedRank: 5, recommendedUpgrades: 27,
+    map: sym(['mmf...f...f', 'mH=c...m..m', 'fB==..f...f', '..f=..c...c', '.A.====...=', 'f..c.f....f', 'mm.f..m...m', '...=c.....c', 'mm..f....f.']),
+    units: mir(22, [['heavy', 3, 1], ['tank', 4, 2], ['mech', 2, 5], ['artillery', 5, 4], ['rockets', 3, 6]], [['heavy', 18, 6], ['tank', 17, 3], ['rockets', 20, 5]]),
+    funds: [37000, 40000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Valerie and Malakor lead their old Solaria guard friends against the Architect\'s last backup core.',
+    briefing: [
+      { who: 'narrator', text: 'Solaria Core. Valerie and Malakor defend their homeland\'s legacy with veteran friends.' },
+      { who: 'valerie', text: 'Malakor, for Solaria and our old friends! Charge!' },
+      { who: 'malakor', text: 'Dread Summon and Spearhead united!' },
+    ],
+    outro: [
+      { who: 'valerie', text: 'Solaria legacy preserved for future generations!' },
+    ],
+  },
+  {
+    id: 'm95', name: 'Sky & Sea Accord', act: 38, par: 15, cos: ['sora', 'mira', 'rhea', 'kaelen'], enemyCo: 'volkov', allyCo: 'mira', forcedCo: 'sora', recommendedRank: 5, recommendedUpgrades: 27,
+    map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
+    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['battleship', 0, 3], ['cruiser', 1, 4], ['carrier', 0, 5]], [['bomber', 17, 5], ['battleship', 18, 2], ['cruiser', 16, 3]]),
+    funds: [37500, 40500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Act XXXVIII — The Final Reunion. Sora and Mira command a combined air-sea armada with old fleet buddies.',
+    briefing: [
+      { who: 'narrator', text: 'Oceanic Skyway. Lieutenant Sora and Admiral Mira command a combined air-sea armada.' },
+      { who: 'sora', text: 'Air wing covering the fleet! Mira, let\'s clear the sea!' },
+      { who: 'mira', text: 'Battleships and carriers in position! Open fire!' },
+    ],
+    outro: [
+      { who: 'mira', text: 'Air and sea completely secured with old friends!' },
+    ],
+  },
+  {
+    id: 'm96', name: 'The Grand Muster', act: 38, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'grimm', enemyCo2: 'frost', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 28,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['tank', 4, 2], ['artillery', 2, 5], ['fighter', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [38000, 41000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    aiLevel: 3,
+    hint: 'Grand Muster! All veteran officers gather for a grand military parade turned live defense.',
+    briefing: [
+      { who: 'narrator', text: 'Capital Plaza. A grand parade of all old veteran commanders turns into a live-fire defense.' },
+      { who: 'rhea', text: 'All veteran officers are here! Dax, Sora, Mira, Brann... execute grand formation!' },
+      { who: 'dax', text: 'Let\'s show the world what true veteran friendship can do!' },
+    ],
+    outro: [
+      { who: 'rhea', text: 'Grand muster victorious! Unbreakable bonds!' },
+    ],
+  },
+  {
+    id: 'm97', name: 'Echoes of Solaria Core', act: 38, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'zero', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 28,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [38500, 41500], weather: 'snow', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
+    boss: { x: 16, y: 4, team: 1, type: 'heavy', name: 'AUTOMATED TITAN', hp: 100, phases: 5 },
+    aiLevel: 3,
+    hint: 'Boss battle: break all 5 shield phases of the AUTOMATED TITAN alongside Colonel Brann.',
+    briefing: [
+      { who: 'narrator', text: 'Solaria Trench. An ancient 5-phase Automated Titan rises from the deep archive vaults.' },
+      { who: 'brann', text: 'Heavy guns focus fire on the Titan shield! Break each phase!' },
+      { who: 'rhea', text: 'All platoons, engage!' },
+    ],
+    outro: [
+      { who: 'brann', text: 'Automated Titan destroyed! Solaria archive is safe!' },
+    ],
+  },
+  {
+    id: 'm98', name: 'United Veterans Alliance', act: 38, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'volkov', allyCo: 'dax', recommendedRank: 5, recommendedUpgrades: 29,
+    map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['battleship', 0, 3], ['fighter', 2, 5], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [39000, 42000], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'hq' },
+    aiLevel: 3,
+    hint: 'Ultimate 2v2 joint battle! Rhea and Dax fight side-by-side with Volkov against Architect Prime.',
+    briefing: [
+      { who: 'narrator', text: 'Sovereign Citadel. Republic and Dominion veteran commanders unite for the pen-ultimate battle.' },
+      { who: 'rhea', text: 'General Volkov, Major Dax, Lieutenant Sora... all our old friends stand as one!' },
+      { who: 'volkov', text: 'For our shared homeland and eternal peace!' },
+    ],
+    outro: [
+      { who: 'rhea', text: 'Sovereign Citadel captured! Only the final Titan Core remains!' },
+    ],
+  },
+  {
+    id: 'm99', name: 'Eternal Friendship & Peace', act: 38, par: 15, cos: ['rhea', 'dax', 'sora', 'mira', 'brann'], enemyCo: 'architect', enemyCo2: 'seraphina', allyCo: 'brann', recommendedRank: 5, recommendedUpgrades: 30,
+    map: sym(['mmmf..A..f', 'mc=....m..', 'f..A.f...m', '..f..f...f', '.A.......t', 'f....f...m', 'm..f.....f', '....A....m', 'mmm.f....f']),
+    units: mir(20, [['heavy', 3, 1], ['rockets', 4, 2], ['aa', 2, 5], ['tank', 5, 4], ['mech', 3, 6]], [['heavy', 16, 6], ['bomber', 15, 3], ['battleship', 18, 5]]),
+    funds: [40000, 45000], weather: 'clear', weatherPool: ['clear', 'rain', 'snow', 'sand'], fog: false, unitCap: [24, 30], objective: { type: 'rout' },
+    boss: { x: 16, y: 4, team: 1, type: 'heavy', name: 'OMEGA TITAN CORE', hp: 100, phases: 8 },
+    aiLevel: 3,
+    hint: 'The Grand 100th Mission! Destroy all 8 shield phases of OMEGA TITAN CORE for true, eternal peace with all your old friends!',
+    briefing: [
+      { who: 'narrator', text: 'The 100th Campaign Climax: Eternal Friendship & Peace. The true Omega Titan Core ascends over the frontier.' },
+      { who: 'rhea', text: 'Look around us, everyone... Rhea, Dax, Sora, Mira, Brann, Valerie, Malakor, Volkov, Frost, Nyx...' },
+      { who: 'dax', text: 'All old friends, united under one sky!' },
+      { who: 'brann', text: 'All heavy batteries, open fire! For eternal friendship and peace!' },
+    ],
+    outro: [
+      { who: 'architect', text: 'OMEGA TITAN CORE DESTROYED... ETERNAL PEACE PROTOCOL ENGAGED...' },
+      { who: 'rhea', text: 'We did it... all 100 campaign missions complete! The frontier is forever at peace.' },
+      { who: 'narrator', text: 'CONGRATULATIONS! You have completed all 100 campaign missions! True friendship and eternal peace reign across the world!' },
     ],
   }];
 
@@ -1397,7 +1822,8 @@ export const REWARDS: Record<string, string> = {
   m25: 'airstrike', m26: 'emp', m27: 'orbital', m28: 'nanite', m29: 'meteor',
   m30: 'whiteout', m31: 'tempest', m32: 'orbital', m33: 'overdrive', m34: 'meteor',
   m35: 'aegis', m36: 'strike', m37: 'orbital',
-  m38: 'fury', m39: 'airstrike', m40: 'stealth', m41: 'overdrive', m42: 'nanite', m43: 'orbital', m44: 'aegis', m45: 'supply', m46: 'rally', m47: 'rain', m48: 'fortify', m49: 'snow', m50: 'repair', m51: 'barrage', m52: 'emp', m53: 'warbonds', m54: 'tempest', m55: 'strike', m56: 'bombard', m57: 'meteor', m58: 'clear', m59: 'blitz', m60: 'whiteout', m61: 'fury', m62: 'airstrike', m63: 'stealth', m64: 'overdrive', m65: 'nanite', m66: 'orbital', m67: 'aegis', m68: 'supply', m69: 'rally', m70: 'rain', m71: 'fortify', m72: 'snow', m73: 'repair', m74: 'barrage'
+  m38: 'fury', m39: 'airstrike', m40: 'stealth', m41: 'overdrive', m42: 'nanite', m43: 'orbital', m44: 'aegis', m45: 'supply', m46: 'rally', m47: 'rain', m48: 'fortify', m49: 'snow', m50: 'repair', m51: 'barrage', m52: 'emp', m53: 'warbonds', m54: 'tempest', m55: 'strike', m56: 'bombard', m57: 'meteor', m58: 'clear', m59: 'blitz', m60: 'whiteout', m61: 'fury', m62: 'airstrike', m63: 'stealth', m64: 'overdrive', m65: 'nanite', m66: 'orbital', m67: 'aegis', m68: 'supply', m69: 'rally', m70: 'rain', m71: 'fortify', m72: 'snow', m73: 'repair', m74: 'barrage',
+  m75: 'rally', m76: 'fortify', m77: 'airstrike', m78: 'bombard', m79: 'tempest', m80: 'supply', m81: 'aegis', m82: 'fury', m83: 'blitz', m84: 'overdrive', m85: 'meteor', m86: 'nanite', m87: 'warbonds', m88: 'rally', m89: 'whiteout', m90: 'stealth', m91: 'orbital', m92: 'fortify', m93: 'barrage', m94: 'fury', m95: 'tempest', m96: 'overdrive', m97: 'meteor', m98: 'orbital', m99: 'aegis'
 };
 export const MERIT_BONUS = 250; // extra merits on first clear
 
@@ -1451,6 +1877,12 @@ export const ACT_INTROS = [
   'Sovereign Core: The true architect core ascends into the stratosphere. Take the fight to the skies.',
   'The Last Alliance: The Azure Republic and Crimson Dominion form a permanent pact to face the final threat.',
   'Eternal Peace: The apocalyptic final battles against the Omega Titan. Bring true peace to the world.',
+  'Old Friends & Reunions: Captain Rhea Vance returns to Solaria Military Academy as old cohort members reunite.',
+  'Solaria Accord: Admiral Mira and Valerie gather with veteran companions across Solaria\'s historic frontiers.',
+  'Veteran Vanguard: Sora, Kaelen, Dax, and Volkov lead their original veteran flight squads and tank brotherhoods.',
+  'Steel & Faith: Revisit Kessel Valley and Glacier Pass in nostalgic joint exercises and ambush defenses.',
+  'Sovereign Reunion: Sora, Mira, Brann, and Valerie unite their old guard comrades for joint strikes.',
+  'The Final Reunion: The grand 100th campaign climax! All veteran friends across all factions unite for eternal peace.',
 ];
 
 /** Pre-deployed army value used by the hidden title-screen mission audit mode. */
