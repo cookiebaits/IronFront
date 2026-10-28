@@ -54,7 +54,10 @@ export function createGame(
     skillFx: [null, null],
     skillWeatherImmune: [false, false],
     meterMax: [ultimateCost(playerCo), ultimateCost(enemyCo)],
-    skillMeterMax: [Math.max(1, ...loadout.skills.map((id) => SKILLS[id]?.cost ?? 0)), 1],
+    skillMeterMax: [
+      loadout.skills.length ? Math.max(50, ...loadout.skills.map((id) => SKILLS[id]?.cost ?? 50)) : 50,
+      50,
+    ],
     coRank: [loadout.coRank ?? 0, 0],
     radioCycle: [0, 0],
     radioMove: [false, false],

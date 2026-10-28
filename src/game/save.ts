@@ -46,6 +46,9 @@ export function defaultSave(): SaveData {
     advancedUnlocked: false,
     advancedMode: false,
     storyCleared: {},
+    ownedSkins: ['default'],
+    activeSkin: 'default',
+    diamondPerks: [],
   };
 }
 
@@ -80,6 +83,9 @@ export function loadSave(): SaveData {
       advancedUnlocked,
       advancedMode: d.advancedMode ?? false,
       storyCleared: d.storyCleared ?? {},
+      ownedSkins: d.ownedSkins ?? ['default'],
+      activeSkin: d.activeSkin ?? 'default',
+      diamondPerks: d.diamondPerks ?? [],
       ownedSkills: d.ownedSkills ?? [],
       loadout: d.loadout ?? {},
       unitUps: d.unitUps ?? {},

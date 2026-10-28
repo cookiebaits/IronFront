@@ -167,6 +167,11 @@ export interface SaveData {
   advancedMode?: boolean;
   /** Cleared character story chapters per CO ID (1..10) */
   storyCleared?: Record<string, Record<number, boolean>>;
+  /** Unlocked cosmetic skins for units purchased with diamonds */
+  ownedSkins?: string[];
+  activeSkin?: string;
+  /** Unlocked special functional diamond perks */
+  diamondPerks?: string[];
 }
 
 export type GraphicsQuality = 'auto' | 'ultra' | 'high' | 'medium' | 'low';

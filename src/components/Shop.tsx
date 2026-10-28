@@ -12,7 +12,7 @@ import COInfo from './COInfo';
 import { UnitIcon } from './GameView';
 import type { SaveData, TrackId, UnitType } from '../game/types';
 
-type Tab = 'cos' | 'skills' | 'units' | 'harvester';
+type Tab = 'cos' | 'skills' | 'units' | 'harvester' | 'diamonds';
 
 const KIND_COLOR: Record<string, string> = {
   Boost: 'text-amber-300 border-amber-400/50',
@@ -162,9 +162,9 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
             <span className="block text-[10px] text-fuchsia-300 font-bold">🧩 {Object.values(save.coPieces ?? {}).reduce((a, b) => a + b, 0)} CO Pieces</span>
           </div>
         </div>
-        <div className="flex gap-1.5 p-2 bg-slate-900/60 shrink-0">
-          {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units'], ['harvester', '⛏️ Harvester']] as [Tab, string][]).map(([t, l]) => (
-            <button key={t} onClick={() => { sfx.cursor(); setTab(t); }} className={`flex-1 menu-btn h-10 text-sm ${tab === t ? 'bg-amber-400 text-slate-900' : 'bg-slate-800'}`}>{l}</button>
+        <div className="flex gap-1.5 p-2 bg-slate-900/60 shrink-0 overflow-x-auto">
+          {([['cos', '👤 Officers'], ['skills', '🎴 Skills'], ['units', '🔧 Units'], ['harvester', '⛏️ Harvester'], ['diamonds', '💎 Diamonds & Skins']] as [Tab, string][]).map(([t, l]) => (
+            <button key={t} onClick={() => { sfx.cursor(); setTab(t); }} className={`flex-1 min-w-[90px] menu-btn h-10 text-xs sm:text-sm ${tab === t ? 'bg-amber-400 text-slate-900' : 'bg-slate-800'}`}>{l}</button>
           ))}
         </div>
 
@@ -485,6 +485,138 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                           <div className={isCurrent ? 'text-amber-300' : 'text-slate-300'}>{lvl.ratePerHour} G/hr</div>
                         </div>
                         <div className="text-[9px] text-slate-500 mt-1">24h: {(lvl.ratePerHour * 24).toLocaleString()}G</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {tab === 'diamonds' && (
+            <div className="flex flex-col gap-4">
+              {/* Buy Gold with Diamonds */}
+              <div className="hud-panel p-3 border-cyan-400/80 bg-slate-900/90 rounded-xl">
+                <div className="text-xs font-black text-cyan-300 tracking-wider mb-2 flex items-center justify-between">
+                  <span>🪙 BUY GOLD WITH DIAMONDS</span>
+                  <span className="text-cyan-200 font-bold">Balance: 💎 {gems}</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {[
+                    { dia: 10, gold: 1000, label: 'Small Gold Pouch' },
+                    { dia: 50, gold: 6000, label: 'Medium Gold Chest' },
+                    { dia: 200, gold: 30000, label: 'Grand Treasury Reserve' },
+                  ].map((pkg) => (
+                    <button
+                      key={pkg.dia}
+                      disabled={gems < pkg.dia}
+                      onClick={() => {
+                        if (gems < pkg.dia) { sfx.cancel(); toast(`Need ${pkg.dia} 💎`); return; }
+                        spendGems(pkg.dia, { ...save, merits: save.merits + pkg.gold }, `Exchanged ${pkg.dia} 💎 → +${pkg.gold.toLocaleString()} Gold!`);
+                      }}
+                      className={`hud-btn p-3 text-left flex flex-col justify-between h-20 transition active:scale-95 ${gems >= pkg.dia ? 'bg-cyan-500/10 border-cyan-400/60 hover:border-cyan-300' : 'bg-slate-900 border-slate-800 text-slate-500'}`}
+                    >
+                      <div>
+                        <div className="text-xs font-black text-white">{pkg.label}</div>
+                        <div className="text-sm font-black text-amber-300">🪙 +{pkg.gold.toLocaleString()} Gold</div>
+                      </div>
+                      <div className="text-[11px] font-bold text-cyan-300 text-right">💎 {pkg.dia} Diamonds</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Exclusive Cosmetic Unit Skins */}
+              <div className="hud-panel p-3 border-fuchsia-400/80 bg-slate-900/90 rounded-xl">
+                <div className="text-xs font-black text-fuchsia-300 tracking-wider mb-2">✨ EXCLUSIVE COSMETIC UNIT SKINS</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { id: 'gold_elite', name: 'Golden Elite', price: 50, desc: 'Shiny 24k gold luster and trim for all armor and aircraft.', icon: '👑' },
+                    { id: 'neon_cyber', name: 'Neon Cyberpunk', price: 60, desc: 'Vibrant neon blue and magenta glowing energy highlights.', icon: '🌐' },
+                    { id: 'crimson_flame', name: 'Crimson Flame', price: 60, desc: 'Aggressive crimson flame decal patterning for all units.', icon: '🔥' },
+                    { id: 'stealth_camo', name: 'Stealth Camo', price: 40, desc: 'Low-visibility matte stealth tactical camouflage.', icon: '🥷' },
+                    { id: 'royal_vanguard', name: 'Royal Vanguard', price: 75, desc: 'Royal blue and platinum crest styling for elite officers.', icon: '🛡️' },
+                  ].map((skin) => {
+                    const owned = (save.ownedSkins ?? ['default']).includes(skin.id);
+                    const active = (save.activeSkin ?? 'default') === skin.id;
+                    return (
+                      <div key={skin.id} className={`p-3 rounded-xl border flex items-center gap-3 ${active ? 'bg-fuchsia-500/20 border-fuchsia-400' : owned ? 'bg-slate-900 border-slate-700' : 'bg-slate-950 border-slate-800'}`}>
+                        <div className="text-3xl shrink-0">{skin.icon}</div>
+                        <div className="flex-1 min-w-0 text-xs">
+                          <div className="font-black text-white text-sm flex items-center gap-2">
+                            <span>{skin.name}</span>
+                            {active && <span className="text-[9px] font-black px-1.5 py-0.5 rounded bg-fuchsia-500 text-slate-950">ACTIVE</span>}
+                          </div>
+                          <div className="text-[11px] text-slate-300 mt-0.5">{skin.desc}</div>
+                        </div>
+                        {owned ? (
+                          <button
+                            onClick={() => {
+                              sfx.select();
+                              onSave({ ...save, activeSkin: active ? 'default' : skin.id });
+                              toast(active ? 'Reset to default unit skin' : `Equipped ${skin.name} skin!`);
+                            }}
+                            className={`menu-btn h-9 px-3 text-xs shrink-0 ${active ? 'bg-slate-700 text-slate-200' : 'bg-fuchsia-400 text-slate-950'}`}
+                          >
+                            {active ? 'UNEQUIP' : 'EQUIP'}
+                          </button>
+                        ) : (
+                          <button
+                            disabled={gems < skin.price}
+                            onClick={() => {
+                              if (gems < skin.price) { sfx.cancel(); toast(`Need ${skin.price} 💎`); return; }
+                              spendGems(skin.price, {
+                                ...save,
+                                ownedSkins: [...(save.ownedSkins ?? ['default']), skin.id],
+                                activeSkin: skin.id,
+                              }, `Unlocked & equipped ${skin.name} skin!`);
+                            }}
+                            className={`menu-btn h-9 px-3 text-xs shrink-0 ${gems >= skin.price ? 'bg-fuchsia-400 text-slate-950' : 'bg-slate-800 text-slate-500'}`}
+                          >
+                            💎 {skin.price}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Special Functional Diamond Perks */}
+              <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 rounded-xl">
+                <div className="text-xs font-black text-amber-300 tracking-wider mb-2">⚡ SPECIAL FUNCTIONAL DIAMOND PERKS</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { id: 'recon_array', name: 'Tactical Recon Array', price: 100, desc: '+1 base vision for all units across fog and sandstorms.', icon: '📡' },
+                    { id: 'nanite_recycler', name: 'Automated Nanite Recycler', price: 120, desc: 'Recovers +10% unit gold cost whenever a unit is destroyed.', icon: '♻️' },
+                    { id: 'radio_uplink', name: 'Overclocked Radio Uplink', price: 140, desc: 'Tactical skill gauge charges +20% faster in battle.', icon: '📻' },
+                    { id: 'harvester_matrix', name: 'Bountiful Harvester Matrix', price: 150, desc: 'AFK Harvester gold generation permanently boosted by +25%.', icon: '⛏️' },
+                  ].map((perk) => {
+                    const owned = (save.diamondPerks ?? []).includes(perk.id);
+                    return (
+                      <div key={perk.id} className={`p-3 rounded-xl border flex items-center gap-3 ${owned ? 'bg-amber-500/20 border-amber-400' : 'bg-slate-950 border-slate-800'}`}>
+                        <div className="text-3xl shrink-0">{perk.icon}</div>
+                        <div className="flex-1 min-w-0 text-xs">
+                          <div className="font-black text-white text-sm">{perk.name}</div>
+                          <div className="text-[11px] text-slate-300 mt-0.5">{perk.desc}</div>
+                        </div>
+                        {owned ? (
+                          <div className="text-amber-300 text-xs font-black shrink-0 px-2">ACTIVE</div>
+                        ) : (
+                          <button
+                            disabled={gems < perk.price}
+                            onClick={() => {
+                              if (gems < perk.price) { sfx.cancel(); toast(`Need ${perk.price} 💎`); return; }
+                              spendGems(perk.price, {
+                                ...save,
+                                diamondPerks: [...(save.diamondPerks ?? []), perk.id],
+                              }, `Unlocked ${perk.name}!`);
+                            }}
+                            className={`menu-btn h-9 px-3 text-xs shrink-0 ${gems >= perk.price ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-500'}`}
+                          >
+                            💎 {perk.price}
+                          </button>
+                        )}
                       </div>
                     );
                   })}

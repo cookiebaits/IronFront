@@ -1453,7 +1453,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm79', name: 'Tides of Friendship', act: 34, par: 15, cos: ['mira', 'rhea', 'volkov', 'zero'], enemyCo: 'volkov', allyCo: 'mira', forcedCo: 'mira', recommendedRank: 5, recommendedUpgrades: 22,
     map: sym(['wws.P..w.', 'wP=w.r.w.', 'rws..P..w', 'wws.w.r.w', 'rws..P..w', 'wws..Q.w.', 'm..f..w.f', '....P...m', 'mmm.f..f.']),
-    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['carrier', 0, 5], ['cruiser', 1, 6]], [['sub', 15, 3], ['battleship', 16, 5], ['cruiser', 15, 6]]),
+    units: mir(18, [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 0, 5], ['cruiser', 1, 6]], [['sub', 15, 3], ['battleship', 16, 5], ['cruiser', 15, 6]]),
     funds: [29500, 32500], weather: 'clear', fog: true, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Act XXXIV — Solaria Accord. Admiral Mira Tull meets her old naval academy shipmates.',
@@ -1729,7 +1729,7 @@ export const MISSIONS: MissionDef[] = [
   {
     id: 'm95', name: 'Sky & Sea Accord', act: 38, par: 15, cos: ['sora', 'mira', 'rhea', 'kaelen'], enemyCo: 'volkov', allyCo: 'mira', forcedCo: 'sora', recommendedRank: 5, recommendedUpgrades: 27,
     map: sym(['wwsmmf...f', 'wP=H=c..m.', 'wws.B=...f', 'wwsfA.=t.m', 'rws.c....f', 'wws.====.m', 'wwsf..c..f', 'wPs.B=...m', 'wwsmf....f']),
-    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['battleship', 0, 3], ['cruiser', 1, 4], ['carrier', 0, 5]], [['bomber', 17, 5], ['battleship', 18, 2], ['cruiser', 16, 3]]),
+    units: mir(20, [['fighter', 2, 1], ['bomber', 3, 2], ['battleship', 0, 3], ['cruiser', 1, 4], ['battleship', 0, 5]], [['bomber', 17, 5], ['battleship', 18, 2], ['cruiser', 16, 3]]),
     funds: [37500, 40500], weather: 'clear', fog: false, unitCap: [24, 28], objective: { type: 'rout' },
     aiLevel: 3,
     hint: 'Act XXXVIII — The Final Reunion. Sora and Mira command a combined air-sea armada with old fleet buddies.',

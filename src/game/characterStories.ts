@@ -69,8 +69,8 @@ const CO_SPECIALTY_UNITS: Record<string, [UnitType, number, number][][]> = {
     [['heavy', 3, 1], ['heavy', 4, 4], ['tank', 2, 3], ['apc', 2, 5], ['mech', 4, 2], ['rockets', 1, 3], ['aa', 3, 6]],
   ],
   mira: [
-    [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['carrier', 0, 5], ['cruiser', 1, 6], ['sub', 2, 7]],
-    [['battleship', 0, 3], ['battleship', 0, 5], ['cruiser', 1, 2], ['sub', 2, 4], ['carrier', 1, 6], ['cruiser', 2, 6]],
+    [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 0, 5], ['cruiser', 1, 6], ['sub', 2, 7]],
+    [['battleship', 0, 3], ['battleship', 0, 5], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 1, 6], ['cruiser', 2, 6]],
   ],
   brann: [
     [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]],
