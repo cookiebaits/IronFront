@@ -717,7 +717,7 @@ export function DialogueScreen({ lines, title, onDone }: { lines: Dialogue[]; ti
 }
 
 /* ---------------- Workshop ---------------- */
-const TIER_COST = [1000, 2500, 4500];
+const TIER_COST = [2500, 6000, 12000];
 export function Workshop({ save, onBack, onSave }: { save: SaveData; onBack: () => void; onSave: (s: SaveData) => void }) {
   const [tab, setTab] = useState<'up' | 'mods'>('up');
   const buyTier = (kind: 'atk' | 'def', cat: Category) => {
@@ -897,37 +897,106 @@ export function Skirmish({ save, onBack, onStart }: { save: SaveData; onBack: ()
 }
 
 /* ---------------- Save / Load profiles ---------------- */
-export function SaveManager({ save, battle, onBack, onLoad }: { save: SaveData; battle: ResumeSave | null; onBack: () => void; onLoad: (slot: SaveSlot) => void }) {
+import { getActiveSlotId, setActiveSlotId } from '../game/save';
+
+export function SaveManager({ save, battle, onBack, onLoad, onNewGame }: { save: SaveData; battle: ResumeSave | null; onBack: () => void; onLoad: (slot: SaveSlot, slotId: string) => void; onNewGame: (slotId: string, name: string) => void }) {
   const [slots, setSlots] = useState(() => loadSlots());
+  const [activeId, setActiveId] = useState(() => getActiveSlotId());
   const [name, setName] = useState('Commander');
   const ids = ['slot1', 'slot2', 'slot3'];
   const refresh = () => setSlots(loadSlots());
+
   return (
-    <Screen title="SAVE / LOAD" onBack={onBack}>
+    <Screen title="SAVE / LOAD SLOTS" onBack={onBack}>
       <div className="max-w-2xl mx-auto grid gap-3">
-        <div className="hud-panel p-3">
-          <div className="font-black text-emerald-300">CURRENT PROFILE</div>
-          <div className="text-xs text-slate-300 mt-1">Campaign {save.progress}/{MISSIONS.length} · 🪙 {save.merits} · {battle ? `${battle.missionId}, Day ${battle.day}` : 'No battle in progress'}</div>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} className="mt-2 w-full h-10 rounded-lg border-2 border-slate-700 bg-slate-950 px-3 text-sm font-bold text-white" placeholder="Save name" />
+        <div className="hud-panel p-3 border-amber-400/80 bg-slate-900/90 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="font-black text-amber-300 text-sm">ACTIVE SAVE SLOT: {activeId.toUpperCase()}</div>
+            <span className="bg-amber-400 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded">AUTO-SAVING ON</span>
+          </div>
+          <div className="text-xs text-slate-300 mt-1">Campaign {save.progress}/{MISSIONS.length} · 🪙 {save.merits.toLocaleString()} Gold · 💎 {save.gems ?? 0} Diamonds · {battle ? `${battle.missionId}, Day ${battle.day}` : 'No active battle'}</div>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={24} className="mt-2 w-full h-10 rounded-lg border-2 border-slate-700 bg-slate-950 px-3 text-sm font-bold text-white" placeholder="Custom Profile Name" />
         </div>
+
         {ids.map((id, i) => {
           const slot = slots[id];
+          const isActive = id === activeId;
           return (
-            <div key={id} className="hud-panel p-3 flex gap-3 items-center">
-              <div className="w-10 h-10 rounded-lg bg-slate-800 border border-slate-600 flex items-center justify-center font-black text-slate-300">{i + 1}</div>
-              <div className="flex-1 min-w-0">
-                <div className="font-black text-white truncate">{slot?.name ?? 'Empty Save Slot'}</div>
-                <div className="text-[11px] text-slate-400">{slot ? `Campaign ${slot.progress.progress}/${MISSIONS.length} · 🪙 ${slot.progress.merits} · ${slot.battle ? `${slot.battle.missionId} Day ${slot.battle.day}` : 'No active battle'} · ${new Date(slot.savedAt).toLocaleString()}` : 'Save progression and the current campaign battle here.'}</div>
+            <div key={id} className={`hud-panel p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center rounded-xl border-2 ${isActive ? 'border-amber-400 bg-amber-400/10 shadow-[0_0_16px_rgba(251,191,36,0.25)]' : 'border-slate-800'}`}>
+              <div className="flex items-center gap-2">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-black text-lg ${isActive ? 'bg-amber-400 text-slate-950' : 'bg-slate-800 text-slate-300'}`}>
+                  {i + 1}
+                </div>
+                {isActive && <span className="bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded sm:hidden">ACTIVE</span>}
               </div>
-              <div className="flex gap-1 flex-wrap justify-end">
-                <button className="hud-btn h-10 px-3 text-xs" onClick={() => { writeSlot(id, name, save, battle); sfx.build(); refresh(); }}>SAVE</button>
-                <button disabled={!slot} className="hud-btn h-10 px-3 text-xs disabled:opacity-40" onClick={() => slot && onLoad(slot)}>LOAD</button>
-                <button disabled={!slot} className="h-10 px-2 rounded-lg bg-rose-900 border border-rose-700 text-[10px] font-bold disabled:opacity-30" onClick={() => { if (slot && confirm(`Delete ${slot.name}?`)) { deleteSlot(id); refresh(); } }}>DELETE</button>
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-black text-white text-base truncate">{slot?.name ?? `Slot ${i + 1} (Empty)`}</span>
+                  {isActive && <span className="hidden sm:inline-block bg-amber-400 text-slate-950 font-black text-[9px] px-1.5 py-0.5 rounded">ACTIVE SLOT</span>}
+                </div>
+                <div className="text-[11px] text-slate-400 mt-0.5">
+                  {slot ? `Campaign ${slot.progress.progress}/${MISSIONS.length} · 🪙 ${slot.progress.merits.toLocaleString()} · 💎 ${slot.progress.gems ?? 0} · ${slot.battle ? `${slot.battle.missionId} Day ${slot.battle.day}` : 'No active battle'} · ${new Date(slot.savedAt).toLocaleDateString()}` : 'Empty slot. Start a new variation or save current campaign.'}
+                </div>
+              </div>
+
+              <div className="flex gap-1.5 flex-wrap justify-end w-full sm:w-auto">
+                <button
+                  className="hud-btn h-9 px-3 text-xs bg-amber-500/20 border-amber-400 text-amber-300 font-bold"
+                  onClick={() => {
+                    writeSlot(id, name, save, battle);
+                    setActiveSlotId(id);
+                    setActiveId(id);
+                    sfx.build();
+                    refresh();
+                  }}
+                >
+                  SAVE
+                </button>
+
+                {slot ? (
+                  <button
+                    className="hud-btn h-9 px-3 text-xs bg-emerald-600 border-emerald-400 font-black text-slate-950"
+                    onClick={() => {
+                      setActiveSlotId(id);
+                      setActiveId(id);
+                      onLoad(slot, id);
+                    }}
+                  >
+                    LOAD
+                  </button>
+                ) : (
+                  <button
+                    className="hud-btn h-9 px-3 text-xs bg-sky-500/30 border-sky-400 text-sky-200 font-black"
+                    onClick={() => {
+                      if (confirm(`Start a brand new game on Slot ${i + 1}?`)) {
+                        setActiveSlotId(id);
+                        setActiveId(id);
+                        onNewGame(id, name || `Commander ${i + 1}`);
+                      }
+                    }}
+                  >
+                    + NEW GAME
+                  </button>
+                )}
+
+                <button
+                  disabled={!slot}
+                  className="h-9 px-2 rounded-lg bg-rose-900/80 border border-rose-700 text-rose-200 text-[10px] font-bold disabled:opacity-30"
+                  onClick={() => {
+                    if (slot && confirm(`Delete profile "${slot.name}" on Slot ${i + 1}?`)) {
+                      deleteSlot(id);
+                      refresh();
+                    }
+                  }}
+                >
+                  DELETE
+                </button>
               </div>
             </div>
           );
         })}
-        <div className="text-[10px] text-slate-500 text-center">Saved for this person in this browser on the hosted game. Clearing browser site data removes these slots.</div>
+        <div className="text-[10px] text-slate-500 text-center mt-1">Up to 3 distinct campaign slots. Auto-saves continuously onto your selected active slot.</div>
       </div>
     </Screen>
   );

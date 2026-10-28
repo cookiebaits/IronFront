@@ -142,7 +142,7 @@ export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; d
   veterancy: { name: 'Veterancy', icon: '⭐', up: '+5% attack & +15% veteran exp / lvl', down: '+6% deploy cost / lvl' },
   logistics: { name: 'Logistics', icon: '📦', up: '+20% fuel/ammo & +5% income bonus', down: '−3% defense / lvl' },
 };
-export const TRACK_PRICE = [600, 1200, 2200, 3800, 6000];
+export const TRACK_PRICE = [1500, 3500, 7000, 12000, 20000];
 export const TRACK_MAX = 5;
 
 export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
@@ -161,7 +161,7 @@ export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
 /* ---------------- CO tactical skills (tiered by officer rank / stars) ---------------- */
 export interface SkillDef {
   id: string; name: string; icon: string; cost: number; price: number; tier: 1 | 2 | 3; kind: 'Boost' | 'Weather' | 'Global Damage' | 'Support' | 'Control';
-  desc: string; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
+  desc: string; diamondCost?: number; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
 }
 
 export function maxSkillTierForRank(rank: number): 1 | 2 | 3 {
@@ -171,48 +171,48 @@ export function maxSkillTierForRank(rank: number): 1 | 2 | 3 {
 }
 
 export const SKILLS: Record<string, SkillDef> = {
-  // Tier 1 Skills (Unlocked at Rank 0+ / Base)
-  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 20, price: 350, tier: 1, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
-  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 30, price: 600, tier: 1, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
-  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 35, price: 600, tier: 1, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
-  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 40, price: 750, tier: 1, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
-  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 40, price: 750, tier: 1, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
-  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 40, price: 750, tier: 1, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
-  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 45, price: 750, tier: 1, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
-  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 45, price: 900, tier: 1, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
+  // Tier 1 Skills (Cost: 50, Unlocked at Rank 0+ / Base)
+  clear: { id: 'clear', name: 'Clear Skies', icon: '☀️', cost: 50, price: 350, tier: 1, kind: 'Weather', weather: 'clear', days: 2, desc: 'Clear weather for 2 days. Cancels enemy storms.' },
+  rain: { id: 'rain', name: 'Rain Dance', icon: '🌧️', cost: 50, price: 600, tier: 1, kind: 'Weather', weather: 'rain', days: 2, desc: 'Enemy-only rain restrictions for 2 days. Weakens enemy air and vision.' },
+  rally: { id: 'rally', name: 'Rally', icon: '📣', cost: 50, price: 600, tier: 1, kind: 'Boost', atk: 10, move: 1, desc: 'All units +1 move, +10% attack.' },
+  snow: { id: 'snow', name: 'Cold Front', icon: '❄️', cost: 50, price: 750, tier: 1, kind: 'Weather', weather: 'snow', days: 2, desc: 'Enemy-only snow restrictions for 2 days. Slows the enemy army.' },
+  sand: { id: 'sand', name: 'Dust Storm', icon: '🌪️', cost: 50, price: 750, tier: 1, kind: 'Weather', weather: 'sand', days: 2, desc: 'Enemy-only sandstorm: −10% attack and shorter enemy ranged fire.' },
+  fortify: { id: 'fortify', name: 'Iron Wall', icon: '🛡️', cost: 50, price: 750, tier: 1, kind: 'Boost', def: 35, desc: 'All units +35% defense.' },
+  supply: { id: 'supply', name: 'Airborne Resupply', icon: '📦', cost: 50, price: 750, tier: 1, kind: 'Support', funds: 2, heal: 20, desc: 'Gain 2 days income and heal all units 2 HP.' },
+  warbonds: { id: 'warbonds', name: 'War Bonds', icon: '💰', cost: 50, price: 900, tier: 1, kind: 'Support', funds: 3, desc: 'Gain funds equal to 3 days of income.' },
   blitz: { id: 'blitz', name: 'Blitz', icon: '💨', cost: 50, price: 1000, tier: 1, kind: 'Boost', move: 2, desc: 'All units +2 move.' },
   repair: { id: 'repair', name: 'Field Repair', icon: '🔧', cost: 50, price: 1000, tier: 1, kind: 'Support', heal: 30, desc: 'All units recover 3 HP.' },
 
-  // Tier 2 Skills (Unlocked at Rank 2+ / 2 Stars)
-  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 55, price: 1200, tier: 2, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
-  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 55, price: 1200, tier: 2, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
-  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 60, price: 1100, tier: 2, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
-  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 65, price: 1400, tier: 2, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
-  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 70, price: 1200, tier: 2, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
-  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 70, price: 1500, tier: 2, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
-  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 75, price: 1200, tier: 2, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
-  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 80, price: 1500, tier: 2, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
-  ironshield: { id: 'ironshield', name: 'Shield Bastion', icon: '🛡️', cost: 85, price: 1700, tier: 2, kind: 'Boost', def: 40, atk: 10, desc: 'All friendly units gain +40% defense and +10% attack.' },
-  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 85, price: 1800, tier: 2, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
-  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 90, price: 2000, tier: 2, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
+  // Tier 2 Skills (Cost: 100, Unlocked at Rank 2+ / 2 Stars)
+  barrage: { id: 'barrage', name: 'Barrage', icon: '💥', cost: 100, price: 1200, tier: 2, kind: 'Global Damage', dmg: 10, desc: 'ALL enemy units take 1 HP damage.' },
+  fury: { id: 'fury', name: 'Berserk', icon: '😡', cost: 100, price: 1200, tier: 2, kind: 'Boost', atk: 35, desc: 'All units +35% attack.' },
+  nanite: { id: 'nanite', name: 'Nanite Surge', icon: '🧪', cost: 100, price: 1100, tier: 2, kind: 'Support', heal: 40, desc: 'All friendly units recover 4 HP and refuel.' },
+  emp: { id: 'emp', name: 'EMP Pulse', icon: '⚡', cost: 100, price: 1400, tier: 2, kind: 'Control', debuff: 2, desc: 'Enemy units −2 move on their next turn.' },
+  stealth: { id: 'stealth', name: 'Ghost Camo', icon: '🌫️', cost: 100, price: 1200, tier: 2, kind: 'Control', debuff: 1, desc: 'Enemy units −1 move next turn, friendly units gain cover.' },
+  strike: { id: 'strike', name: 'Precision Strike', icon: '🎯', cost: 100, price: 1500, tier: 2, kind: 'Global Damage', clusters: 1, clusterDmg: 40, desc: '4 HP strike on the densest enemy cluster (radius 2).' },
+  airstrike: { id: 'airstrike', name: 'Air Strike', icon: '🛩️', cost: 100, price: 1200, tier: 2, kind: 'Global Damage', dmg: 15, desc: 'All enemy ground & air units take 1.5 HP damage.' },
+  overdrive: { id: 'overdrive', name: 'Overdrive', icon: '⚡', cost: 100, price: 1500, tier: 2, kind: 'Boost', move: 2, atk: 20, desc: 'All units +2 move, +20% attack.' },
+  ironshield: { id: 'ironshield', name: 'Shield Bastion', icon: '🛡️', cost: 100, price: 1700, tier: 2, kind: 'Boost', def: 40, atk: 10, desc: 'All friendly units gain +40% defense and +10% attack.' },
+  bombard: { id: 'bombard', name: 'Bombardment', icon: '☄️', cost: 100, price: 1800, tier: 2, kind: 'Global Damage', dmg: 20, desc: 'ALL enemy units take 2 HP damage.' },
+  tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 100, price: 2000, tier: 2, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
 
-  // Tier 3 Skills (Unlocked at Rank 3+ / 3 Stars)
-  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 95, price: 1800, tier: 3, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
-  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 110, price: 2400, tier: 3, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
-  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 120, price: 2500, tier: 3, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
-  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 130, price: 3000, tier: 3, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
-  cataclysm: { id: 'cataclysm', name: 'Cataclysm Strike', icon: '☄️', cost: 140, price: 3200, tier: 3, kind: 'Global Damage', clusters: 2, clusterDmg: 40, desc: '4 HP strikes on the 2 densest enemy clusters.' },
-  hyperdrive: { id: 'hyperdrive', name: 'Hyperdrive', icon: '🚀', cost: 150, price: 3500, tier: 3, kind: 'Boost', move: 3, atk: 40, heal: 30, desc: 'All units +3 move, +40% attack, and heal 3 HP.' },
+  // Tier 3 Skills (Cost: 150, Unlocked at Rank 3+ / 3 Stars)
+  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 150, price: 2800, tier: 3, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
+  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 150, price: 3400, tier: 3, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
+  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 150, price: 3500, diamondCost: 25, tier: 3, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
+  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 150, price: 4200, diamondCost: 35, tier: 3, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
+  cataclysm: { id: 'cataclysm', name: 'Cataclysm Strike', icon: '☄️', cost: 150, price: 4500, diamondCost: 40, tier: 3, kind: 'Global Damage', clusters: 2, clusterDmg: 40, desc: '4 HP strikes on the 2 densest enemy clusters.' },
+  hyperdrive: { id: 'hyperdrive', name: 'Hyperdrive', icon: '🚀', cost: 150, price: 5000, diamondCost: 50, tier: 3, kind: 'Boost', move: 3, atk: 40, heal: 30, desc: 'All units +3 move, +40% attack, and heal 3 HP.' },
 };
 export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.cost - b.cost).map((s) => s.id);
 
 /* ---------------- CO ranks & hiring ---------------- */
-export const RANK_PRICE = [1500, 3000, 5000, 8000];
+export const RANK_PRICE = [3000, 7000, 15000, 25000];
 export const RANK_MAX = 4;
 export const RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Ace', 'Legend'];
 export const rankSlots = (rank: number) => 1 + Math.floor(rank / 2);
 export const rankDesc = (rank: number) => `+${rank * 3}% atk & def · +${rank * 6}% charge speed · ${rankSlots(rank)} skill slot${rankSlots(rank) > 1 ? 's' : ''}`;
-export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 4000, sora: 5500, mira: 6000, brann: 6000, seraphina: 7000, aria: 7500, valerie: 9000, grimm: 8500, frost: 9500, nyx: 11000, volkov: 14000, zero: 15000, kaelen: 12000, architect: 20000, malakor: 22000 };
+export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 8000, sora: 12000, mira: 14000, brann: 14000, seraphina: 15000, aria: 16000, valerie: 18000, grimm: 17000, frost: 19000, nyx: 22000, volkov: 28000, zero: 30000, kaelen: 25000, architect: 40000, malakor: 45000 };
 /** CO Pieces required (in addition to Gold) to unlock each officer. Rhea is free. */
 export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, seraphina: 18, aria: 18, valerie: 20, grimm: 20, frost: 20, nyx: 24, volkov: 28, zero: 30, kaelen: 26, architect: 40, malakor: 42 };
 

@@ -182,6 +182,7 @@ export default function GameView(props: Props) {
   const tutorialPromptOpen = briefingOpen || !!tutNote;
   const [showIntel, setShowIntel] = useState(false);
   const [coInfo, setCoInfo] = useState<Team | null>(null);
+  const [confirmSkillId, setConfirmSkillId] = useState<string | null>(null);
   const [showGraphicsSettings, setShowGraphicsSettings] = useState(false);
   const [rangePeek, setRangePeek] = useState<{ text: string; until: number } | null>(null);
   const [hudY, setHudY] = useState({
@@ -971,9 +972,25 @@ export default function GameView(props: Props) {
     bump();
   };
 
-  const playerSkill = async (id: string) => {
+  const playerSkill = async (id: string, force = false) => {
     if (mission.tutorial && guideEvent() !== 'field-guide') return;
     if (!isLocalTurn() || ui.current.mode !== 'idle' || !canUseSkill(gs, localTeam, id)) return;
+
+    const sk = SKILLS[id];
+    if (!sk) return;
+
+    const equipped = gs.skills[localTeam].filter((skId) => SKILLS[skId]);
+    const highestTier = Math.max(1, ...equipped.map((skId) => SKILLS[skId].tier));
+    const maxCost = highestTier === 3 ? 150 : highestTier === 2 ? 100 : 50;
+    const isFullForHighest = gs.skillMeter[localTeam] >= maxCost;
+
+    // Prompt ONLY if between tiers (e.g. unlocked Tier 3 or Tier 2, but gauge is between tiers) and not forced
+    if (!force && !isFullForHighest && sk.tier < highestTier) {
+      setConfirmSkillId(id);
+      return;
+    }
+
+    setConfirmSkillId(null);
     saveSnap();
     ui.current.mode = 'busy';
     try {
@@ -1915,18 +1932,21 @@ export default function GameView(props: Props) {
   const skillBar = (team: Team) => {
     const equipped = gs.skills[team].filter((id) => SKILLS[id]);
     if (!equipped.length) return null;
-    const max = Math.max(1, gs.skillMeterMax[team]);
-    const pct = Math.min(100, (gs.skillMeter[team] / max) * 100);
+    const highestTier = Math.max(1, ...equipped.map((id) => SKILLS[id].tier));
+    const max = highestTier === 3 ? 150 : highestTier === 2 ? 100 : 50;
+    const cur = gs.skillMeter[team];
+    const pct = Math.min(100, (cur / max) * 100);
     const ready = equipped.some((id) => canUseSkill(gs, team, id));
-    const highestTier = Math.max(...equipped.map((id) => SKILLS[id].tier));
+
     return (
-      <div className="flex items-center gap-1 mt-1" title={`Tactical Skill charge ${Math.floor(gs.skillMeter[team])}/${max} · charges 35% slower`}>
+      <div className="flex items-center gap-1 mt-1" title={`Tactical Skill charge ${Math.floor(cur)}/${max} · charges 35% slower`}>
         <span className="text-[8px] font-black tracking-wider text-emerald-300 shrink-0 flex items-center gap-1">
           SKILL <span className="text-[7px] text-amber-300 bg-amber-500/20 px-1 rounded border border-amber-400/30">T{highestTier}</span>
         </span>
         <div className={`relative h-2 flex-1 rounded-full overflow-hidden border bg-slate-950 ${ready ? 'border-emerald-200 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'border-slate-600'}`}>
           <div className={`h-full transition-all duration-500 ${ready ? 'bg-emerald-300' : 'bg-gradient-to-r from-emerald-700 to-emerald-400'}`} style={{ width: `${pct}%` }} />
-          {equipped.map((id) => <div key={id} className="absolute top-0 bottom-0 w-px bg-white/70" style={{ left: `${Math.min(99, (SKILLS[id].cost / max) * 100)}%` }} />)}
+          {highestTier >= 2 && <div className="absolute top-0 bottom-0 w-px bg-amber-400/80" style={{ left: `${(50 / max) * 100}%` }} title="Tier 1 Threshold" />}
+          {highestTier >= 3 && <div className="absolute top-0 bottom-0 w-px bg-amber-400/80" style={{ left: `${(100 / max) * 100}%` }} title="Tier 2 Threshold" />}
         </div>
       </div>
     );
@@ -2343,6 +2363,29 @@ export default function GameView(props: Props) {
           canSuper={coInfo === localTeam && isLocalTurn() && U.mode === 'idle' && canActivate(gs, localTeam, 2)}
           onActivate={(lvl) => { setCoInfo(null); playerPower(lvl); }}
         />
+      )}
+
+      {confirmSkillId && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/80 p-4 anim-fade" onClick={() => setConfirmSkillId(null)}>
+          <div className="hud-panel p-4 max-w-sm w-full bg-slate-900 border-2 border-amber-400/80 rounded-2xl shadow-2xl text-center anim-pop" onClick={(e) => e.stopPropagation()}>
+            <div className="text-3xl mb-1">{SKILLS[confirmSkillId]?.icon}</div>
+            <div className="font-black text-amber-300 text-lg">{SKILLS[confirmSkillId]?.name}</div>
+            <div className="text-xs text-slate-300 mt-2 leading-relaxed">
+              Your skill gauge is charged to <b className="text-emerald-300">Tier {SKILLS[confirmSkillId]?.tier}</b>, but your highest equipped skill reaches <b className="text-amber-300">Tier {Math.max(1, ...gs.skills[localTeam].map((s) => SKILLS[s]?.tier ?? 1))}</b>.
+            </div>
+            <div className="text-xs text-slate-400 mt-1">
+              Do you want to activate <b>{SKILLS[confirmSkillId]?.name}</b> now, or keep charging to Tier {Math.max(1, ...gs.skills[localTeam].map((s) => SKILLS[s]?.tier ?? 1))}?
+            </div>
+            <div className="grid grid-cols-2 gap-2 mt-4">
+              <button className="hud-btn h-11 bg-slate-800 text-slate-300 text-xs font-bold" onClick={() => setConfirmSkillId(null)}>
+                Keep Charging
+              </button>
+              <button className="hud-btn h-11 bg-gradient-to-r from-emerald-500 to-amber-400 text-slate-950 text-xs font-black" onClick={() => playerSkill(confirmSkillId, true)}>
+                Activate Now
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {battle && <BattleScene key={`${battle.r.attackerId}-${battle.r.defenderId}-${battle.r.dBefore}-${battle.r.aBefore}`} r={battle.r} cos={gs.cos} speed={speed} weather={gs.weather} onDone={battle.done} />}

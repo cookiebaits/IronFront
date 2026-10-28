@@ -57,27 +57,27 @@ const CO_SPECIALTY_UNITS: Record<string, [UnitType, number, number][][]> = {
     [['infantry', 3, 1], ['mech', 4, 2], ['tank', 3, 3], ['heavy', 2, 4], ['artillery', 2, 3], ['recon', 1, 5]],
   ],
   sora: [
-    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5]],
-    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['tcopter', 1, 5], ['infantry', 2, 5]],
+    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['drone', 1, 5], ['fighter', 1, 2]],
+    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 4, 3], ['gundrone', 2, 4], ['tcopter', 1, 5], ['bomber', 2, 3]],
+  ],
+  kaelen: [
+    [['fighter', 2, 1], ['bcopter', 3, 2], ['bomber', 1, 3], ['gundrone', 4, 3], ['drone', 2, 4], ['fighter', 3, 5]],
+    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 3, 4], ['gundrone', 4, 3], ['drone', 1, 5], ['bomber', 2, 2]],
   ],
   dax: [
     [['tank', 3, 1], ['tank', 4, 4], ['heavy', 2, 3], ['apc', 2, 5], ['infantry', 4, 2], ['artillery', 1, 3], ['aa', 3, 6]],
     [['heavy', 3, 1], ['heavy', 4, 4], ['tank', 2, 3], ['apc', 2, 5], ['mech', 4, 2], ['rockets', 1, 3], ['aa', 3, 6]],
   ],
   mira: [
-    [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['tank', 5, 2], ['infantry', 5, 1], ['bcopter', 3, 5]],
-    [['battleship', 0, 3], ['battleship', 0, 5], ['cruiser', 1, 2], ['sub', 2, 4], ['heavy', 5, 2], ['fighter', 3, 5]],
+    [['battleship', 0, 3], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 0, 5], ['cruiser', 1, 6], ['sub', 2, 7]],
+    [['battleship', 0, 3], ['battleship', 0, 5], ['cruiser', 1, 2], ['sub', 2, 4], ['battleship', 1, 6], ['cruiser', 2, 6]],
   ],
   brann: [
     [['artillery', 4, 2], ['rockets', 2, 3], ['artillery', 4, 6], ['tank', 5, 3], ['infantry', 6, 1], ['mech', 6, 7], ['recon', 4, 8]],
     [['rockets', 4, 2], ['rockets', 2, 3], ['missiles', 4, 6], ['heavy', 5, 3], ['mech', 6, 1], ['mech', 6, 7], ['apc', 4, 8]],
   ],
-  kaelen: [
-    [['fighter', 2, 1], ['bcopter', 3, 2], ['tcopter', 2, 4], ['infantry', 2, 5], ['gundrone', 4, 3]],
-    [['fighter', 2, 1], ['bomber', 3, 2], ['bcopter', 3, 4], ['gundrone', 4, 3], ['drone', 1, 5]],
-  ],
   aria: [
-    [['recon', 2, 1], ['drone', 3, 2], ['missiles', 1, 4], ['tank', 4, 3], ['infantry', 3, 5]],
+    [['recon', 2, 1], ['drone', 3, 2], ['missiles', 1, 4], ['gundrone', 4, 3], ['infantry', 3, 5]],
     [['recon', 2, 1], ['gundrone', 3, 2], ['missiles', 1, 4], ['heavy', 4, 3], ['mech', 3, 5]],
   ],
   grimm: [
@@ -190,7 +190,7 @@ function getValerieStoryChapters(): CharacterStoryChapter[] {
         { who: 'valerie', text: 'Command HQ, this is Spearhead Valerie. I\'ve intercepted a Crimson armored column along the border.' },
         { who: 'valerie', text: 'Wait... their reinforcement calling signals... they\'re identical to the Vanguard doctrine my family used before the raid on Solaria!' },
         { who: 'malakor', text: 'Azure Republic trespassers! I am Malakor, Shadow Warlord of Crimson. You will be crushed under heavy treads!' },
-        { who: 'valerie', text: 'Malakor?! That name... could it really be my long-lost twin sister?!' },
+        { who: 'valerie', text: 'Malakor?! That name... I was separated from my twin sister Malakor during the Shadow War! Could it really be her?!' },
       ],
       outro: [
         { who: 'valerie', text: 'Malakor! Hold your fire! Look at the twin silver pendant on my neck—it matches yours!' },
@@ -448,13 +448,33 @@ export function getCharacterStoryChapters(coId: string): CharacterStoryChapter[]
   const enemies = ENEMY_ROTATIONS[coId] ?? Array.from({ length: 10 }, () => 'grimm');
   const coDef = COS[coId];
 
+  const SPECIALTY_MAP_INDICES: Record<string, number[]> = {
+    sora: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    kaelen: [3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+    mira: [4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+    brann: [2, 7, 2, 7, 2, 7, 2, 7, 2, 7],
+    zero: [2, 7, 2, 7, 2, 7, 2, 7, 2, 7],
+    frost: [9, 9, 9, 9, 9, 9, 9, 9, 9, 9],
+    nyx: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+    aria: [6, 6, 6, 6, 6, 6, 6, 6, 6, 6],
+    dax: [0, 5, 2, 5, 0, 5, 2, 5, 0, 5],
+    volkov: [0, 8, 2, 8, 0, 8, 2, 8, 0, 8],
+    grimm: [8, 8, 8, 8, 8, 8, 8, 8, 8, 8],
+  };
+
   return Array.from({ length: 10 }, (_, i) => {
     const chNum = i + 1;
     const enemyCo = enemies[i];
-    const mapTemplate = STORY_MAP_TEMPLATES[(i + (coId.charCodeAt(0) % 10)) % STORY_MAP_TEMPLATES.length];
+    const mapIndices = SPECIALTY_MAP_INDICES[coId];
+    const mapIdx = mapIndices ? mapIndices[i % mapIndices.length] : (i + (coId.charCodeAt(0) % 10)) % STORY_MAP_TEMPLATES.length;
+    const mapTemplate = STORY_MAP_TEMPLATES[mapIdx];
     const unitPresets = CO_SPECIALTY_UNITS[coId] ?? CO_SPECIALTY_UNITS.rhea;
     const myUnits = unitPresets[i % unitPresets.length];
-    const enemyExtras: [UnitType, number, number][] = i >= 4 ? [['heavy', 9, 3], ['tank', 10, 4]] : [['tank', 9, 3]];
+    const enemyExtras: [UnitType, number, number][] = (coId === 'sora' || coId === 'kaelen')
+      ? (i >= 4 ? [['fighter', 9, 3], ['bomber', 10, 4]] : [['bcopter', 9, 3]])
+      : (coId === 'mira')
+      ? (i >= 4 ? [['battleship', 11, 3], ['sub', 10, 4]] : [['cruiser', 10, 3]])
+      : (i >= 4 ? [['heavy', 9, 3], ['tank', 10, 4]] : [['tank', 9, 3]]);
 
     const weatherList: Weather[] = ['clear', 'clear', 'rain', 'snow', 'sand'];
     const weather = (coId === 'frost' ? 'snow' : coId === 'mira' ? 'rain' : coId === 'zero' || coId === 'brann' ? 'sand' : weatherList[i % weatherList.length]) as Weather;
