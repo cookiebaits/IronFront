@@ -142,7 +142,7 @@ export const TRACKS: Record<TrackId, { name: string; icon: string; up: string; d
   veterancy: { name: 'Veterancy', icon: '⭐', up: '+5% attack & +15% veteran exp / lvl', down: '+6% deploy cost / lvl' },
   logistics: { name: 'Logistics', icon: '📦', up: '+20% fuel/ammo & +5% income bonus', down: '−3% defense / lvl' },
 };
-export const TRACK_PRICE = [600, 1200, 2200, 3800, 6000];
+export const TRACK_PRICE = [1500, 3500, 7000, 12000, 20000];
 export const TRACK_MAX = 5;
 
 export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
@@ -161,7 +161,7 @@ export function upgradeEffects(u: UnitUps | undefined, indirect: boolean) {
 /* ---------------- CO tactical skills (tiered by officer rank / stars) ---------------- */
 export interface SkillDef {
   id: string; name: string; icon: string; cost: number; price: number; tier: 1 | 2 | 3; kind: 'Boost' | 'Weather' | 'Global Damage' | 'Support' | 'Control';
-  desc: string; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
+  desc: string; diamondCost?: number; atk?: number; def?: number; move?: number; heal?: number; dmg?: number; weather?: Weather; days?: number; debuff?: number; funds?: number; clusters?: number; clusterDmg?: number;
 }
 
 export function maxSkillTierForRank(rank: number): 1 | 2 | 3 {
@@ -197,22 +197,22 @@ export const SKILLS: Record<string, SkillDef> = {
   tempest: { id: 'tempest', name: 'Tempest', icon: '⛈️', cost: 100, price: 2000, tier: 2, kind: 'Weather', weather: 'rain', days: 2, dmg: 10, debuff: 1, desc: 'Enemy-only rain + all enemies take 1 HP and −1 move.' },
 
   // Tier 3 Skills (Cost: 150, Unlocked at Rank 3+ / 3 Stars)
-  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 150, price: 1800, tier: 3, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
-  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 150, price: 2400, tier: 3, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
-  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 150, price: 2500, tier: 3, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
-  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 150, price: 3000, tier: 3, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
-  cataclysm: { id: 'cataclysm', name: 'Cataclysm Strike', icon: '☄️', cost: 150, price: 3200, tier: 3, kind: 'Global Damage', clusters: 2, clusterDmg: 40, desc: '4 HP strikes on the 2 densest enemy clusters.' },
-  hyperdrive: { id: 'hyperdrive', name: 'Hyperdrive', icon: '🚀', cost: 150, price: 3500, tier: 3, kind: 'Boost', move: 3, atk: 40, heal: 30, desc: 'All units +3 move, +40% attack, and heal 3 HP.' },
+  aegis: { id: 'aegis', name: 'Aegis Shield', icon: '🛡️', cost: 150, price: 2800, tier: 3, kind: 'Boost', def: 50, desc: 'All friendly units gain +50% defense for 1 turn.' },
+  whiteout: { id: 'whiteout', name: 'Whiteout', icon: '🌨️', cost: 150, price: 3400, tier: 3, kind: 'Weather', weather: 'snow', days: 2, dmg: 20, desc: 'Enemy-only snow + all enemies take 2 HP.' },
+  orbital: { id: 'orbital', name: 'Orbital Beam', icon: '📡', cost: 150, price: 3500, diamondCost: 25, tier: 3, kind: 'Global Damage', clusters: 1, clusterDmg: 50, desc: 'Devastating 5 HP beam strike on the dense enemy cluster.' },
+  meteor: { id: 'meteor', name: 'Armageddon', icon: '🌋', cost: 150, price: 4200, diamondCost: 35, tier: 3, kind: 'Global Damage', dmg: 30, debuff: 1, desc: 'ALL enemies take 3 HP and −1 move next turn.' },
+  cataclysm: { id: 'cataclysm', name: 'Cataclysm Strike', icon: '☄️', cost: 150, price: 4500, diamondCost: 40, tier: 3, kind: 'Global Damage', clusters: 2, clusterDmg: 40, desc: '4 HP strikes on the 2 densest enemy clusters.' },
+  hyperdrive: { id: 'hyperdrive', name: 'Hyperdrive', icon: '🚀', cost: 150, price: 5000, diamondCost: 50, tier: 3, kind: 'Boost', move: 3, atk: 40, heal: 30, desc: 'All units +3 move, +40% attack, and heal 3 HP.' },
 };
 export const SKILL_ORDER = Object.values(SKILLS).sort((a, b) => a.tier !== b.tier ? a.tier - b.tier : a.cost - b.cost).map((s) => s.id);
 
 /* ---------------- CO ranks & hiring ---------------- */
-export const RANK_PRICE = [1500, 3000, 5000, 8000];
+export const RANK_PRICE = [3000, 7000, 15000, 25000];
 export const RANK_MAX = 4;
 export const RANK_NAMES = ['Recruit', 'Veteran', 'Elite', 'Ace', 'Legend'];
 export const rankSlots = (rank: number) => 1 + Math.floor(rank / 2);
 export const rankDesc = (rank: number) => `+${rank * 3}% atk & def · +${rank * 6}% charge speed · ${rankSlots(rank)} skill slot${rankSlots(rank) > 1 ? 's' : ''}`;
-export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 4000, sora: 5500, mira: 6000, brann: 6000, seraphina: 7000, aria: 7500, valerie: 9000, grimm: 8500, frost: 9500, nyx: 11000, volkov: 14000, zero: 15000, kaelen: 12000, architect: 20000, malakor: 22000 };
+export const CO_PRICE: Record<string, number> = { rhea: 0, dax: 8000, sora: 12000, mira: 14000, brann: 14000, seraphina: 15000, aria: 16000, valerie: 18000, grimm: 17000, frost: 19000, nyx: 22000, volkov: 28000, zero: 30000, kaelen: 25000, architect: 40000, malakor: 45000 };
 /** CO Pieces required (in addition to Gold) to unlock each officer. Rhea is free. */
 export const CO_PIECES: Record<string, number> = { rhea: 0, dax: 12, sora: 16, mira: 16, brann: 16, seraphina: 18, aria: 18, valerie: 20, grimm: 20, frost: 20, nyx: 24, volkov: 28, zero: 30, kaelen: 26, architect: 40, malakor: 42 };
 

@@ -117,7 +117,17 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
   /* ---------- Skills ---------- */
   const buySkill = (id: string) => {
     if (save.ownedSkills.includes(id)) return;
-    spend(SKILLS[id].price, { ...save, ownedSkills: [...save.ownedSkills, id] }, `Learned ${SKILLS[id].name}!`);
+    const sk = SKILLS[id];
+    if (sk.diamondCost) {
+      if (gems < sk.diamondCost) {
+        sfx.cancel();
+        toast(`Needs ${sk.diamondCost} 💎 Diamonds`);
+        return;
+      }
+      spendGems(sk.diamondCost, { ...save, ownedSkills: [...save.ownedSkills, id] }, `Unlocked ${sk.name} with Diamonds!`);
+      return;
+    }
+    spend(sk.price, { ...save, ownedSkills: [...save.ownedSkills, id] }, `Learned ${sk.name}!`);
   };
   const rewardMission = (id: string) => {
     const mid = Object.entries(REWARDS).find(([, s]) => s === id)?.[0];
@@ -370,7 +380,9 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
                                 </div>
                                 {!have && rm && <div className="text-[10px] text-sky-300 mt-0.5">🎁 Free reward: {rm}</div>}
                               </div>
-                              {have ? <div className="text-emerald-300 text-xs font-black shrink-0">OWNED</div> : (
+                              {have ? <div className="text-emerald-300 text-xs font-black shrink-0">OWNED</div> : sk.diamondCost ? (
+                                <button onClick={() => buySkill(id)} className={`menu-btn h-10 text-xs shrink-0 ${gems >= sk.diamondCost ? 'bg-cyan-400 text-slate-950 font-black' : 'bg-slate-800 text-slate-500'}`}>💎 {sk.diamondCost}</button>
+                              ) : (
                                 <button onClick={() => buySkill(id)} className={`menu-btn h-10 text-xs shrink-0 ${save.merits >= sk.price ? 'bg-amber-400 text-slate-900' : 'bg-slate-800 text-slate-500'}`}>🪙 {sk.price}</button>
                               )}
                             </div>

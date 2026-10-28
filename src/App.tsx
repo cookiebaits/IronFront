@@ -10,7 +10,7 @@ import { COS, PLAYABLE_ORDER, rankSlots } from './game/data';
 
 /** Story campaign missions only allow Good (Azure Republic) officers. Evil officers cannot be chosen for campaign. */
 const allowedFor = (m: MissionDef) => (m.tutorial ? ['rhea'] : PLAYABLE_ORDER.filter((c) => c !== m.enemyCo && COS[c]?.faction !== 'crimson'));
-import { addHighScore, clearResume, loadResume, loadSave, writeResume, writeSave, type ResumeSave } from './game/save';
+import { addHighScore, clearResume, defaultSave, loadResume, loadSave, setActiveSlotId, writeResume, writeSave, writeSlot, type ResumeSave } from './game/save';
 import { awardPieces, levelUpCoFromStory } from './game/unlocks';
 import { setSfx } from './game/audio';
 import type { GameState, MissionDef, SaveData, Settings, Weather } from './game/types';
@@ -106,7 +106,8 @@ export default function App() {
 
   const dropResume = () => { clearResume(); setResumeSave(null); };
 
-  const loadSlot = (slot: import('./game/save').SaveSlot) => {
+  const loadSlot = (slot: import('./game/save').SaveSlot, slotId: string) => {
+    setActiveSlotId(slotId);
     persist(slot.progress);
     if (slot.battle) {
       const { v: _v, savedAt: _savedAt, ...battle } = slot.battle;
@@ -114,6 +115,15 @@ export default function App() {
       writeResume(battle);
       setResumeSave(loadResume());
     } else dropResume();
+    setScreen('title');
+  };
+
+  const startNewGameOnSlot = (slotId: string, profileName: string) => {
+    setActiveSlotId(slotId);
+    dropResume();
+    const freshSave = defaultSave();
+    writeSlot(slotId, profileName, freshSave, null);
+    persist(freshSave);
     setScreen('title');
   };
 
@@ -307,7 +317,7 @@ export default function App() {
       {screen === 'stories' && <CharacterStories save={save} onBack={() => setScreen('title')} onStart={startStoryBattle} />}
       {screen === 'help' && <Help onBack={() => setScreen('title')} onTutorial={() => pickMission(0)} />}
       {screen === 'online' && <OnlineRoom save={save} onBack={() => setScreen('title')} onSettings={onSettings} onCoopComplete={onCoopComplete} />}
-      {screen === 'saves' && <SaveManager save={save} battle={resumeSave} onBack={() => setScreen('title')} onLoad={loadSlot} />}
+      {screen === 'saves' && <SaveManager save={save} battle={resumeSave} onBack={() => setScreen('title')} onLoad={loadSlot} onNewGame={startNewGameOnSlot} />}
     </div>
   );
 }

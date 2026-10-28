@@ -4,6 +4,16 @@ import type { GameState, HighScore, SaveData, Settings, Weather } from './types'
 import { MISSIONS } from './campaign';
 
 const KEY = 'ironfront_tactics_v1';
+const ACTIVE_SLOT_KEY = 'ironfront_active_slot_v1';
+
+export function getActiveSlotId(): string {
+  try { return localStorage.getItem(ACTIVE_SLOT_KEY) || 'slot1'; }
+  catch { return 'slot1'; }
+}
+
+export function setActiveSlotId(id: string) {
+  try { localStorage.setItem(ACTIVE_SLOT_KEY, id); } catch { /* ignore */ }
+}
 
 export function defaultSettings(): Settings {
   const autoPreset = getGraphicsPreset('auto');
@@ -98,7 +108,15 @@ export function loadSave(): SaveData {
 }
 
 export function writeSave(s: SaveData) {
-  try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(s));
+    // Auto-save onto the active slot so progress persists per slot seamlessly
+    const activeId = getActiveSlotId();
+    const slots = loadSlots();
+    const existingName = slots[activeId]?.name ?? `Commander ${activeId.replace('slot', '#')}`;
+    const activeResume = loadResume();
+    writeSlot(activeId, existingName, s, activeResume);
+  } catch { /* ignore */ }
 }
 
 /* ---------------- Campaign battle auto-save (resume where you left off) ---------------- */
