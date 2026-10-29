@@ -240,7 +240,8 @@ export default function GameView(props: Props) {
   const refreshVis = () => { visRef.current = visibility(gs, localTeam); };
   const isVis = (x: number, y: number) => !visRef.current || visRef.current.has(y * gs.w + x);
 
-  const vertCoord = (x: number, y: number) => ({ x, y });
+  const origW = Math.max(...mission.map.map((r) => r.length));
+  const vertCoord = (x: number, y: number) => (isVert ? { x: y, y: origW - 1 - x } : { x, y });
 
   // A grouped lesson keeps one briefing open while its required actions advance in sequence.
   const tutEvent = (e: string) => {
