@@ -43,19 +43,24 @@ export interface AfkStatus {
   ratePerSec: number;
 }
 
+export function isHarvesterUnlocked(save: SaveData): boolean {
+  return Boolean(save.tutorialComplete || save.progress > 0);
+}
+
 export function getAfkStatus(save: SaveData, now = Date.now()): AfkStatus {
+  const unlocked = isHarvesterUnlocked(save);
   const afk = save.afkHarvest ?? { lastClaimTime: now, level: 1 };
   const level = Math.max(1, Math.min(HARVESTER_LEVELS.length, afk.level ?? 1));
   const levelDef = getHarvesterLevel(level);
   const nextLevelDef = level < HARVESTER_LEVELS.length ? getHarvesterLevel(level + 1) : null;
 
   const lastClaim = afk.lastClaimTime && afk.lastClaimTime > 0 ? afk.lastClaimTime : now;
-  const rawElapsedSec = Math.max(0, Math.floor((now - lastClaim) / 1000));
+  const rawElapsedSec = unlocked ? Math.max(0, Math.floor((now - lastClaim) / 1000)) : 0;
   const cappedSeconds = Math.min(rawElapsedSec, MAX_HARVEST_SECONDS);
   const capReached = rawElapsedSec >= MAX_HARVEST_SECONDS;
 
   const ratePerSec = levelDef.ratePerHour / 3600;
-  const pendingGold = Math.floor(cappedSeconds * ratePerSec);
+  const pendingGold = unlocked ? Math.floor(cappedSeconds * ratePerSec) : 0;
   const maxGold = Math.floor(MAX_HARVEST_SECONDS * ratePerSec);
   const progressPercent = Math.min(100, (cappedSeconds / MAX_HARVEST_SECONDS) * 100);
 
