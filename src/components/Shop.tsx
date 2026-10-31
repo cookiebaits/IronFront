@@ -384,7 +384,19 @@ export default function CommandHQ({ save, onBack, onSave, next }: { save: SaveDa
             </>
           )}
 
-          {tab === 'harvester' && (
+          {tab === 'harvester' && !(save.tutorialComplete || save.progress > 0) && (
+            <div className="hud-panel p-6 border-slate-700 bg-slate-900/90 rounded-xl flex flex-col items-center text-center gap-3">
+              <div className="w-16 h-16 rounded-2xl bg-slate-800 text-slate-500 font-black text-3xl flex items-center justify-center border border-slate-700 shadow-inner">
+                🔒
+              </div>
+              <div className="text-lg font-black text-amber-400">HARVESTER LOCKED</div>
+              <div className="text-xs text-slate-300 max-w-md leading-relaxed">
+                Complete the <b className="text-white">Boot Camp Tutorial</b> to unlock automated offline Gold mining and Harvester capacity upgrades!
+              </div>
+            </div>
+          )}
+
+          {tab === 'harvester' && (save.tutorialComplete || save.progress > 0) && (
             <div className="flex flex-col gap-4">
               <div className="hud-panel p-4 border-amber-400 bg-slate-900/90 rounded-xl flex flex-col gap-3">
                 <div className="flex items-center justify-between flex-wrap gap-2">

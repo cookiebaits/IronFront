@@ -165,7 +165,13 @@ export default function App() {
         const prev = s.best[cfg.mission.id];
         if (!prev || prev.score < score.total) s.best = { ...s.best, [cfg.mission.id]: { score: score.total, rank: score.rank } };
         if (firstClear) storyCo = cfg.mission.unlockCo;
-        if (!auditJump && cfg.mission.tutorial) s.tutorialComplete = true;
+        if (!auditJump && cfg.mission.tutorial) {
+          s.tutorialComplete = true;
+          s.afkHarvest = {
+            ...(s.afkHarvest ?? { level: 1 }),
+            lastClaimTime: Date.now(),
+          };
+        }
       } else if (!cfg.isCampaign && w && cfg.playerCo) {
         // Character Story Chapter Clear
         targetCo = cfg.playerCo;
